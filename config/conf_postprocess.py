@@ -12,6 +12,8 @@
     - velocity
     - vorticity
     - reduced distance to critical point
+    - speed of sound
+    - local Mach number
 
     integrals that can be plotted:
     - entropy
@@ -24,13 +26,11 @@
 # sequence of post-processing steps to be applied
 PLOT_SEQUENCE = [
     "DENSITY",
-    #"PRESSURE_FLUCTUATIONS",
-    #"TOTAL_ENTROPY",
-    #"TEMPERATURE",
+    "PRESSURE_FLUCTUATIONS",
     "VELOCITY",
     "VORTICITY",
-    #"PV",
-    #"CRITICAL_DISTANCE",
+    "LOCAL_MACH",
+    "PV",
 ]
 
 #TO DO: entropy production (scalar field) evolution over time same for kinetic energy 

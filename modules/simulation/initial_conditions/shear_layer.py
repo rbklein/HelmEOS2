@@ -46,7 +46,7 @@ def chan_shear_layer_2d(mesh, rho_c, p_c):
 
 def coppola_shear_layer_2d(mesh, rho_c, p_c):
     """
-    Generate Coppola's shear layer
+    Generate Coppola's shear layer (edited)
 
     domain: Lx = .5 m, Ly = .25 m, [-Lx, Lx] x [-Ly, Ly]
     """
@@ -56,14 +56,14 @@ def coppola_shear_layer_2d(mesh, rho_c, p_c):
 
     A = 3.0 / 8.0 
     B = 3.0 / 8.0
-    delta = 1.0 / 15.0
+    delta = 0.01 #1.0 / 15.0
     eps = 0.1
     k = 3.0
     T0 = 110
 
-    u0 = 20 #m/s
+    u0 = 100 #m/s
     u = u0 * jnp.where(mesh_y_trans > 0.0, (1 - A * jnp.tanh(mesh_y_trans / delta)), (1 + A * jnp.tanh(mesh_y_trans / delta)))
-    v = eps * jnp.sin(2.0 * k * jnp.pi / DOMAIN_SIZE[0] * mesh_x_trans) * jnp.exp(-4.0 * mesh_y_trans**2 / delta)
+    v = eps * u0 * jnp.sin(2.0 * k * jnp.pi / DOMAIN_SIZE[0] * mesh_x_trans) * jnp.exp(-4.0 * mesh_y_trans**2 / delta)
     T = T0 * jnp.where(mesh_y_trans > 0, (1 + B * jnp.tanh(mesh_y_trans / delta)), (1 - B * jnp.tanh(mesh_y_trans/ delta)))
     p = 2 * p_c * jnp.ones_like(mesh_x_trans)
     rho = density_eos(p, T)

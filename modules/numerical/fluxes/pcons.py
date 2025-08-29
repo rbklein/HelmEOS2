@@ -1,5 +1,5 @@
 """
-Implementation of a new kinetic energy and pressure consistent numerical flux
+Implementation of a new kinetic energy and pressure consistent (and pressure equilibrium preserving) numerical flux
 for arbitrary equations of state.
 """
 
@@ -9,20 +9,20 @@ from config.conf_thermodynamics import *
 from modules.geometry.grid import *
 from modules.thermodynamics.EOS import *
 
-''' Import necessary discrete gradients'''
-if EOS == "IDEAL_GAS":
-    #The ideal gas case is the same for all discrete gradients
-    from modules.numerical.discrete_gradients.symmetrized_itoh_abe import density_internal_energy_pressdg_itoh_abe_ideal_gas as density_internal_energy
-else:
-    match DISCRETE_GRADIENT:
-        case "SYMMETRIZED_ITOH_ABE":
-            from modules.numerical.discrete_gradients.symmetrized_itoh_abe import density_internal_energy_pressdg_itoh_abe as density_internal_energy
-        case "GONZALEZ":
-            from modules.numerical.discrete_gradients.gonzalez import density_internal_energy_pressdg_gonzalez2 as density_internal_energy
-        case _:
-            raise ValueError(f"Unknown discrete gradient: {DISCRETE_GRADIENT}")
 
-def div_x_pressdg_2d(u):
+''' Import means '''
+
+''' pcons and pepc are the same flux up definition of some means '''
+match NUMERICAL_FLUX:
+    case "PCONS":
+        from modules.numerical.means.pcons_mean import density_internal_energy_pcons_gonzalez_mean as density_internal_energy
+    case "PEPC":
+        from modules.numerical.means.pepc_mean import density_internal_energy_pepc_mean as density_internal_energy
+
+
+''' Compute flux divergences '''
+
+def div_x_pcons_2d(u):
     """
     Assume u is padded appropriately (5, n_x + 2, n_y + 2).
     """
@@ -68,7 +68,7 @@ def div_x_pressdg_2d(u):
 
     return d_y * (f[:, 1:, :] - f[:, :-1, :])
 
-def div_y_pressdg_2d(u):
+def div_y_pcons_2d(u):
     """
     Assume u is padded appropriately (5, n_x + 2, n_y + 2).
     """
@@ -115,10 +115,10 @@ def div_y_pressdg_2d(u):
     return d_x * (f[:, :, 1:] - f[:, :, :-1])
 
 
-def div_press_dg_2d(u):
-    return div_x_pressdg_2d(u) + div_y_pressdg_2d(u)
+def div_pcons_dg_2d(u):
+    return div_x_pcons_2d(u) + div_y_pcons_2d(u)
 
 #placeholder for the actual implementation
-def div_press_dg_3d(u):
+def div_pcons_dg_3d(u):
     pass
 

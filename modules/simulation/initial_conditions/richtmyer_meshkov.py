@@ -30,10 +30,10 @@ def blast_wave_2d(mesh, rho_c, p_c):
     Returns:
     jnp.ndarray: A stack of 2D arrays representing the blast wave initial condition.
     """
-    rho = rho_c * jnp.ones_like(mesh[0]) 
+    rho = 1.5 * rho_c * jnp.ones_like(mesh[0]) 
     u = jnp.zeros_like(mesh[0])  # Zero velocity field
     v = jnp.zeros_like(mesh[0])  # Zero velocity field
 
     circle = jnp.sqrt((mesh[0] - DOMAIN_SIZE[0]/2)**2 + (mesh[1] - DOMAIN_SIZE[1]/2)**2) - 0.1
-    p = smoothed_jump(circle, 2.5, 0.1, 200.0) * p_c  # Pressure field with a jump
+    p = smoothed_jump(circle, 2.5, 1.5, 200.0) * p_c  # Pressure field with a jump
     return jnp.stack((rho, u, v, p), axis=0)  # Stack to create a 2D array with shape (4, n_x, n_y)

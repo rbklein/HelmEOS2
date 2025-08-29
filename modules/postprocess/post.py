@@ -28,6 +28,8 @@ KNOWN_POSTPROCESSING_STEPS = [
     "PV",
     "CRITICAL_DISTANCE",
     "TOTAL_ENTROPY",
+    "SPEED_OF_SOUND",
+    "LOCAL_MACH",
 ]
 
 SCALAR_FIELDS = [
@@ -41,6 +43,8 @@ SCALAR_FIELDS = [
     "VELOCITY",
     "VORTICITY",
     "CRITICAL_DISTANCE",
+    "SPEED_OF_SOUND",
+    "LOCAL_MACH",
 ]
 
 INTEGRAL_VALUES = [
@@ -182,6 +186,12 @@ def plot_postprocess(u, fig, rows, cmap = 'viridis'):
                     case "CRITICAL_DISTANCE":
                         field = jnp.sqrt((rho / rho_c - 1.0)**2 + (T / T_c - 1.0)**2 + (p / p_c - 1.0)**2)
                         title = "Critical distance"
+                    case"SPEED_OF_SOUND":
+                        field = speed_of_sound(rho, T)
+                        title = "Speed of Sound"
+                    case "LOCAL_MACH":
+                        field = jnp.linalg.norm(u[1:N_DIMENSIONS] / rho, axis = 0) / speed_of_sound(rho, T)
+                        title = "Mach number"
                     case _:
                         raise ValueError(f"Postprocessing for scalar field: {step}, not implemented")
 
@@ -261,6 +271,10 @@ def update_postprocess(u, fig, plot_grid):
                             field = jnp.linalg.norm(vorticity(u), axis=0)
                     case "CRITICAL_DISTANCE":
                         field = jnp.sqrt((rho / rho_c - 1.0)**2 + (T / T_c - 1.0)**2 + (p / p_c - 1.0)**2)
+                    case"SPEED_OF_SOUND":
+                        field = speed_of_sound(rho, T)
+                    case "LOCAL_MACH":
+                        field = jnp.linalg.norm(u[1:N_DIMENSIONS] / rho, axis = 0) / speed_of_sound(rho, T)
                     case _:
                         raise ValueError(f"Postprocessing for scalar field: {step}, not implemented")
 

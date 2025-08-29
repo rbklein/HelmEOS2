@@ -10,7 +10,7 @@ from modules.simulation.boundary import apply_boundary_conditions
 
 ''' Consistency checks '''
 
-KNOWN_FLUX_TYPES = ["NAIVE", "KEEP_DG", "PRESSURE_DG"]
+KNOWN_FLUX_TYPES = ["NAIVE", "KEEP_DG", "PCONS", "PEPC"]
 KNOWN_DISCRETE_GRADIENTS = ["SYMMETRIZED_ITOH_ABE", "GONZALEZ", "NONE"] 
 
 assert NUMERICAL_FLUX in KNOWN_FLUX_TYPES, f"Unknown numerical flux: {NUMERICAL_FLUX}"
@@ -32,11 +32,17 @@ match NUMERICAL_FLUX:
             from modules.numerical.fluxes.keep_dg import div_keep_dg_2d as flux_div
         elif N_DIMENSIONS == 3:
             from modules.numerical.fluxes.keep_dg import div_keep_dg_3d as flux_div
-    case "PRESSURE_DG":    
+    case "PCONS":    
         if N_DIMENSIONS == 2:
-            from modules.numerical.fluxes.press_dg import div_press_dg_2d as flux_div
+            from modules.numerical.fluxes.pcons import div_pcons_dg_2d as flux_div
         elif N_DIMENSIONS == 3:
-            from modules.numerical.fluxes.press_dg import div_press_dg_3d as flux_div
+            from modules.numerical.fluxes.pcons import div_pcons_dg_3d as flux_div
+    case "PEPC":
+        # PEPC is implemented using PCONS
+        if N_DIMENSIONS == 2:
+            from modules.numerical.fluxes.pcons import div_pcons_dg_2d as flux_div
+        elif N_DIMENSIONS == 3:
+            from modules.numerical.fluxes.pcons import div_pcons_dg_3d as flux_div
     case _:
         raise ValueError(f"Unknown numerical flux: {NUMERICAL_FLUX}")
 

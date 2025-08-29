@@ -23,7 +23,7 @@ match EOS:
 VISC_DYN = "CONSTANT"
 
 VISC_DYN_parameters = {
-    "value" : 0, #1e-5, #Pa s dynamic viscosity value 
+    "value" : 0 #1e-5, #Pa s dynamic viscosity value 
 }
 
 #Bulk viscosity

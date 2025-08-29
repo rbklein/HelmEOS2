@@ -8,12 +8,12 @@ from config.conf_numerical import *
 from modules.geometry.grid import *
 from modules.thermodynamics.EOS import *
 
-''' Import necessary discrete gradients'''
+''' Import necessary discrete gradient means'''
 match DISCRETE_GRADIENT:
     case "SYMMETRIZED_ITOH_ABE":
-        from modules.numerical.discrete_gradients.symmetrized_itoh_abe import density_internal_energy_keepdg_itoh_abe as density_internal_energy
+        from modules.numerical.means.keep_dg_mean import density_internal_energy_keepdg_itoh_abe as density_internal_energy
     case "GONZALEZ":
-        from modules.numerical.discrete_gradients.gonzalez import density_internal_energy_keepdg_gonzalez as density_internal_energy
+        from modules.numerical.means.keep_dg_mean import density_internal_energy_keepdg_gonzalez as density_internal_energy
     case _:
         raise ValueError(f"Unknown discrete gradient: {DISCRETE_GRADIENT}")
 
