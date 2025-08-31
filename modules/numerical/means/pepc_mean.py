@@ -19,7 +19,7 @@ def density_internal_energy_pepc_mean(rho_1, rho_2, T_1, T_2):
     p_1 = pressure(rho_1, T_1)
     p_2 = pressure(rho_2, T_2)
 
-    # Energy density ε = ρ * e(ρ, T)
+    # Energy density eps = rho * e(rho, T)
     eps_1 = rho_1 * internal_energy(rho_1, T_1)
     eps_2 = rho_2 * internal_energy(rho_2, T_2)
 
@@ -65,7 +65,7 @@ def density_internal_energy_pepc_mean(rho_1, rho_2, T_1, T_2):
     rho_m = 0.5 * (rho_1 + rho_2)
     eps_m = 0.5 * (eps_1 + eps_2)
 
-    density = rho_m + jnp.where(D != 0.0, num_rho / D, 0) # zero_by_zero(num_rho, D)  #
-    energy  = eps_m + jnp.where(D != 0.0, num_eps / D, 0) # zero_by_zero(num_eps, D)  #
+    density = rho_m + zero_by_zero(num_rho, D)  #  jnp.where(D != 0.0, num_rho / D, 0) #  
+    energy  = eps_m + zero_by_zero(num_eps, D)  #  jnp.where(D != 0.0, num_eps / D, 0) #   
 
     return density, energy

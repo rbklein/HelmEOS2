@@ -30,7 +30,7 @@ PLOT_SEQUENCE = [
     "VELOCITY",
     "VORTICITY",
     "LOCAL_MACH",
-    "PV",
+    #"PV",
 ]
 
 #TO DO: entropy production (scalar field) evolution over time same for kinetic energy 

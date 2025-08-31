@@ -5,7 +5,7 @@
 ''' User-defined parameters '''
 
 #Numerical flux type
-NUMERICAL_FLUX = "KEEP_DG"
+NUMERICAL_FLUX = "PCONS"
 
 #Numerical viscous flux type
 NUMERICAL_VISCOUS_FLUX = "NAIVE"

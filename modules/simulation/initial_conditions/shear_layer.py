@@ -23,11 +23,11 @@ def chan_shear_layer_2d(mesh, rho_c, p_c):
 
     #shear layer thickness parameters
     sig = 0.15
-    alpha = 1.0
+    alpha = 0.1
     sig2 = sig**2
 
     #velocity difference between layers
-    du0 = 10
+    du0 = 100 #Mach order 0.1
 
     #number of roll ups
     k = 1
@@ -39,7 +39,7 @@ def chan_shear_layer_2d(mesh, rho_c, p_c):
 
     rho = rho_c * (1 + 1 / (1 + jnp.exp(-yp/sig2)) - 1 / (1 + jnp.exp(-ym/sig2)))
     u = du0 * (1 / (1 + jnp.exp(-yp/sig2)) - 1 / (1 + jnp.exp(-ym/sig2)) - 1/2)
-    v = alpha * jnp.sin(k * jnp.pi * x_trans) * (1/(1+jnp.exp(-yp/sig2)) - 1/(1+jnp.exp(-ym/sig2)))
+    v = alpha * du0 * jnp.sin(k * jnp.pi * x_trans) * (1/(1+jnp.exp(-yp/sig2)) - 1/(1+jnp.exp(-ym/sig2)))
     p = 2.0 * p_c * jnp.ones_like(mesh[0])
     
     return jnp.stack((rho, u, v, p), axis = 0)
