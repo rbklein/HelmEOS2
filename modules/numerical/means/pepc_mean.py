@@ -58,29 +58,6 @@ def density_internal_energy_pepc_mean_naive(rho_1, rho_2, T_1, T_2):
 
     return density, energy
 
-def pinv_leading2(A, rcond=None, hermitian=False):
-    """
-    Moore–Penrose pseudoinverse for arrays whose *first two* axes are matrix axes.
-    A:        shape (m, n, *batch)  — here m=n=2 in your example
-    returns:  shape (n, m, *batch)
-    """
-    # put matrix axes last -> shape (*batch, m, n)
-    A_last = jnp.moveaxis(A, (0, 1), (-2, -1))
-    # batched pinv over the last two axes
-    A_pinv_last = jnp.linalg.pinv(A_last, rcond=rcond, hermitian=hermitian)
-    # move matrix axes back to the front -> shape (n, m, *batch)
-    return jnp.moveaxis(A_pinv_last, (-2, -1), (0, 1))
-
-def matvec_leading(A, x):
-    """
-    Batched matrix–vector product with matrix axes first.
-
-    A: (m, n, *B)   # matrices in leading axes
-    x: (n, *B)      # vectors in the first axis
-    -> (m, *B)
-    """
-    return jnp.einsum('mn...,n...->m...', A, x)
-
 def density_internal_energy_pepc_mean_robust(rho_1, rho_2, T_1, T_2):
     """
     Robust implementation of pepc means when states are close or equal
@@ -116,9 +93,6 @@ def density_internal_energy_pepc_mean_robust(rho_1, rho_2, T_1, T_2):
     A = jnp.array([[dpr, dpe],
                    [pr_m, pe_m]])
     b = jnp.stack((r_c, r_p), axis = 0)
-
-    #Ainv = pinv_leading2(A)
-    #sol = matvec_leading(Ainv, b)
     sol = lstsq2x2(A, b)
 
     # Arithmetic means
