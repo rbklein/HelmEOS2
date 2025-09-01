@@ -17,7 +17,7 @@ match NUMERICAL_FLUX:
     case "PCONS":
         from modules.numerical.means.pcons_mean import density_internal_energy_pcons_gonzalez_mean as density_internal_energy
     case "PEPC":
-        from modules.numerical.means.pepc_mean import density_internal_energy_pepc_mean as density_internal_energy
+        from modules.numerical.means.pepc_mean import density_internal_energy_pepc as density_internal_energy
 
 
 ''' Compute flux divergences '''

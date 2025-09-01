@@ -5,7 +5,7 @@
 ''' User-defined parameters '''
 
 #Numerical flux type
-NUMERICAL_FLUX = "PCONS"
+NUMERICAL_FLUX = "PEPC"
 
 #Numerical viscous flux type
 NUMERICAL_VISCOUS_FLUX = "NAIVE"

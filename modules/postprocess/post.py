@@ -130,7 +130,6 @@ def init_postprocess():
 
     return fig, rows
 
-
 #IMPROVEMENT: CONSTRUCT UPDATE FUNCTION BY PUTTING THE NECESSARY 
 # PLOTTING FUNCTIONS IN THE PLOT_GRID LIST AS WELL
 def plot_postprocess(u, fig, rows, cmap = 'viridis'):

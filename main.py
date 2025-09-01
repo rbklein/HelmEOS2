@@ -3,7 +3,6 @@
 """
 
 if __name__ == "__main__":
-    
     from prep_jax import *
     from modules.geometry.grid          import mesh
     from modules.numerical.integration  import integrate, integrate_interactive
@@ -27,6 +26,7 @@ if __name__ == "__main__":
     start_time = time()
     u   = integrate_interactive(u) 
     end_time = time()
+    
     
 
 

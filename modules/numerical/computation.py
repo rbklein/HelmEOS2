@@ -8,6 +8,11 @@ from modules.geometry.grid import *
 import numpy as np
 from scipy.spatial import ConvexHull
 
+''' Derived parameters '''
+EPS = jnp.finfo(DTYPE).eps
+
+
+''' Auxiliary functions used in computation '''
 def spatial_average(field):
     integral = jnp.sum(field)
     for i in range(N_DIMENSIONS):
@@ -19,12 +24,14 @@ def smoothed_jump(mesh_input, left_state, right_state, slope):
 
 def zero_by_zero(num, den):
     """
-        Robust division operator for 0/0 = 0 scenarios (thanks to Alessia)
+    Robust division operator for 0/0 = 0 scenarios (thanks to Alessia)
     """
     return den * (jnp.sqrt(2) * num) / (jnp.sqrt(den**4 + jnp.maximum(den, 1e-14)**4))
 
 def sign_nonzero(x):
-    """Sign function that returns +1 for x >= 0, -1 otherwise."""
+    """
+    Sign function that returns +1 for x >= 0, -1 otherwise.
+    """
     return jnp.where(x >= 0, 1, -1) 
 
 def rq2x2(A):
@@ -90,7 +97,9 @@ def svd2x2(A):
     """
     x, y, z, c2, s2 = rq2x2(A)
 
-    scaler = 1.0 / jnp.maximum(jnp.abs(x), jnp.abs(y))
+    mxy = jnp.maximum(jnp.abs(x), jnp.abs(y))
+
+    scaler = jnp.where(mxy != 0.0, 1 / mxy, 1.0) 
     x_ = x * scaler
     y_ = y * scaler
     z_ = z * scaler
@@ -149,7 +158,7 @@ def svd2x2(A):
 
     return u1, u2, d1, d2, v1, v2
 
-def lstsq2x2(A, b, tol=1e-14):
+def lstsq2x2(A, b):
     """
     Solve a 2x2 least squares problem in every cell of the mesh
     Returns the least norm solution in cases of nonuniqueness
@@ -157,7 +166,7 @@ def lstsq2x2(A, b, tol=1e-14):
     Parameters:
     A : nd.array of shape (2, 2, nx, ny(, nz)) containing 2x2 matrices
     b : nd.array of shape (2, nx, ny(, nz)) containing the rhs
-    tol : float cutoff for small singular values
+    tol : float cutoff for small singular values, multiplies machine precision
 
     Returns:
     nd.array of shape (2, nx, ny(, nz)) containing the solutions
@@ -168,9 +177,12 @@ def lstsq2x2(A, b, tol=1e-14):
     alpha1 = u1[0]*b[0] + u1[1]*b[1]   # shape (*batch)
     alpha2 = u2[0]*b[0] + u2[1]*b[1]
 
+    dmax = jnp.maximum(jnp.abs(d1), jnp.abs(d2))
+    rcond = EPS * 2.0
+
     # form safe reciprocals of singular values
-    inv_d1 = jnp.where(d1 > tol, 1.0/d1, 0.0)
-    inv_d2 = jnp.where(d2 > tol, 1.0/d2, 0.0)
+    inv_d1 = jnp.where(jnp.abs(d1) > (dmax * EPS), 1.0/d1, 0.0)
+    inv_d2 = jnp.where(jnp.abs(d2) > (dmax * EPS), 1.0/d2, 0.0)
 
     # coefficients in V-basis
     gamma1 = inv_d1 * alpha1           # (*batch)

@@ -28,9 +28,9 @@ PLOT_SEQUENCE = [
     "DENSITY",
     "PRESSURE_FLUCTUATIONS",
     "VELOCITY",
-    "VORTICITY",
+    "CRITICAL_DISTANCE",
     "LOCAL_MACH",
-    #"PV",
+    "SPEED_OF_SOUND",
 ]
 
 #TO DO: entropy production (scalar field) evolution over time same for kinetic energy 
