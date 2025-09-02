@@ -5,7 +5,9 @@ Implementation of mean for the pepc flux
 from prep_jax import *
 from config.conf_numerical import *
 from modules.thermodynamics.EOS import *
-from modules.numerical.computation import lstsq2x2
+from modules.numerical.computation import lstsq2x2, EPS
+
+# these functions can be combined to prevent recomputations
 
 def density_internal_energy_pepc_mean_naive(rho_1, rho_2, T_1, T_2):
     """
@@ -138,7 +140,7 @@ def density_internal_energy_pepc(rho_1, rho_2, T_1, T_2):
     # or the naive formula becomes ill-conditioned.
     # We do this by checking small state deltas (relative) and a small Cramer's-rule denominator.
     # Avoid extra imports; use dtype-driven tolerances.
-    eps_dtype = jnp.finfo(jnp.result_type(rho_1, rho_2, T_1, T_2)).eps
+    eps_dtype = EPS
     rtol = jnp.sqrt(eps_dtype)      # ~1e-8 for float64, ~3e-4 for float32
     atol = 10.0 * eps_dtype
 

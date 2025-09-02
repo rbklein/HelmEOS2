@@ -10,19 +10,19 @@ def symmetrized_itoh_abe_2vars(
         f : callable,
         dfdx : callable,
         dfdy : callable,
-        d2fd2x : callable,
-        d2fd2y : callable,
-        #d3fd3x : callable,
-        #d3fd3y : callable,
         x_1 : jnp.ndarray | float,
         x_2 : jnp.ndarray | float,
         y_1 : jnp.ndarray | float,
         y_2 : jnp.ndarray | float,
-        tol : float = 1e-12
+        atol : float = 1e-12,
+        rtol : float = 1e-12,
 ) -> tuple[jnp.ndarray, jnp.ndarray] | tuple[float, float]:
     """
     Compute the symmetrized itoh-abe discrete gradient of a function f
     taking two variables
+
+    The discrete gradient Gf between two points satisfies:
+    (f2 - f1) = Gf^T (x2 - x1)
 
     parameters:
     f       : 2 variable function
@@ -35,32 +35,43 @@ def symmetrized_itoh_abe_2vars(
     tuple containing two discrete gradient components
     """
 
-    #compute function values
+    # Function values (4 corners)
     f11 = f(x_1, y_1)
     f12 = f(x_1, y_2)
     f21 = f(x_2, y_1)
     f22 = f(x_2, y_2)
 
-    #compute exact derivatives
-    #dx_f_exact = 0.5 * (dfdx(x_1, y_1) + dfdx(x_2, y_2))
-    #dy_f_exact = 0.5 * (dfdy(x_1, y_1) + dfdy(x_2, y_2))
+    # Itoh-abe dg's at 0/0 
+    dx_f_exact = 0.5 * (dfdx(x_1, y_1) + dfdx(x_2, y_2))
+    dy_f_exact = 0.5 * (dfdy(x_1, y_1) + dfdy(x_2, y_2))
 
-    #compute derivatives for |x_2 - x_1| < eps range using taylor expansions (linear seems to also work)
-    dx_f_taylor = dfdx(x_1, y_1) + 1/2 * d2fd2x(x_1,y_1) * (x_2 - x_1) #+ 1/27 * d3fd3x(x_1, y_1) * (x_2 - x_1)**2
-    dy_f_taylor = dfdy(x_1, y_1) + 1/2 * d2fd2y(x_1,y_1) * (y_2 - y_1) #+ 1/27 * d3fd3y(x_1, y_1) * (y_2 - y_1)**2
+    # Differences and adaptive thresholds (abs + relative)
+    dx = x_2 - x_1
+    dy = y_2 - y_1
 
-    #compute discrete gradient components
-    dx_f = jnp.where(
-       jnp.isclose((x_2 - x_1), 0.0, atol = tol),
-        dx_f_taylor,
-        (0.5 * (f21 - f11) + 0.5 * (f22 - f12)) / (x_2 - x_1)
-    )
+    scale_x = jnp.maximum(jnp.abs(x_1), jnp.abs(x_2))
+    scale_y = jnp.maximum(jnp.abs(y_1), jnp.abs(y_2))
 
-    dy_f = jnp.where(
-        jnp.isclose((y_2 - y_1), 0.0, atol = tol),
-        dy_f_taylor,
-        (0.5 * (f12 - f11) + 0.5 * (f22 - f21)) / (y_2 - y_1)
-    )
+    thr_x = atol + rtol * scale_x
+    thr_y = atol + rtol * scale_y
+
+    use_diff_x = jnp.abs(dx) > thr_x
+    use_diff_y = jnp.abs(dy) > thr_y
+
+    # Symmetrized Itoh-abe numerators
+    num_x = 0.5 * ((f21 - f11) + (f22 - f12))  
+    num_y = 0.5 * ((f12 - f11) + (f22 - f21)) 
+
+    # Safe denominators to avoid dividing by ~0 when masked out
+    den_x = jnp.where(use_diff_x, dx, jnp.ones_like(dx))
+    den_y = jnp.where(use_diff_y, dy, jnp.ones_like(dy))
+
+    qx = num_x / den_x
+    qy = num_y / den_y
+
+    # Blend with 0/0 case where necessary
+    dx_f = jnp.where(use_diff_x, qx, dx_f_exact)
+    dy_f = jnp.where(use_diff_y, qy, dy_f_exact)
 
     return dx_f, dy_f
 

@@ -3,7 +3,7 @@
 """
 
 from modules.thermodynamics.EOS import *
-from modules.numerical.computation import zero_by_zero, lstsq2x2
+from modules.numerical.computation import zero_by_zero
 
 def gonzalez_2vars(
         f : callable,

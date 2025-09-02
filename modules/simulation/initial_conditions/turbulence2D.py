@@ -115,7 +115,7 @@ def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray], rho_c : float, p_c) ->
     Kx, Ky = jnp.meshgrid(kx, ky, indexing = 'ij')
     K_mag = jnp.sqrt(Kx**2 + Ky**2)
 
-    Ek = .1 * E(K_mag, shape=3, k_peak = 8)
+    Ek =  E(K_mag, shape=3, k_peak = 8)
     key = jax.random.PRNGKey(0)
     ux, uy = random_velocity_solenoidal(key, Ek)
 
