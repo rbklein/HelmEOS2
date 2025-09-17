@@ -26,7 +26,7 @@ if __name__ == "__main__":
     start_time = time()
     u   = integrate_interactive(u) 
     end_time = time()
-    
+
     
 
 

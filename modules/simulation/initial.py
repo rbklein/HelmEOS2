@@ -16,7 +16,8 @@ KNOWN_TEST_CASES = [
     "PERIODIC_RICHMYER_MESHKOV_2D", 
     "BLAST_WAVE_2D", 
     "TURBULENCE_2D", 
-    "COPPOLA_SHEAR_LAYER_2D"
+    "COPPOLA_SHEAR_LAYER_2D",
+    "BERNADES_SHEAR_LAYER_2D",
 ]
 
 assert TEST_CASE in KNOWN_TEST_CASES, f"Unknown test case: {TEST_CASE}. Known test cases are: {KNOWN_TEST_CASES}"
@@ -85,6 +86,11 @@ match TEST_CASE:
         ''' set initial condition for coppola's shear layer '''
         assert N_DIMENSIONS == 2, "COPPOLA_SHEAR_LAYER_2D requires 2 dimensions"
         from modules.simulation.initial_conditions.shear_layer import coppola_shear_layer_2d as initial_condition
+    case "BERNADES_SHEAR_LAYER_2D":
+
+        ''' set initial condition for Bernades's shear layer '''
+        assert N_DIMENSIONS == 2, "BERNADES_SHEAR_LAYER_2D requires 2 dimensions"
+        from modules.simulation.initial_conditions.shear_layer import bernades_shear_layer_2d as initial_condition
 
     case _:
         raise ValueError(f"Unknown test case: {TEST_CASE}")

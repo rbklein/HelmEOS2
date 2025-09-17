@@ -1,4 +1,7 @@
 *.pyc
 *.pyo
 *.npy
+
 __pycache__/
+
+notes.py

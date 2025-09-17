@@ -5,6 +5,7 @@ Hamiltonian-conserving discrete canonical equations based on variational differe
 """
 
 from modules.thermodynamics.EOS import *
+from modules.numerical.computation import EPS
 
 def symmetrized_itoh_abe_2vars(
         f : callable,
@@ -13,9 +14,7 @@ def symmetrized_itoh_abe_2vars(
         x_1 : jnp.ndarray | float,
         x_2 : jnp.ndarray | float,
         y_1 : jnp.ndarray | float,
-        y_2 : jnp.ndarray | float,
-        atol : float = 1e-12,
-        rtol : float = 1e-12,
+        y_2 : jnp.ndarray | float
 ) -> tuple[jnp.ndarray, jnp.ndarray] | tuple[float, float]:
     """
     Compute the symmetrized itoh-abe discrete gradient of a function f
@@ -34,6 +33,10 @@ def symmetrized_itoh_abe_2vars(
     returns:
     tuple containing two discrete gradient components
     """
+
+    eps_dtype = EPS
+    rtol = jnp.sqrt(eps_dtype)      # ~1e-8 for float64, ~3e-4 for float32
+    atol = 10.0 * eps_dtype
 
     # Function values (4 corners)
     f11 = f(x_1, y_1)
