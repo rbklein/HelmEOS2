@@ -19,6 +19,12 @@ def spatial_average(field):
         integral *= GRID_SPACING[i] / DOMAIN_SIZE[i]
     return integral
 
+def smooth_indicator(x, R, delta):
+    t = (jnp.abs(x) - R) / delta
+    rho = lambda t: jnp.where(t > 0, jnp.exp(-1/t), 0)
+    y = rho(t) / (rho(t) + rho(1-t))
+    return y
+
 def smoothed_jump(mesh_input, left_state, right_state, slope):
     return 0.5 * (left_state + right_state) + 0.5 * (right_state - left_state) * jnp.tanh(slope * mesh_input)
 

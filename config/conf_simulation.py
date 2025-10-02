@@ -18,7 +18,7 @@
 ''' User-defined parameters '''
 
 #Initial conditions
-TEST_CASE = "BERNADES_SHEAR_LAYER_2D"
+TEST_CASE = "DENSITY_WAVE_2D"
 
 #Boundary condition type ([x_1, x_2], [y_1, y_2](, [z_1, z_2]))
 BC_TYPES = [("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC")]
