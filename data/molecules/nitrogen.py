@@ -21,6 +21,11 @@ class Nitrogen(Molecule):
             "molecular_dofs": 5,  # Degrees of freedom for the molecules
         }
 
+        self._Peng_Robinson_parameters = {
+            "acentric_factor" : 0.040, # Parameter used in Peng-Robinson (no units)
+            "molecular_dofs": 5,  # Degrees of freedom for the molecules
+        }
+
         self._rho_c = 314.465 #kg m^-3 critical density
         self._T_c = 126.21 #K critical temperature
         self._p_c = 3.3946e6 #Pa critical pressure
@@ -33,6 +38,9 @@ class Nitrogen(Molecule):
     
     @property
     def Van_der_Waals_parameters(self): return self._Van_der_Waals_parameters
+
+    @property
+    def Peng_Robinson_parameters(self): return self._Peng_Robinson_parameters
 
     @property
     def critical_points(self): return (self._rho_c, self._T_c, self._p_c)

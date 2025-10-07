@@ -4,12 +4,12 @@
 
 ''' User-defined parameters '''
 
-from data.molecules.nitrogen import nitrogen as molecule
+from data.molecules.carbondioxide import carbondioxide as molecule
 
 MOLAR_MASS = molecule.molar_mass #kg mol^-1 (Nitrogen : N_2)
 
 #Equation of State (EOS) type
-EOS = "IDEAL_GAS" # Options: "IDEAL_GAS", "VAN_DER_WAALS"
+EOS = "PENG_ROBINSON" # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON"
 
 #Equation of State parameters
 match EOS:
@@ -17,6 +17,8 @@ match EOS:
         EOS_parameters = molecule.ideal_gas_parameters
     case "VAN_DER_WAALS":
         EOS_parameters = molecule.Van_der_Waals_parameters
+    case "PENG_ROBINSON":
+        EOS_parameters = molecule.Peng_Robinson_parameters
 
 
 #Dynamic viscosity

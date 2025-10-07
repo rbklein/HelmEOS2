@@ -11,7 +11,6 @@ from scipy.spatial import ConvexHull
 ''' Derived parameters '''
 EPS = jnp.finfo(DTYPE).eps
 
-
 ''' Auxiliary functions used in computation '''
 def spatial_average(field):
     integral = jnp.sum(field)

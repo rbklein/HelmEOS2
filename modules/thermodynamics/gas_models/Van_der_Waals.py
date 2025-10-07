@@ -1,5 +1,5 @@
 """
-The Helmholtz energy and other functions of the ideal gas law
+The Helmholtz energy and other functions of the Van der Waals equation
 """
 
 from prep_jax import *

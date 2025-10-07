@@ -1,7 +1,5 @@
 """
     Functions for thermodynamic equations of state (EOS).
-
-    TO DO: NEEDS TO BE CLEANED UP (Refactor + docstrings)
 """
 
 from prep_jax import *
@@ -10,8 +8,8 @@ from config.conf_geometry import N_DIMENSIONS
 
 ''' Consistency checks '''
 
-KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS"]
-CUBIC_EOS = ["VAN_DER_WAALS"]
+KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON"]
+#CUBIC_EOS = ["VAN_DER_WAALS"]
 
 assert EOS in KNOWN_EOS, f"Unknown EOS: {EOS}"
 assert MOLAR_MASS > 0, f"Molar mass should be positive"
@@ -55,6 +53,25 @@ match EOS:
 
         ''' set temperature functions for Van der Waals gas '''
         from modules.thermodynamics.gas_models.Van_der_Waals import temperature_Van_der_Waals as temperature_e
+
+    case "PENG_ROBINSON":
+
+        from modules.thermodynamics.gas_models.Peng_Robinson import check_consistency_Peng_Robinson as check_consistency
+
+        ''' set critical point values '''
+        from modules.thermodynamics.gas_models.Peng_Robinson import rho_c, T_c, p_c
+
+        ''' set Helmholtz energy function for Van der Waals '''
+        from modules.thermodynamics.gas_models.Peng_Robinson import Peng_Robinson as Helmholtz
+
+        ''' set temperature function for Van der Waals gas '''        
+        from modules.thermodynamics.gas_models.Peng_Robinson import temperature_eos_Peng_Robinson as temperature_eos
+
+        ''' set density function for Van der Waals gas '''
+        from modules.thermodynamics.gas_models.Peng_Robinson import density_eos_Peng_Robinson as density_eos
+
+        ''' set temperature functions for Van der Waals gas '''
+        from modules.thermodynamics.gas_models.Peng_Robinson import temperature_Peng_Robinson as temperature_e
 
     case _:
         raise ValueError(f"Unknown EOS: {EOS}")
