@@ -11,7 +11,7 @@ class Nitrogen(Molecule):
     def __init__(self):
         self._molar_mass = 28.0134e-3 #kg mol^-1 (Nitrogen : N_2)
 
-        self._ideal_gass_parameters = {
+        self._ideal_gas_parameters = {
             "gamma" : 1.4  # Specific heat ratio for ideal gas
         }
 
@@ -21,14 +21,21 @@ class Nitrogen(Molecule):
             "molecular_dofs": 5,  # Degrees of freedom for the molecules
         }
 
+        self._rho_c = 314.465 #kg m^-3 critical density
+        self._T_c = 126.21 #K critical temperature
+        self._p_c = 3.3946e6 #Pa critical pressure
+
     @property
     def molar_mass(self): return self._molar_mass
 
     @property
-    def ideal_gas_parameters(self): return self._ideal_gass_parameters
+    def ideal_gas_parameters(self): return self._ideal_gas_parameters
     
     @property
     def Van_der_Waals_parameters(self): return self._Van_der_Waals_parameters
+
+    @property
+    def critical_points(self): return (self._rho_c, self._T_c, self._p_c)
 
 #static instance
 nitrogen = Nitrogen()

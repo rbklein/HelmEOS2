@@ -15,4 +15,7 @@ class Molecule(ABC):
     @abstractmethod
     def Van_der_Waals_parameters(self) -> Dict[str, float]: pass
 
+    @abstractmethod
+    def critical_points(self) -> tuple[float, float, float]: pass
+
     #maybe also viscosities and thermal conductance functions 

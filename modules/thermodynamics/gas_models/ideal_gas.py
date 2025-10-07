@@ -19,9 +19,7 @@ R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas cons
 ''' set critical point values for ideal gas (does not have a critical point)'''
 
 #Critical values for Nitrogen, to use for initial conditions
-rho_c = 241.29  # Critical density for ideal gas, can be set to any positive value
-T_c = 126.15  # Critical temperature for ideal gas, can be set to any positive value
-p_c = 3387933.47  # Critical pressure for ideal gas, can be set to any positive value
+rho_c, T_c, p_c = molecule.critical_points
 
 ''' Helmholtz Energies '''
 
@@ -33,7 +31,7 @@ def ideal_gas(rho, T):
     """
     gamma = EOS_parameters["gamma"]
 
-    return (R_specific * T) / (gamma - 1) * (1 - jnp.log(T / (rho**(gamma - 1))))
+    return - R_specific * T * (1 + jnp.log(T**(1/(gamma - 1)) / rho))
 
 
 ''' Temperature equation (rho, p) -> T for initial conditions'''
