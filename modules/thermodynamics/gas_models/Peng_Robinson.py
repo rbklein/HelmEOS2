@@ -62,10 +62,11 @@ def _solve_root_pressure(rho, p):
     #initial guess, exact solution ignoring molecular attraction
     T = p * (1 - b_PR * rho) / (rho * R_specific)
     it_max = 10
+    tol = 1e-10
 
     def cond(state):
         T, i = state
-        return jnp.logical_and(i < it_max, jnp.abs(_root_func_pressure(rho, p, T)))
+        return jnp.logical_and(i < it_max, jnp.abs(_root_func_pressure(rho, p, T)) > (tol * p))
     
     def body(state):
         T, i = state
@@ -139,10 +140,11 @@ def _solve_root_energy(rho, e):
     #initial guess, exact solution ignoring molecular attraction
     T = e / (molecular_dofs / 2 * R_specific)
     it_max = 10
+    tol = 1e-10
 
     def cond(state):
         T, i = state
-        return jnp.logical_and(i < it_max, jnp.abs(_root_func_energy(rho, e, T)))
+        return jnp.logical_and(i < it_max, jnp.abs(_root_func_energy(rho, e, T)) > (tol * e))
     
     def body(state):
         T, i = state
