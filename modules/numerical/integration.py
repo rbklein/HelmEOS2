@@ -7,6 +7,9 @@ from config.conf_numerical import *
 from config.conf_simulation import *
 from config.conf_postprocess import *
 
+from config.conf_geometry import *
+from config.conf_thermodynamics import *
+
 from modules.thermodynamics.EOS import *
 from modules.geometry.grid import GRID_SPACING
 
@@ -45,6 +48,7 @@ def check_CFL(u):
     return cfl
 
 from modules.postprocess.post import init_postprocess, plot_postprocess, update_postprocess, NUM_ITS_PER_UPDATE
+from modules.numerical.computation import midpoint_integrate
 
 @jax.jit
 def integrate(u):
@@ -85,66 +89,68 @@ def integrate_interactive(u):
 
     return u
 
+from pathlib import Path
 
-#def integrate_debug(u):
+def integrate_experiment(u):
     """
-    Debug version of the integrate function that prints debug information.
-    """ 
+    A time-integrator that can be customized to perform numerical experiments
+    """
 
-    import matplotlib.pyplot as plt
-    import numpy as np
+    #step = jax.jit(time_step)
 
-    #please clean up
-    from modules.postprocess.derived_quantities.vorticity import vorticity_2d as vorticity
+    u0 = jnp.copy(u)
 
-    step = jax.jit(time_step)
-    
-    plt.ion()
-    fig, axes = plt.subplots(1,4, figsize=(20, 5))
-    im1 = axes[0].imshow(u[0, :, :].T, origin = 'lower', cmap='plasma')
-    cbar1 = fig.colorbar(im1, ax=axes[0], label='Density')
+    rho = u[0]
+    T   = temperature(u)
+    S0  = midpoint_integrate(rho * entropy(rho, T))
+    p_exact = 2 * p_c
 
-    im2 = axes[1].imshow(temperature(u).T, origin = 'lower', cmap='plasma')
-    cbar2 = fig.colorbar(im2, ax=axes[1], label='Temperature')
+    arr_e_s = jnp.zeros(NUM_TIME_STEPS + 1)
+    arr_e_s = arr_e_s.at[0].set(0.0)
 
-    im3 = axes[2].imshow(jnp.linalg.norm(u[1:3, :, :], axis=0).T, origin = 'lower', cmap='plasma')
-    cbar3 = fig.colorbar(im3, ax=axes[2], label='Velocity Magnitude')
+    arr_e_p = jnp.zeros(NUM_TIME_STEPS + 1)
+    arr_e_p = arr_e_p.at[0].set(0.0)
 
-    im4 = axes[3].imshow(vorticity(u).T, origin = 'lower', cmap='plasma')
-    cbar4 = fig.colorbar(im4, ax=axes[3], label='Vorticity')
 
-    #use a regular loop to integrate the system
-    for it in range(NUM_TIME_STEPS):
-        if (it % 10) == 0:
-            print(f"Current time step: {it}/{NUM_TIME_STEPS}, t: {it*dt}, CFL: {jnp.max(check_CFL(u)):.4f}")
+    def scan_step(carry, _):
+        it, u, arr_e_s, arr_e_p = carry
 
-            # Updated data
-            data1 = np.array(u[0, :, :]).T
-            data2 = np.array(temperature(u)).T
-            data3 = np.array(jnp.linalg.norm(u[1:3, :, :], axis=0)).T
-            data4 = np.array(vorticity(u)).T
+        rho = u[0]
+        T   = temperature(u)
+        S   = midpoint_integrate(rho * entropy(rho, T))
 
-            # Update image data
-            im1.set_data(data1)
-            im2.set_data(data2)
-            im3.set_data(data3)
-            im4.set_data(data4)
+        p   = pressure(rho, T)
 
-            # Update color limits to fit new data
-            im1.set_clim(vmin=data1.min(), vmax=data1.max())
-            im2.set_clim(vmin=data2.min(), vmax=data2.max())
-            im3.set_clim(vmin=data3.min(), vmax=data3.max())
-            im4.set_clim(vmin=data4.min(), vmax=data4.max())
+        arr_e_s = arr_e_s.at[it].set(jnp.abs(S - S0) / jnp.abs(S0))
+        arr_e_p = arr_e_p.at[it].set(jnp.sqrt(midpoint_integrate((p - p_exact)**2)) / (jnp.abs(p_exact) * 1))
 
-            # Update colorbars
-            cbar1.update_normal(im1)
-            cbar2.update_normal(im2)
-            cbar3.update_normal(im3)
-            cbar4.update_normal(im4)
+        jax.debug.print("Current time step: {it}/{its}, t: {t}", it=it, its = NUM_TIME_STEPS, t=(it*dt))
 
-            fig.canvas.draw_idle()
-            plt.pause(0.001)  # Pause to update the plot
+        return (it+1, time_step(u, dt), arr_e_s, arr_e_p), None
 
-        u = step(u, dt)
+    it, u, arr_e_s, arr_e_p = jax.lax.scan(
+        scan_step, (0, u, arr_e_s, arr_e_p), None, length=NUM_TIME_STEPS
+    )[0]
 
+    err = u - u0
+    name = (
+        f"{NUMERICAL_FLUX}_{DISCRETE_GRADIENT}_{NAME_MOLECULE}_"
+        f"{EOS}_{GRID_RESOLUTION[0]}_{NUM_TIME_STEPS}"
+    )
+
+    base = Path("./output") / TEST_CASE
+    path_sol  = base / "solution_data"
+    path_err  = base / "convergence_data"
+    path_ent  = base / "entropy_data"
+    path_pres = base / "pressure_data"
+
+    # Ensure each directory exists
+    for p in (path_sol, path_err, path_ent, path_pres):
+        p.mkdir(parents=True, exist_ok=True)
+
+    # Save files (Path objects are fine)
+    jnp.save(path_sol  / f"{name}.npy", u)
+    jnp.save(path_err  / f"{name}.npy", err)
+    jnp.save(path_ent  / f"{name}.npy", arr_e_s)
+    jnp.save(path_pres / f"{name}.npy", arr_e_p)
     return u

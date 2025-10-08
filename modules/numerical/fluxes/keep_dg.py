@@ -10,7 +10,7 @@ from modules.thermodynamics.EOS import *
 
 ''' Import necessary discrete gradient means'''
 match DISCRETE_GRADIENT:
-    case "SYMMETRIZED_ITOH_ABE":
+    case "SYM_ITOH_ABE":
         from modules.numerical.means.keep_dg_mean import density_internal_energy_keepdg_itoh_abe as density_internal_energy
     case "GONZALEZ":
         from modules.numerical.means.keep_dg_mean import density_internal_energy_keepdg_gonzalez as density_internal_energy

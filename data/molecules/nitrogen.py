@@ -30,6 +30,8 @@ class Nitrogen(Molecule):
         self._T_c = 126.21 #K critical temperature
         self._p_c = 3.3946e6 #Pa critical pressure
 
+        self._name = "N_2"
+
     @property
     def molar_mass(self): return self._molar_mass
 
@@ -44,6 +46,9 @@ class Nitrogen(Molecule):
 
     @property
     def critical_points(self): return (self._rho_c, self._T_c, self._p_c)
+
+    @property
+    def name(self): return self._name
 
 #static instance
 nitrogen = Nitrogen()

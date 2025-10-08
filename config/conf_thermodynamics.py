@@ -6,7 +6,9 @@
 
 from data.molecules.carbondioxide import carbondioxide as molecule
 
-MOLAR_MASS = molecule.molar_mass #kg mol^-1 (Nitrogen : N_2)
+NAME_MOLECULE = molecule.name
+
+MOLAR_MASS = molecule.molar_mass #kg mol^-1
 
 #Equation of State (EOS) type
 EOS = "PENG_ROBINSON" # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON"

@@ -29,6 +29,8 @@ class CarbonDioxide(Molecule):
         self._rho_c = 467.7 #kg m^-3 critical density
         self._T_c = 304.128 #K critical temperature
         self._p_c = 7.3773e6 #Pa critical pressure
+
+        self._name = "CO_2"
         
 
     @property
@@ -45,6 +47,9 @@ class CarbonDioxide(Molecule):
 
     @property
     def critical_points(self): return (self._rho_c, self._T_c, self._p_c)
+
+    @property
+    def name(self): return self._name
 
 #static instance
 carbondioxide = CarbonDioxide()

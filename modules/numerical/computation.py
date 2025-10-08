@@ -18,6 +18,12 @@ def spatial_average(field):
         integral *= GRID_SPACING[i] / DOMAIN_SIZE[i]
     return integral
 
+@jax.jit
+def midpoint_integrate(field):
+    field_scaled = field * CELL_VOLUME
+    integral = jnp.sum(field_scaled)
+    return integral
+
 def smooth_indicator(x, R, delta):
     t = (jnp.abs(x) - R) / delta
     rho = lambda t: jnp.where(t > 0, jnp.exp(-1/t), 0)

@@ -21,4 +21,7 @@ class Molecule(ABC):
     @abstractmethod
     def critical_points(self) -> tuple[float, float, float]: pass
 
+    @abstractmethod
+    def name(self) -> str: pass
+
     #maybe also viscosities and thermal conductance functions 

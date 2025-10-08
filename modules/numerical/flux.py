@@ -10,8 +10,8 @@ from modules.simulation.boundary import apply_boundary_conditions
 
 ''' Consistency checks '''
 
-KNOWN_FLUX_TYPES = ["NAIVE", "KEEP_DG", "PCONS", "PEPC"]
-KNOWN_DISCRETE_GRADIENTS = ["SYMMETRIZED_ITOH_ABE", "GONZALEZ", "NONE"] 
+KNOWN_FLUX_TYPES = ["NAIVE", "KEEP", "PCONS", "PEPC"]
+KNOWN_DISCRETE_GRADIENTS = ["SYM_ITOH_ABE", "GONZALEZ", "NONE"] 
 
 assert NUMERICAL_FLUX in KNOWN_FLUX_TYPES, f"Unknown numerical flux: {NUMERICAL_FLUX}"
 
@@ -27,7 +27,7 @@ match NUMERICAL_FLUX:
             from modules.numerical.fluxes.naive import div_naive_2d as flux_div
         elif N_DIMENSIONS == 3:
             from modules.numerical.fluxes.naive import div_naive_3d as flux_div
-    case "KEEP_DG":    
+    case "KEEP":    
         if N_DIMENSIONS == 2:
             from modules.numerical.fluxes.keep_dg import div_keep_dg_2d as flux_div
         elif N_DIMENSIONS == 3:

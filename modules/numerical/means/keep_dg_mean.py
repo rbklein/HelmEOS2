@@ -8,7 +8,7 @@ from modules.thermodynamics.EOS import *
 
 ''' Import necessary discrete gradients'''
 match DISCRETE_GRADIENT:
-    case "SYMMETRIZED_ITOH_ABE":
+    case "SYM_ITOH_ABE":
         from modules.numerical.discrete_gradients.symmetrized_itoh_abe import symmetrized_itoh_abe_2vars
     case "GONZALEZ":
         from modules.numerical.discrete_gradients.gonzalez import gonzalez_2vars
