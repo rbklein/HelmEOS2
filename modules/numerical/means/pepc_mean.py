@@ -70,3 +70,4 @@ def density_internal_energy_pepc(rho_1, rho_2, T_1, T_2):
     )
 
     return density, energy
+

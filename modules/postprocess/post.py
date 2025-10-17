@@ -132,7 +132,7 @@ def init_postprocess():
 
 #IMPROVEMENT: CONSTRUCT UPDATE FUNCTION BY PUTTING THE NECESSARY 
 # PLOTTING FUNCTIONS IN THE PLOT_GRID LIST AS WELL
-def plot_postprocess(u, fig, rows, cmap = 'viridis'):
+def plot_postprocess(u, fig, rows, cmap = 'viridis', freeze_image: bool = False):
     """
     Plot the post-processing sequence
     """
@@ -223,10 +223,13 @@ def plot_postprocess(u, fig, rows, cmap = 'viridis'):
             count += 1
         plot_grid.append(plot_row)
 
-    fig.canvas.draw_idle()
-    fig.canvas.flush_events()
-    plt.tight_layout()
-    plt.pause(0.0001)
+    if not freeze_image:
+        fig.canvas.draw_idle()
+        fig.canvas.flush_events()
+        plt.tight_layout()
+        plt.pause(0.0001)
+    else:
+        plt.tight_layout()
     
     return plot_grid
 
@@ -307,3 +310,9 @@ def update_postprocess(u, fig, plot_grid):
     fig.canvas.flush_events()
     plt.pause(0.0001)
 
+def show():
+    """
+    Show the post-processing figure
+    """
+    plt.ioff()
+    plt.show()

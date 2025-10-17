@@ -66,7 +66,7 @@ def integrate(u):
     )[0]  # Perform the integration over the specified number of time steps
     return u
 
-def integrate_interactive(u):
+#def integrate_interactive(u):
     """
     Interactive version of the integrate function that plots postprocessing information 
 
@@ -89,15 +89,42 @@ def integrate_interactive(u):
 
     return u
 
-from pathlib import Path
+from functools import partial
+def integrate_interactive(u):
+    """
+    Interactive integration using a JIT-compiled jax.lax.scan for each interval
+    between update_postprocess calls.
+    """
+    step = jax.jit(time_step)
+    scan_steps = NUM_ITS_PER_UPDATE
+    total_steps = NUM_TIME_STEPS
 
+    fig, plot_grid = init_postprocess()
+    plot_grid = plot_postprocess(u, fig, plot_grid, cmap=COLORMAP)
+    print(f"Current time step: {0}/{NUM_TIME_STEPS}, t: {0}, CFL: {jnp.max(check_CFL(u)):.4f}")
+
+    @partial(jax.jit, static_argnames=['steps'])
+    def compiled_step(u, steps):
+        u, _ = jax.lax.scan(lambda u, _: (step(u, dt), None), u, None, length=steps)
+        return u
+    
+    steps_done = 0
+    while steps_done < total_steps:
+        #steps = min(scan_steps, total_steps - steps_done)
+        u = compiled_step(u, scan_steps)
+        steps_done += scan_steps
+
+        print(f"Current time step: {steps_done}/{NUM_TIME_STEPS}, t: {steps_done*dt}, CFL: {jnp.max(check_CFL(u)):.4f}")
+        update_postprocess(u, fig, plot_grid)
+
+    return u
+
+
+from pathlib import Path
 def integrate_experiment(u):
     """
     A time-integrator that can be customized to perform numerical experiments
     """
-
-    #step = jax.jit(time_step)
-
     u0 = jnp.copy(u)
 
     rho = u[0]
@@ -111,9 +138,9 @@ def integrate_experiment(u):
     arr_e_p = jnp.zeros(NUM_TIME_STEPS + 1)
     arr_e_p = arr_e_p.at[0].set(0.0)
 
-
     def scan_step(carry, _):
-        it, u, arr_e_s, arr_e_p = carry
+        it, u, arr_e_s, arr_e_p, p = carry
+        it = it + 1
 
         rho = u[0]
         T   = temperature(u)
@@ -124,19 +151,20 @@ def integrate_experiment(u):
         arr_e_s = arr_e_s.at[it].set(jnp.abs(S - S0) / jnp.abs(S0))
         arr_e_p = arr_e_p.at[it].set(jnp.sqrt(midpoint_integrate((p - p_exact)**2)) / (jnp.abs(p_exact) * 1))
 
-        jax.debug.print("Current time step: {it}/{its}, t: {t}", it=it, its = NUM_TIME_STEPS, t=(it*dt))
+        jax.debug.print("Current time step: {it}/{its}, t: {t}", it=it, its = NUM_TIME_STEPS, t=((it)*dt))
 
-        return (it+1, time_step(u, dt), arr_e_s, arr_e_p), None
+        return (it, time_step(u, dt), arr_e_s, arr_e_p, p), None
 
-    it, u, arr_e_s, arr_e_p = jax.lax.scan(
-        scan_step, (0, u, arr_e_s, arr_e_p), None, length=NUM_TIME_STEPS
+    it, u, arr_e_s, arr_e_p, p = jax.lax.scan(
+        scan_step, (0, u, arr_e_s, arr_e_p, p_exact * jnp.ones_like(rho)), None, length=NUM_TIME_STEPS
     )[0]
 
     err = u - u0
-    name = (
-        f"{NUMERICAL_FLUX}_{DISCRETE_GRADIENT}_{NAME_MOLECULE}_"
-        f"{EOS}_{GRID_RESOLUTION[0]}_{NUM_TIME_STEPS}"
-    )
+
+    p = jnp.expand_dims(p, 0)
+    u = jnp.concatenate((u, p), axis = 0)
+
+    name = f"{NUMERICAL_FLUX}_{DISCRETE_GRADIENT}_{NAME_MOLECULE}_{EOS}_{GRID_RESOLUTION[0]}_{NUM_TIME_STEPS}"
 
     base = Path("./output") / TEST_CASE
     path_sol  = base / "solution_data"
@@ -145,8 +173,8 @@ def integrate_experiment(u):
     path_pres = base / "pressure_data"
 
     # Ensure each directory exists
-    for p in (path_sol, path_err, path_ent, path_pres):
-        p.mkdir(parents=True, exist_ok=True)
+    for pth in (path_sol, path_err, path_ent, path_pres):
+        pth.mkdir(parents=True, exist_ok=True)
 
     # Save files (Path objects are fine)
     jnp.save(path_sol  / f"{name}.npy", u)

@@ -27,7 +27,7 @@ match EOS:
 VISC_DYN = "CONSTANT"
 
 VISC_DYN_parameters = {
-    "value" : 0 #1e-5, #Pa s dynamic viscosity value 
+    "value" : 0.0, #1e-5, #Pa s dynamic viscosity value 
 }
 
 #Bulk viscosity
@@ -41,7 +41,7 @@ VISC_BULK_parameters = {
 THERMAL_COND = "CONSTANT"
 
 THERMAL_COND_parameters = {
-    "value" : 0 #0.001, #thermal conductivity
+    "value" :  0.0, #0.001, #thermal conductivity
 }
 
 ''' Constants '''

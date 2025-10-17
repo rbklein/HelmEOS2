@@ -54,6 +54,7 @@ match EOS:
         ''' set temperature functions for Van der Waals gas '''
         from modules.thermodynamics.gas_models.Van_der_Waals import temperature_Van_der_Waals as temperature_e
 
+
     case "PENG_ROBINSON":
 
         from modules.thermodynamics.gas_models.Peng_Robinson import check_consistency_Peng_Robinson as check_consistency
@@ -233,39 +234,36 @@ def dpbdbeta(rho,T):
 '''
 #-----------
 
-# pressdg terms
+# pressure derivatives used in PEPC
+# Because for many EoS's p(rho,eps) is defined through iterative method we do not have
+# scalar version nor grad availability
 #-----------
+
+
 def pressure_rho_eps(rho, epsilon):
     """
         Calculate pressure from density and the internal energy density
     """
     T = temperature_e(rho, epsilon / rho)
-    p = rho**2 * dAdrho_scalar(rho, T)
+    p = rho**2 * dAdrho(rho, T)
     return p
 
-p_rho = jax.grad(pressure_rho_eps, argnums = 0)
-p_eps = jax.grad(pressure_rho_eps, argnums = 1)
-p_rho_rho = jax.grad(p_rho, argnums = 0)
-p_rho_eps = jax.grad(p_rho, argnums = 1) #symmetry -> p_rho_eps = p_eps_rho
-p_eps_eps = jax.grad(p_eps, argnums = 1) 
+def p_rho(rho, epsilon):
+    """
+        Calculate the pressure derivative with respect to rho at constant internal energy density
+    """
+    T = temperature_e(rho, epsilon / rho)
+    pr = 2 * rho * dAdrho(rho,T) + rho**2 * d2Ad2rho(rho, T) + \
+        + rho**2 * d2AdrhodT(rho, T) * (enthalpy(rho, T) - rho * T * d2AdrhodT(rho, T)) / (rho * T * d2Ad2T(rho, T))
+    return pr
 
-p_eps_eps_eps = jax.grad(p_eps_eps, argnums = 1) 
-p_rho_rho_rho = jax.grad(p_rho_rho, argnums = 0)
-p_rho_eps_eps = jax.grad(p_rho_eps, argnums = 1)
-p_rho_rho_eps = jax.grad(p_rho_rho, argnums = 1)
+def p_eps(rho, epsilon):    
+    """
+        Calculate the pressure derivative with respect to internal energy density at constant rho
+    """
+    T = temperature_e(rho, epsilon / rho)
+    pe = - rho * d2AdrhodT(rho, T) / (T * d2Ad2T(rho, T)) 
+    return pe
 
-pressure_rho_eps = _vectorize_thermo(pressure_rho_eps)
-p_rho = _vectorize_thermo(p_rho)
-p_eps = _vectorize_thermo(p_eps)
-p_rho_rho = _vectorize_thermo(p_rho_rho)
-p_rho_eps = _vectorize_thermo(p_rho_eps)
-p_eps_eps = _vectorize_thermo(p_eps_eps)
-p_eps_rho = p_rho_eps
-
-p_eps_eps_eps = _vectorize_thermo(p_eps_eps_eps) 
-p_rho_rho_rho = _vectorize_thermo(p_rho_rho_rho)
-p_rho_eps_eps = _vectorize_thermo(p_rho_eps_eps)
-p_rho_rho_eps = _vectorize_thermo(p_rho_rho_eps)
-p_eps_rho_rho = p_rho_rho_eps
 
 #-----------

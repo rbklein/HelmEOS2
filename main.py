@@ -7,7 +7,8 @@ if __name__ == "__main__":
     from modules.geometry.grid          import mesh
     from modules.numerical.integration  import integrate, integrate_interactive, integrate_experiment
     from modules.simulation.initial     import initial_condition
-    from modules.thermodynamics.EOS     import temperature_eos, total_energy, rho_c, p_c, T_c, speed_of_sound
+    from modules.thermodynamics.EOS     import temperature_eos, total_energy, rho_c, p_c, T_c, speed_of_sound, temperature
+    from modules.postprocess.post       import init_postprocess, plot_postprocess, COLORMAP, show
 
     #   rho, velocity, pressure 
     #   clean this sequence up
@@ -24,10 +25,10 @@ if __name__ == "__main__":
 
     from time import time
     start_time = time()
-    u   = integrate_experiment(u) 
+    u   = integrate(u) 
     end_time = time()
-
     
-
-
+    fig, plot_grid = init_postprocess()
+    plot_grid = plot_postprocess(u, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
+    show()
 

@@ -55,7 +55,7 @@ def _root_func_pressure(rho, p, T):
     res = p - (rho * R_specific * T) / (1 - rho * b_PR) + (attraction_func(T) * rho**2) / (1 + 2 * b_PR * rho - b_PR**2 * rho**2)
     return res
 
-_drpdT_root = jax.grad(_root_func_pressure, 2,)
+_drpdT_root = jax.grad(_root_func_pressure, 2)
 
 @jax.jit
 def _solve_root_pressure(rho, p):
@@ -74,7 +74,7 @@ def _solve_root_pressure(rho, p):
         dres = _drpdT_root(rho, p, T)
         dres = jnp.where(jnp.abs(dres) < 1e-20, jnp.sign(dres) * 1e-20, dres)
         step = res / dres
-        T = T - jnp.clip(step, -10., 10.)
+        T = T - step
         return (T, i + 1)
     
     return jax.lax.while_loop(cond, body, (T, jnp.array(0)))[0]
@@ -152,7 +152,7 @@ def _solve_root_energy(rho, e):
         dres = _dredT_root(rho, e, T)
         dres = jnp.where(jnp.abs(dres) < 1e-20, jnp.sign(dres) * 1e-20, dres)
         step = res / dres
-        T = T - jnp.clip(step, -10., 10.)
+        T = T - step
         return (T, i + 1)
     
     return jax.lax.while_loop(cond, body, (T, jnp.array(0)))[0]
