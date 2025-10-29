@@ -188,36 +188,40 @@ def Gibbs_beta(rho, beta):
 
 dgbdrho = jax.grad(Gibbs_beta, argnums = 0)
 dgbdbeta = jax.grad(Gibbs_beta, argnums = 1)
-d2gbd2rho = jax.grad(dgbdrho, argnums = 0)
-d2gbd2beta = jax.grad(dgbdbeta, argnums = 1)
-d3gbd3rho = jax.grad(d2gbd2rho, argnums = 0)
-d3gbd3beta = jax.grad(d2gbd2beta, argnums = 1)
+
+# d2gbd2rho = jax.grad(dgbdrho, argnums = 0)
+# d2gbd2beta = jax.grad(dgbdbeta, argnums = 1)
+# d3gbd3rho = jax.grad(d2gbd2rho, argnums = 0)
+# d3gbd3beta = jax.grad(d2gbd2beta, argnums = 1)
 
 Gibbs_beta = _vectorize_thermo(Gibbs_beta)
 dgbdrho = _vectorize_thermo(dgbdrho)
 dgbdbeta = _vectorize_thermo(dgbdbeta)
-d2gbd2rho = _vectorize_thermo(d2gbd2rho)
-d2gbd2beta = _vectorize_thermo(d2gbd2beta)
-d3gbd3rho = _vectorize_thermo(d3gbd3rho)
-d3gbd3beta = _vectorize_thermo(d3gbd3beta)
+
+# d2gbd2rho = _vectorize_thermo(d2gbd2rho)
+# d2gbd2beta = _vectorize_thermo(d2gbd2beta)
+# d3gbd3rho = _vectorize_thermo(d3gbd3rho)
+# d3gbd3beta = _vectorize_thermo(d3gbd3beta)
 
 def pressure_beta(rho, beta):
     return beta * (rho**2 * dAdrho_scalar(rho, 1/beta))
 
 dpbdrho = jax.grad(pressure_beta, argnums = 0)
 dpbdbeta = jax.grad(pressure_beta, argnums = 1)
-d2pbd2rho = jax.grad(dpbdrho, argnums = 0)
-d2pbd2beta = jax.grad(dpbdbeta, argnums = 1)
-d3pbd3rho = jax.grad(d2pbd2rho, argnums = 0)
-d3pbd3beta = jax.grad(d2pbd2beta, argnums = 1)
+
+# d2pbd2rho = jax.grad(dpbdrho, argnums = 0)
+# d2pbd2beta = jax.grad(dpbdbeta, argnums = 1)
+# d3pbd3rho = jax.grad(d2pbd2rho, argnums = 0)
+# d3pbd3beta = jax.grad(d2pbd2beta, argnums = 1)
 
 pressure_beta = _vectorize_thermo(pressure_beta)
 dpbdrho = _vectorize_thermo(dpbdrho)
 dpbdbeta = _vectorize_thermo(dpbdbeta)
-d2pbd2rho = _vectorize_thermo(d2pbd2rho)
-d2pbd2beta = _vectorize_thermo(d2pbd2beta)
-d3pbd3rho = _vectorize_thermo(d3pbd3rho)
-d3pbd3beta = _vectorize_thermo(d3pbd3beta)
+
+# d2pbd2rho = _vectorize_thermo(d2pbd2rho)
+# d2pbd2beta = _vectorize_thermo(d2pbd2beta)
+# d3pbd3rho = _vectorize_thermo(d3pbd3rho)
+# d3pbd3beta = _vectorize_thermo(d3pbd3beta)
 
 '''
 def dgbdrho(rho,T):
@@ -234,36 +238,41 @@ def dpbdbeta(rho,T):
 '''
 #-----------
 
-# pressure derivatives used in PEPC
-# Because for many EoS's p(rho,eps) is defined through iterative method we do not have
-# scalar version nor grad availability
+# pressure derivatives used in pressure related fluxes
 #-----------
 
+# def p_rho(rho, T):
+#     """
+#         Calculate the pressure derivative with respect to rho at constant internal energy density
+#     """
+#     pr = 2 * rho * dAdrho(rho,T) + rho**2 * d2Ad2rho(rho, T) + \
+#         + rho**2 * d2AdrhodT(rho, T) * (enthalpy(rho, T) - rho * T * d2AdrhodT(rho, T)) / (rho * T * d2Ad2T(rho, T))
+#     return pr
 
-def pressure_rho_eps(rho, epsilon):
-    """
-        Calculate pressure from density and the internal energy density
-    """
-    T = temperature_e(rho, epsilon / rho)
-    p = rho**2 * dAdrho(rho, T)
-    return p
+# p_rho2 = jax.grad(p_rho, argnums=0)
+# p_rhoT = jax.grad(p_rho, argnums=1)
+# p_rho2 = _vectorize_thermo(p_rho2)
+# p_rhoT = _vectorize_thermo(p_rhoT)
 
-def p_rho(rho, epsilon):
-    """
-        Calculate the pressure derivative with respect to rho at constant internal energy density
-    """
-    T = temperature_e(rho, epsilon / rho)
-    pr = 2 * rho * dAdrho(rho,T) + rho**2 * d2Ad2rho(rho, T) + \
-        + rho**2 * d2AdrhodT(rho, T) * (enthalpy(rho, T) - rho * T * d2AdrhodT(rho, T)) / (rho * T * d2Ad2T(rho, T))
-    return pr
+# def p_eps(rho, T):    
+#     """
+#         Calculate the pressure derivative with respect to internal energy density at constant rho
+#     """
+#     pe = - rho * d2AdrhodT(rho, T) / (T * d2Ad2T(rho, T)) 
+#     return pe
 
-def p_eps(rho, epsilon):    
-    """
-        Calculate the pressure derivative with respect to internal energy density at constant rho
-    """
-    T = temperature_e(rho, epsilon / rho)
-    pe = - rho * d2AdrhodT(rho, T) / (T * d2Ad2T(rho, T)) 
-    return pe
+# p_epsrho = jax.grad(p_eps, argnums=0)
+# p_epsT = jax.grad(p_eps, argnums=1)
+# p_epsrho = _vectorize_thermo(p_epsrho)
+# p_epsT = _vectorize_thermo(p_epsT)
 
+# def tau(rho, T):
+#     p = pressure(rho, T) 
+#     return (rho * speed_of_sound(rho, T)**2 - p) + rho * p / T * d2AdrhodT(rho, T) / d2Ad2T(rho, T)
+
+# tau_rho = jax.grad(tau, argnums=0)
+# tau_T = jax.grad(tau, argnums=1)
+# tau_rho = _vectorize_thermo(tau_rho)
+# tau_T = _vectorize_thermo(tau_T)
 
 #-----------

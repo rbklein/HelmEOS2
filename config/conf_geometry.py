@@ -11,6 +11,6 @@ N_DIMENSIONS = 2
 DOMAIN_SIZE = (1.0, 1.0) #tuple of floats representing the size in each dimension
 
 #grid resolution (n_x, n_y, n_z)
-GRID_RESOLUTION = (1024, 1024) # (256, 256) #(400, 800)  #tuple of integers representing the number of grid cells in each dimension
+GRID_RESOLUTION = (128, 128) # (1024, 1024) # (256, 256) #(400, 800)  #tuple of integers representing the number of grid cells in each dimension
 
 
