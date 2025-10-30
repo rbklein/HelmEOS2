@@ -5,7 +5,7 @@ from modules.numerical.flux import dudt as dudt_c
 from modules.numerical.viscous import dudt as dudt_v
 from modules.numerical.heat import dudt as dudt_q
 
-def forward_euler(u, dt):
+def forward_euler(u, T, dt):
     """
     Perform one step of the forward euler method.
 
@@ -17,5 +17,5 @@ def forward_euler(u, dt):
     Returns:
     array-like: Updated state of the system after one time step.
     """
-    k = dudt_c(u) + dudt_v(u) + dudt_q(u)
+    k = dudt_c(u, T) + dudt_v(u, T) + dudt_q(u, T)
     return u + dt * k

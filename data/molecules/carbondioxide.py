@@ -26,6 +26,10 @@ class CarbonDioxide(Molecule):
             "molecular_dofs": 5,  # Degrees of freedom for the molecules (CO_2 is a linear molecule)
         }
 
+        self._Span_Wagner_parameters = {
+            "gamma" : 1.4  # Specific heat ratio for ideal gas
+        }
+
         self._rho_c = 467.7 #kg m^-3 critical density
         self._T_c = 304.128 #K critical temperature
         self._p_c = 7.3773e6 #Pa critical pressure
@@ -44,6 +48,10 @@ class CarbonDioxide(Molecule):
 
     @property
     def Peng_Robinson_parameters(self): return self._Peng_Robinson_parameters
+
+    #Exclusively for Carbon Dioxide
+    @property
+    def Span_Wagner_parameters(self): return self._Span_Wagner_parameters
 
     @property
     def critical_points(self): return (self._rho_c, self._T_c, self._p_c)

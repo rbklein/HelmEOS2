@@ -14,7 +14,7 @@ authors: A. Aiello, C. De Michele, G.
 
 from prep_jax import *
 from modules.geometry.grid import *
-from modules.thermodynamics.EOS import density_eos, T_c
+from modules.thermodynamics.EOS import density_ptr, T_c
 
 def chan_shear_layer_2d(mesh, rho_c, p_c):
     """
@@ -67,7 +67,7 @@ def coppola_shear_layer_2d(mesh, rho_c, p_c):
     v = eps * u0 * jnp.sin(2.0 * k * jnp.pi / DOMAIN_SIZE[0] * mesh_x_trans) * jnp.exp(-4.0 * mesh_y_trans**2 / delta)
     T = T0 * jnp.where(mesh_y_trans > 0, (1 + B * jnp.tanh(mesh_y_trans / delta)), (1 - B * jnp.tanh(mesh_y_trans/ delta)))
     p = 2 * p_c * jnp.ones_like(mesh_x_trans)
-    rho = density_eos(p, T)
+    rho = density_ptr(p, T, 2 * rho_c * jnp.ones_like(T))
     
     return jnp.stack((rho, u, v, p), axis = 0)
 
@@ -119,6 +119,6 @@ def bernades_shear_layer_2d(mesh, rho_c, p_c):
     u = u_base + A * Up
     v = v_base + A * Vp
 
-    rho = density_eos(p, T)
+    rho = density_ptr(p, T, 2 * rho_c * jnp.ones_like(T))
 
     return jnp.stack((rho, u, v, p), axis = 0)

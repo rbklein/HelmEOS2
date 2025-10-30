@@ -36,7 +36,7 @@ def ideal_gas(rho, T):
 
 ''' Temperature equation (rho, p) -> T for initial conditions'''
 
-def temperature_eos_ideal(rho, p):
+def temperature_rpt_ideal(rho, p, Tguess):
     """
         Solve temperature profile from density and pressure for ideal gas
     """
@@ -46,7 +46,7 @@ def temperature_eos_ideal(rho, p):
 
 ''' Density equation (p, T) -> rho for initial conditions'''
 
-def density_eos_ideal(p, T):
+def density_ptr_ideal(p, T, rho_guess):
     """
         Solve density profile from temperature and pressure for ideal gas
     """
@@ -56,7 +56,7 @@ def density_eos_ideal(p, T):
 
 ''' Temperature equations (rho, e) -> T for simulations '''
 
-def temperature_ideal_gas(rho, e):
+def temperature_ret_ideal(rho, e, Tguess):
     """
         Calculate temperature from density and specific internal energy for ideal gas EOS.
     """

@@ -5,7 +5,7 @@
 from prep_jax import *
 from config.conf_numerical import *
 from config.conf_geometry import *
-from modules.simulation.boundary import apply_boundary_conditions
+from modules.simulation.boundary import apply_boundary_conditions, apply_temperature_boundary_condition
 
 ''' Consistency checks '''
 
@@ -25,7 +25,7 @@ match NUMERICAL_HEAT_FLUX:
     case _:
         raise ValueError(f"Unknown numerical heat flux: {NUMERICAL_HEAT_FLUX}")
     
-def dudt(u):
+def dudt(u, T):
     """
     Calculate the time derivative of u using the specified numerical heat flux.
 
@@ -35,5 +35,6 @@ def dudt(u):
     Returns:
     array-like: Time derivative of u.
     """
-    u = apply_boundary_conditions(u)
-    return heat_flux_div(u) / CELL_VOLUME
+    u = apply_boundary_conditions(u, T)
+    T = apply_temperature_boundary_condition(u, T)
+    return heat_flux_div(u, T) / CELL_VOLUME

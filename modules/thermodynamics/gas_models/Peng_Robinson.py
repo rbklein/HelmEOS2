@@ -46,7 +46,9 @@ def Peng_Robinson(rho, T):
 
     return - R_specific * T * (1 + jnp.log((1-rho*b_PR) * T**(molecular_dofs / 2) / rho)) - alpha / (2 * jnp.sqrt(2) * b_PR) * jnp.log(density_term)
 
+
 ''' Temperature equation (rho, p) -> T for initial conditions'''
+
 @jax.jit
 def _root_func_pressure(rho, p, T):
     """
@@ -82,16 +84,17 @@ def _solve_root_pressure(rho, p):
 for i in range(N_DIMENSIONS):
     _solve_root_pressure = jax.vmap(_solve_root_pressure, (i, i), i)
 
-def temperature_eos_Peng_Robinson(rho, p):
+def temperature_rpt_Peng_Robinson(rho, p):
     """
         Solve temperature profile from density and pressure for Peng-Robinson gas
     """
     return _solve_root_pressure(rho, p)
 
+
 ''' Density equation (p, T) -> rho for initial conditions'''
 
 from modules.numerical.computation import cubic_real_roots
-def density_eos_Peng_Robinson(p, T):
+def density_ptr_Peng_Robinson(p, T):
     """
         Solve the cubic compressibility equation for Z and recover density
 
@@ -160,7 +163,7 @@ def _solve_root_energy(rho, e):
 for i in range(N_DIMENSIONS):
     _solve_root_energy = jax.vmap(_solve_root_energy, (i, i), i)
 
-def temperature_Peng_Robinson(rho, e):
+def temperature_ret_Peng_Robinson(rho, e):
     """
         Calculate temperature from density and specific internal energy for Peng-Robinson EOS.
     """

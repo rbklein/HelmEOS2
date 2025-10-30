@@ -17,7 +17,7 @@ match DISCRETE_GRADIENT:
     case _:
         raise ValueError(f"Unknown discrete gradient: {DISCRETE_GRADIENT}")
 
-def div_x_keepdg_2d(u):
+def div_x_keepdg_2d(u, T):
     """
     Assume u is padded appropriately (5, n_x + 2, n_y + 2).
     """
@@ -27,7 +27,7 @@ def div_x_keepdg_2d(u):
 
     #compute necessary fields
     density     = u[0] 
-    temp        = temperature(u)
+    temp        = T
     vel         = u[1:3] / density
     press       = pressure(density, temp)
 
@@ -63,7 +63,7 @@ def div_x_keepdg_2d(u):
 
     return d_y * (f[:, 1:, :] - f[:, :-1, :])
 
-def div_y_keepdg_2d(u):
+def div_y_keepdg_2d(u, T):
     """
     Assume u is padded appropriately (5, n_x + 2, n_y + 2).
     """
@@ -73,7 +73,7 @@ def div_y_keepdg_2d(u):
 
     #compute necessary fields
     density     = u[0] 
-    temp        = temperature(u)
+    temp        = T
     vel         = u[1:3] / density
     press       = pressure(density, temp)
 
@@ -110,10 +110,10 @@ def div_y_keepdg_2d(u):
     return d_x * (f[:, :, 1:] - f[:, :, :-1])
 
 
-def div_keep_dg_2d(u):
-    return div_x_keepdg_2d(u) + div_y_keepdg_2d(u)
+def div_keep_dg_2d(u, T):
+    return div_x_keepdg_2d(u, T) + div_y_keepdg_2d(u, T)
 
 #placeholder for the actual implementation
-def div_keep_dg_3d(u):
+def div_keep_dg_3d(u, T):
     pass
 

@@ -19,13 +19,12 @@ for bc in BC_TYPES:
 
 ''' Functions for boundary conditions '''
 
-#@partial(jax.jit, static_argnames = ("axis",))
 def pad_periodic(u, axis):
     """
     Apply periodic boundary conditions by padding the array.
     
     Parameters:
-    u (jnp.ndarray): The array to apply periodic boundary conditions to.
+    u (jnp.ndarray): The array containing the state to apply periodic boundary conditions to.
     axis (int): The axis along which to apply the periodic boundary condition.
     
     Returns:
@@ -34,8 +33,7 @@ def pad_periodic(u, axis):
     padding = tuple((1, 1) if i == (axis + 1) else (0, 0) for i in range(N_DIMENSIONS + 1))
     return jnp.pad(u, padding, mode = 'wrap') 
 
-#@jax.jit
-def apply_boundary_conditions(u):
+def apply_boundary_conditions(u, T):
     # BC_TYPES is a Python tuple/list of length n_dimensions, e.g. [("PERIODIC","PERIODIC"), ...]
     for dim in range(N_DIMENSIONS):
         # check if this dimension is flagged as periodic
@@ -44,18 +42,26 @@ def apply_boundary_conditions(u):
     return u
 
 
-if __name__ == "__main__":
+''' Functions for temperature boundary conditions '''
 
-    # Create a sample array to test the periodic padding
-    sample_array = jnp.arange(2*3*3*3).reshape((2, 3, 3, 3))  # Example 4D array (2x3x3x3)
+
+def pad_periodic_scalar(T, axis):
+    """
+    Apply periodic boundary conditions by padding the array.
     
+    Parameters:
+    T (jnp.ndarray): The array to apply periodic boundary conditions to.
+    axis (int): The axis along which to apply the periodic boundary condition.
+    
+    Returns:
+    jnp.ndarray: The padded array with periodic boundary conditions applied.
+    """
+    padding = tuple((1, 1) if i == axis else (0, 0) for i in range(N_DIMENSIONS))
+    return jnp.pad(T, padding, mode = 'wrap') 
 
-    # Apply periodic padding along the first axis (0)
-    padded_array = pad_periodic(sample_array, axis=2)
 
-
-    padded_array = apply_boundary_conditions(sample_array)  
-
-
-    print("Original Array:\n", sample_array)
-    print("Padded Array:\n", padded_array)
+def apply_temperature_boundary_condition(u, T):
+    for dim in range(N_DIMENSIONS):
+        if BC_TYPES[dim] == ("PERIODIC", "PERIODIC"):
+            T = pad_periodic_scalar(T, axis=dim) # dim-1 since T is scalar field
+    return T

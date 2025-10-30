@@ -5,7 +5,7 @@
 from prep_jax import *
 from config.conf_numerical import *
 from config.conf_geometry import *
-from modules.simulation.boundary import apply_boundary_conditions
+from modules.simulation.boundary import apply_boundary_conditions, apply_temperature_boundary_condition
 
 
 ''' Consistency checks '''
@@ -36,15 +36,17 @@ match NUMERICAL_FLUX:
         raise ValueError(f"Unknown numerical flux: {NUMERICAL_FLUX}")
 
 
-def dudt(u):
+def dudt(u, T):
     """
     Calculate the time derivative of u using the specified numerical flux.
 
     Parameters:
     u (array-like): Current state of the system.
+    T (array-like): Current temperature of the system
 
     Returns:
     array-like: Time derivative of u.
     """
-    u = apply_boundary_conditions(u)  # Apply boundary conditions to u
-    return - flux_div(u) / CELL_VOLUME
+    u = apply_boundary_conditions(u, T)  # Apply boundary conditions to u
+    T = apply_temperature_boundary_condition(u, T)
+    return - flux_div(u, T) / CELL_VOLUME

@@ -8,8 +8,7 @@ from config.conf_geometry import N_DIMENSIONS
 
 ''' Consistency checks '''
 
-KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON"]
-#CUBIC_EOS = ["VAN_DER_WAALS"]
+KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "SPAN_WAGNER"]
 
 assert EOS in KNOWN_EOS, f"Unknown EOS: {EOS}"
 assert MOLAR_MASS > 0, f"Molar mass should be positive"
@@ -26,13 +25,13 @@ match EOS:
         from modules.thermodynamics.gas_models.ideal_gas import ideal_gas as Helmholtz
 
         ''' set temperature function for ideal gas '''
-        from modules.thermodynamics.gas_models.ideal_gas import temperature_eos_ideal as temperature_eos
+        from modules.thermodynamics.gas_models.ideal_gas import temperature_rpt_ideal as temperature_rpt
 
         ''' set density function for ideal gas '''
-        from modules.thermodynamics.gas_models.ideal_gas import density_eos_ideal as density_eos
+        from modules.thermodynamics.gas_models.ideal_gas import density_ptr_ideal as density_ptr
 
         ''' set temperature functions for ideal gas '''
-        from modules.thermodynamics.gas_models.ideal_gas import temperature_ideal_gas as temperature_e
+        from modules.thermodynamics.gas_models.ideal_gas import temperature_ret_ideal as temperature_ret
 
 
     case "VAN_DER_WAALS":
@@ -46,13 +45,13 @@ match EOS:
         from modules.thermodynamics.gas_models.Van_der_Waals import Van_der_Waals as Helmholtz
 
         ''' set temperature function for Van der Waals gas '''        
-        from modules.thermodynamics.gas_models.Van_der_Waals import temperature_eos_Van_der_Waals as temperature_eos
+        from modules.thermodynamics.gas_models.Van_der_Waals import temperature_rpt_Van_der_Waals as temperature_rpt
 
         ''' set density function for Van der Waals gas '''
-        from modules.thermodynamics.gas_models.Van_der_Waals import density_eos_Van_der_Waals as density_eos
+        from modules.thermodynamics.gas_models.Van_der_Waals import density_ptr_Van_der_Waals as density_ptr
 
         ''' set temperature functions for Van der Waals gas '''
-        from modules.thermodynamics.gas_models.Van_der_Waals import temperature_Van_der_Waals as temperature_e
+        from modules.thermodynamics.gas_models.Van_der_Waals import temperature_ret_Van_der_Waals as temperature_ret
 
 
     case "PENG_ROBINSON":
@@ -62,39 +61,58 @@ match EOS:
         ''' set critical point values '''
         from modules.thermodynamics.gas_models.Peng_Robinson import rho_c, T_c, p_c
 
-        ''' set Helmholtz energy function for Van der Waals '''
+        ''' set Helmholtz energy function for Span_Wagner '''
         from modules.thermodynamics.gas_models.Peng_Robinson import Peng_Robinson as Helmholtz
 
-        ''' set temperature function for Van der Waals gas '''        
-        from modules.thermodynamics.gas_models.Peng_Robinson import temperature_eos_Peng_Robinson as temperature_eos
+        ''' set temperature function for Span_Wagner gas '''        
+        from modules.thermodynamics.gas_models.Peng_Robinson import temperature_rpt_Peng_Robinson as temperature_rpt
 
-        ''' set density function for Van der Waals gas '''
-        from modules.thermodynamics.gas_models.Peng_Robinson import density_eos_Peng_Robinson as density_eos
+        ''' set density function for Span_Wagner gas '''
+        from modules.thermodynamics.gas_models.Peng_Robinson import density_ptr_Peng_Robinson as density_ptr
 
-        ''' set temperature functions for Van der Waals gas '''
-        from modules.thermodynamics.gas_models.Peng_Robinson import temperature_Peng_Robinson as temperature_e
+        ''' set temperature functions for Span_Wagner gas '''
+        from modules.thermodynamics.gas_models.Peng_Robinson import temperature_ret_Peng_Robinson as temperature_ret
+
+
+    case "SPAN_WAGNER":
+
+        from modules.thermodynamics.gas_models.Span_Wagner import check_consistency_Span_Wagner as check_consistency
+
+        ''' set critical point values '''
+        from modules.thermodynamics.gas_models.Span_Wagner import rho_c, T_c, p_c
+
+        ''' set Helmholtz energy function for Span_Wagner '''
+        from modules.thermodynamics.gas_models.Span_Wagner import Span_Wagner as Helmholtz
+
+        ''' set temperature function for Span_Wagner gas '''        
+        from modules.thermodynamics.gas_models.Span_Wagner import temperature_rpt_Span_Wagner as temperature_rpt
+
+        ''' set density function for Span_Wagner gas '''
+        from modules.thermodynamics.gas_models.Span_Wagner import density_ptr_Span_Wagner as density_ptr
+
+        ''' set temperature functions for Span_Wagner gas '''
+        from modules.thermodynamics.gas_models.Span_Wagner import temperature_ret_Span_Wagner as temperature_ret
 
     case _:
         raise ValueError(f"Unknown EOS: {EOS}")
 
 check_consistency()
 
-''' Temperature equations (rho, e) -> T for simulations '''
 
+''' Temperature equations (rho, e) -> T for simulations '''
 def internal_energy_u(u):
     """
         Calculate internal energy from conservative variables
     """
     return u[N_DIMENSIONS+1] / u[0] - 0.5 * jnp.sum((u[1:N_DIMENSIONS+1])**2, axis=0) / u[0]**2
 
-''' Temperature from conservative variables  (u) -> T '''
 
-temperature = lambda u: temperature_e(u[0], internal_energy_u(u))
+''' Temperature from conservative variables  (u) -> T '''
+temperature = lambda u, Tguess: temperature_ret(u[0], internal_energy_u(u), Tguess)
 
 
 
 ''' Compute other thermodynamic quantities automatically '''
-
 def _vectorize_thermo(f : callable) -> callable:
     """
     Helper function to clean up code
@@ -140,7 +158,6 @@ d3Ad3T      = _vectorize_thermo(d3Ad3T_scalar)
 
 
 ''' Computing thermodynamic quantites using the equation of state'''
-
 def pressure(rho, T):
     return rho**2 * dAdrho(rho, T) 
 
@@ -189,19 +206,9 @@ def Gibbs_beta(rho, beta):
 dgbdrho = jax.grad(Gibbs_beta, argnums = 0)
 dgbdbeta = jax.grad(Gibbs_beta, argnums = 1)
 
-# d2gbd2rho = jax.grad(dgbdrho, argnums = 0)
-# d2gbd2beta = jax.grad(dgbdbeta, argnums = 1)
-# d3gbd3rho = jax.grad(d2gbd2rho, argnums = 0)
-# d3gbd3beta = jax.grad(d2gbd2beta, argnums = 1)
-
 Gibbs_beta = _vectorize_thermo(Gibbs_beta)
 dgbdrho = _vectorize_thermo(dgbdrho)
 dgbdbeta = _vectorize_thermo(dgbdbeta)
-
-# d2gbd2rho = _vectorize_thermo(d2gbd2rho)
-# d2gbd2beta = _vectorize_thermo(d2gbd2beta)
-# d3gbd3rho = _vectorize_thermo(d3gbd3rho)
-# d3gbd3beta = _vectorize_thermo(d3gbd3beta)
 
 def pressure_beta(rho, beta):
     return beta * (rho**2 * dAdrho_scalar(rho, 1/beta))
@@ -209,19 +216,9 @@ def pressure_beta(rho, beta):
 dpbdrho = jax.grad(pressure_beta, argnums = 0)
 dpbdbeta = jax.grad(pressure_beta, argnums = 1)
 
-# d2pbd2rho = jax.grad(dpbdrho, argnums = 0)
-# d2pbd2beta = jax.grad(dpbdbeta, argnums = 1)
-# d3pbd3rho = jax.grad(d2pbd2rho, argnums = 0)
-# d3pbd3beta = jax.grad(d2pbd2beta, argnums = 1)
-
 pressure_beta = _vectorize_thermo(pressure_beta)
 dpbdrho = _vectorize_thermo(dpbdrho)
 dpbdbeta = _vectorize_thermo(dpbdbeta)
-
-# d2pbd2rho = _vectorize_thermo(d2pbd2rho)
-# d2pbd2beta = _vectorize_thermo(d2pbd2beta)
-# d3pbd3rho = _vectorize_thermo(d3pbd3rho)
-# d3pbd3beta = _vectorize_thermo(d3pbd3beta)
 
 '''
 def dgbdrho(rho,T):
@@ -236,43 +233,3 @@ def dpbdrho(rho,T):
 def dpbdbeta(rho,T):
     return rho**2 * dAdrho(rho, T) - rho**2 * T * d2AdrhodT(rho, T)
 '''
-#-----------
-
-# pressure derivatives used in pressure related fluxes
-#-----------
-
-# def p_rho(rho, T):
-#     """
-#         Calculate the pressure derivative with respect to rho at constant internal energy density
-#     """
-#     pr = 2 * rho * dAdrho(rho,T) + rho**2 * d2Ad2rho(rho, T) + \
-#         + rho**2 * d2AdrhodT(rho, T) * (enthalpy(rho, T) - rho * T * d2AdrhodT(rho, T)) / (rho * T * d2Ad2T(rho, T))
-#     return pr
-
-# p_rho2 = jax.grad(p_rho, argnums=0)
-# p_rhoT = jax.grad(p_rho, argnums=1)
-# p_rho2 = _vectorize_thermo(p_rho2)
-# p_rhoT = _vectorize_thermo(p_rhoT)
-
-# def p_eps(rho, T):    
-#     """
-#         Calculate the pressure derivative with respect to internal energy density at constant rho
-#     """
-#     pe = - rho * d2AdrhodT(rho, T) / (T * d2Ad2T(rho, T)) 
-#     return pe
-
-# p_epsrho = jax.grad(p_eps, argnums=0)
-# p_epsT = jax.grad(p_eps, argnums=1)
-# p_epsrho = _vectorize_thermo(p_epsrho)
-# p_epsT = _vectorize_thermo(p_epsT)
-
-# def tau(rho, T):
-#     p = pressure(rho, T) 
-#     return (rho * speed_of_sound(rho, T)**2 - p) + rho * p / T * d2AdrhodT(rho, T) / d2Ad2T(rho, T)
-
-# tau_rho = jax.grad(tau, argnums=0)
-# tau_T = jax.grad(tau, argnums=1)
-# tau_rho = _vectorize_thermo(tau_rho)
-# tau_T = _vectorize_thermo(tau_T)
-
-#-----------

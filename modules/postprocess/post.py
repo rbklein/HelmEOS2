@@ -132,12 +132,11 @@ def init_postprocess():
 
 #IMPROVEMENT: CONSTRUCT UPDATE FUNCTION BY PUTTING THE NECESSARY 
 # PLOTTING FUNCTIONS IN THE PLOT_GRID LIST AS WELL
-def plot_postprocess(u, fig, rows, cmap = 'viridis', freeze_image: bool = False):
+def plot_postprocess(u, T, fig, rows, cmap = 'viridis', freeze_image: bool = False):
     """
     Plot the post-processing sequence
     """
     rho = u[0]
-    T = temperature(u)
     p = pressure(rho, T)
 
     plot_grid = []
@@ -176,11 +175,11 @@ def plot_postprocess(u, fig, rows, cmap = 'viridis', freeze_image: bool = False)
                         title = "Velocity Magnitude"
                     case "VORTICITY":
                         if N_DIMENSIONS == 2:
-                            field = vorticity(u)
+                            field = vorticity(u, T)
                             title = "Vorticity"
                         elif N_DIMENSIONS == 3:
                             #do something else when 3D plotting is implemented
-                            field = jnp.linalg.norm(vorticity(u), axis=0)
+                            field = jnp.linalg.norm(vorticity(u, T), axis=0)
                             title = "Vorticity Magnitude"
                     case "CRITICAL_DISTANCE":
                         field = jnp.sqrt((rho / rho_c - 1.0)**2 + (T / T_c - 1.0)**2 + (p / p_c - 1.0)**2)
@@ -234,12 +233,11 @@ def plot_postprocess(u, fig, rows, cmap = 'viridis', freeze_image: bool = False)
     return plot_grid
 
 
-def update_postprocess(u, fig, plot_grid):
+def update_postprocess(u, T, fig, plot_grid):
     """
     Update the post-processing sequence
     """
     rho = u[0]
-    T = temperature(u)
     p = pressure(rho, T)
 
     count = 0
@@ -267,10 +265,10 @@ def update_postprocess(u, fig, plot_grid):
                         field = jnp.linalg.norm(u[1:1+N_DIMENSIONS] / rho, axis = 0)
                     case "VORTICITY":
                         if N_DIMENSIONS == 2:
-                            field = vorticity(u)
+                            field = vorticity(u, T)
                         elif N_DIMENSIONS == 3:
                             #do something else when 3D plotting is implemented
-                            field = jnp.linalg.norm(vorticity(u), axis=0)
+                            field = jnp.linalg.norm(vorticity(u, T), axis=0)
                     case "CRITICAL_DISTANCE":
                         field = jnp.sqrt((rho / rho_c - 1.0)**2 + (T / T_c - 1.0)**2 + (p / p_c - 1.0)**2)
                     case"SPEED_OF_SOUND":

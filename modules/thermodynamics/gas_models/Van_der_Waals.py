@@ -53,7 +53,7 @@ def Van_der_Waals(rho, T):
 
 ''' Temperature equation (rho, p) -> T for initial conditions'''
 
-def temperature_eos_Van_der_Waals(rho, p):
+def temperature_rpt_Van_der_Waals(rho, p, Tguess):
     """
         Solve temperature profile from density and pressure for Van der Waals gas
     """
@@ -66,7 +66,7 @@ def temperature_eos_Van_der_Waals(rho, p):
 ''' Density equation (p, T) -> rho for initial conditions'''
 
 from modules.numerical.computation import cubic_real_roots
-def density_eos_Van_der_Waals(p, T):
+def density_ptr_Van_der_Waals(p, T, rhoguess):
     """
         Solve density profile from pressure and temperature for Van der Waals gas
     """
@@ -88,7 +88,7 @@ def density_eos_Van_der_Waals(p, T):
 
 ''' Temperature equations (rho, e) -> T for simulations '''
 
-def temperature_Van_der_Waals(rho, e):
+def temperature_ret_Van_der_Waals(rho, e, Tguess):
     """
         Calculate temperature from density and specific internal energy for Van der Waals EOS.
     """

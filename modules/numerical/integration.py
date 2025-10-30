@@ -35,13 +35,12 @@ match TIME_STEP_METHOD:
     case _:
         raise ValueError(f"Unknown time step method: {TIME_STEP_METHOD}")
 
-def check_CFL(u):
+def check_CFL(u, T):
     """
     Calculate the CFL number in every grid cell
 
     CFL is define as the max_i |u_i| * dt / dx
     """
-    T = temperature(u)
     c = speed_of_sound(u[0], T)
     v_max = jnp.max(jnp.abs(u[1:(N_DIMENSIONS+1)] / u[0]), axis = 0) 
     cfl = (dt * (v_max + c)) / GRID_SPACING[0]
@@ -51,73 +50,75 @@ from modules.postprocess.post import init_postprocess, plot_postprocess, update_
 from modules.numerical.computation import midpoint_integrate
 
 @jax.jit
-def integrate(u):
+def integrate(u, T):
+    """
+    Integrate the Compressible flow in time
+
+    Parameters:
+        - u (array-like): initial state
+        - T (array-like): initial temperature associated to initial state
+
+    Returns:
+        Final state and temperature
+    """
+    # Define process status function
+    status = lambda it, u, T: jax.debug.print("Current time step: {it}/{its}, t: {t}, CFL: {cfl}", it=it, its = NUM_TIME_STEPS, t=(it*dt), cfl = jnp.max(check_CFL(u, T)))
 
     def scan_step(carry, _):
-        it, u = carry  # Unpack the carry variable
+        it, u_prev, T_prev = carry  # Unpack the carry variable
+        u = time_step(u_prev, T_prev, dt) # Compute new state
+        T = temperature(u, T_prev) # Compute new temperature using previous temperature as initial guess
+        it = it + 1
         jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
-                    lambda _: jax.debug.print("Current time step: {it}/{its}, t: {t}, CFL: {cfl}", it=it, its = NUM_TIME_STEPS, t=(it*dt), cfl = jnp.max(check_CFL(u))), 
+                    lambda _: status(it, u, T), 
                     lambda _: None, 
                     operand=None)
-        return (it+1, time_step(u, dt)), None
+        return (it, u, T), None
 
-    it, u = jax.lax.scan(
-        scan_step, (0, u), None, length=NUM_TIME_STEPS
+    status(0, u, T)
+    it, u, T = jax.lax.scan(
+        scan_step, (0, u, T), None, length=NUM_TIME_STEPS
     )[0]  # Perform the integration over the specified number of time steps
-    return u
+    return u, T
 
-#def integrate_interactive(u):
-    """
-    Interactive version of the integrate function that plots postprocessing information 
-
-    Use comes at the cost of possible optimizations like loop unrolling
-    """ 
-
-    step = jax.jit(time_step)
-
-    fig, plot_grid = init_postprocess()
-    plot_grid = plot_postprocess(u, fig, plot_grid, cmap = COLORMAP)
-    print(f"Current time step: {0}/{NUM_TIME_STEPS}, t: {0}, CFL: {jnp.max(check_CFL(u)):.4f}")
-
-    #use a regular loop to integrate the system
-    for it in range(NUM_TIME_STEPS):
-        if (it % NUM_ITS_PER_UPDATE) == 0 and it != 0:
-            print(f"Current time step: {it}/{NUM_TIME_STEPS}, t: {it*dt}, CFL: {jnp.max(check_CFL(u)):.4f}")
-            update_postprocess(u, fig, plot_grid)
-
-        u = step(u, dt)
-
-    return u
-
+# UPDATE TO TEMPERATURE CARRY IMPLEMENTATION
 from functools import partial
-def integrate_interactive(u):
+def integrate_interactive(u, T):
     """
     Interactive integration using a JIT-compiled jax.lax.scan for each interval
     between update_postprocess calls.
     """
-    step = jax.jit(time_step)
+
+    @jax.jit
+    def step(u, T, dt):
+        u = time_step(u, T, dt)
+        T = temperature(u, T)
+        return u, T
+
+    status = lambda it, u, T: print(f"Current time step: {it}/{NUM_TIME_STEPS}, t: {it*dt}, CFL: {jnp.max(check_CFL(u, T)):.4f}")
+
     scan_steps = NUM_ITS_PER_UPDATE
     total_steps = NUM_TIME_STEPS
 
     fig, plot_grid = init_postprocess()
-    plot_grid = plot_postprocess(u, fig, plot_grid, cmap=COLORMAP)
-    print(f"Current time step: {0}/{NUM_TIME_STEPS}, t: {0}, CFL: {jnp.max(check_CFL(u)):.4f}")
+    plot_grid = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP)
+    status(0, u, T)
 
     @partial(jax.jit, static_argnames=['steps'])
-    def compiled_step(u, steps):
-        u, _ = jax.lax.scan(lambda u, _: (step(u, dt), None), u, None, length=steps)
-        return u
+    def compiled_step(u, T, steps):
+        u, T = jax.lax.scan(lambda carry, _: (step(carry[0], carry[1], dt), None), (u, T), None, length=steps)[0]
+        return u, T
     
     steps_done = 0
     while steps_done < total_steps:
         #steps = min(scan_steps, total_steps - steps_done)
-        u = compiled_step(u, scan_steps)
+        u, T = compiled_step(u, T, scan_steps)
         steps_done += scan_steps
 
-        print(f"Current time step: {steps_done}/{NUM_TIME_STEPS}, t: {steps_done*dt}, CFL: {jnp.max(check_CFL(u)):.4f}")
-        update_postprocess(u, fig, plot_grid)
+        status(steps_done, u, T)
+        update_postprocess(u, T, fig, plot_grid)
 
-    return u
+    return u, T
 
 
 from pathlib import Path

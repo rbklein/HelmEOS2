@@ -6,14 +6,14 @@ from prep_jax import *
 from modules.geometry.grid import *
 from modules.simulation.boundary import apply_boundary_conditions
 
-def vorticity_2d(u):
+def vorticity_2d(u, T):
     """
         Calculate the vorticity of the 2D velocity field u
     """
 
     dx, dy = GRID_SPACING
 
-    u = apply_boundary_conditions(u)
+    u = apply_boundary_conditions(u, T)
     vel = u[1:3, :, :] / u[0, : ,:]
 
     vel_x_y = (vel[0, 1:-1, 2:] - vel[0, 1:-1, :-2]) / (2 * dy)
@@ -21,14 +21,14 @@ def vorticity_2d(u):
 
     return vel_y_x - vel_x_y
 
-def vorticity_3d(u):
+def vorticity_3d(u, T):
     """
         Calculate the vorticity of the 3D velocity field u
     """
 
     dx, dy, dz = GRID_SPACING
 
-    u = apply_boundary_conditions(u)
+    u = apply_boundary_conditions(u, T)
     vel = u[1:4, :, :] / u[0, : ,:]
 
     vel_x_y = (vel[0, 1:-1, 2:, 1:-1] - vel[0, 1:-1, :-2, 1:-1]) / (2 * dy)
