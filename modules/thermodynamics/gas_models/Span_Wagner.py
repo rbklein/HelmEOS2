@@ -33,60 +33,47 @@ def Span_Wagner(rho, T):
 
 
 ''' Temperature equation (rho, p) -> T for initial conditions'''
-_dAdrho = jax.grad(Span_Wagner, 0)
-_p = lambda rho, T: rho**2 * _dAdrho(rho, T)
+_dAdrho                 = jax.grad(Span_Wagner, 0)
+_p                      = lambda rho, T: rho**2 * _dAdrho(rho, T)
+_root_func_pressure_T   = lambda T, rho, p: p - _p(rho, T)
+_drpdT_root             = jax.grad(_root_func_pressure_T, 0)
 
-def _root_func_pressure_T(T, rho, p):
-    """
-        function f(T) = p - p(rho,T)  to be solved for root
-    """
-    return p - _p(rho, T)
-
-_drpdT_root = jax.grad(_root_func_pressure_T, 0)
-
+root_func_pressure_T = vectorize_root(_root_func_pressure_T)
+drpdT_root = vectorize_root(_drpdT_root)
 
 def temperature_rpt_Span_Wagner(rho, p, Tguess):
     """
         Solve temperature profile from density and pressure for Span-Wagner gas
     """
-    return solve_root_thermo(Tguess, rho, p, _root_func_pressure_T, _drpdT_root, 1e-10, 10)
-
-temperature_rpt_Span_Wagner = vectorize_root(temperature_rpt_Span_Wagner)
+    return solve_root_thermo(Tguess, rho, p, root_func_pressure_T, drpdT_root, 1e-10, 10)
 
 
 ''' Density equation (p, T) -> rho for initial conditions'''
-def _root_func_pressure_rho(rho, T, p):
-    return p - _p(rho, T)
+_root_func_pressure_rho = lambda rho, T, p: p - _p(rho, T)
+_drpdrho_root           = jax.grad(_root_func_pressure_rho, 0)
 
-_drpdrho_root = jax.grad(_root_func_pressure_rho, 0)
-
+root_func_pressure_rho = vectorize_root(_root_func_pressure_rho)
+drpdrho_root = vectorize_root(_drpdrho_root)
 
 def density_ptr_Span_Wagner(p, T, rhoguess):
     """
         Solve density profile from pressure and temperature for Span-Wagner gas
     """
-    return solve_root_thermo(rhoguess, T, p, _root_func_pressure_rho, _drpdrho_root, 1e-10, 10)
-
-density_ptr_Span_Wagner = vectorize_root(density_ptr_Span_Wagner)
+    return solve_root_thermo(rhoguess, T, p, root_func_pressure_rho, drpdrho_root, 1e-10, 10)
 
 
 ''' Temperature equations (rho, e) -> T for simulations '''
-_dAdT = jax.grad(Span_Wagner, 1)
-_e = lambda rho, T: Span_Wagner(rho, T) - T * _dAdT
+_dAdT                   = jax.grad(Span_Wagner, 1)
+_e                      = lambda rho, T: Span_Wagner(rho, T) - T * _dAdT(rho, T)
+_root_func_energy_T     = lambda T, rho, e: e - _e(rho, T)
+_dredT_root             = jax.grad(_root_func_energy_T, 0)
 
-def _root_func_energy_T(T, rho, e):
-    """
-        function f(T) = e - e(rho,T)  to be solved for root
-    """
-    return e - _e(rho, T)
-
-_dredT_root = jax.grad(_root_func_energy_T, 0)
+root_func_energy_T = vectorize_root(_root_func_energy_T)
+dredT_root = vectorize_root(_dredT_root)
 
 def temperature_ret_Span_Wagner(rho, e, Tguess):
     """
         Calculate temperature from density and specific internal energy for Span-Wagner EOS.
     """
-    return solve_root_thermo(Tguess, rho, e, _root_func_energy_T, _dredT_root, 1e-10, 10)
-
-
+    return solve_root_thermo(Tguess, rho, e, root_func_energy_T, dredT_root, 1e-10, 10)
 

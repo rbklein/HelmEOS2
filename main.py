@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     u, T = integrate(u, T) 
 
-    #fig, plot_grid = init_postprocess()
-    #plot_grid = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
+    fig, plot_grid = init_postprocess()
+    plot_grid = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
     show()
 

@@ -5,6 +5,7 @@ The Helmholtz energy and other functions of the Peng-Robinson equation
 from prep_jax import *
 from config.conf_thermodynamics import *
 from config.conf_geometry import *
+from modules.numerical.computation import solve_root_thermo, vectorize_root, cubic_real_roots
 
 ''' check parameter consistency '''
 
@@ -30,7 +31,6 @@ kappa = 0.37464 + 1.54226 * molecule.Peng_Robinson_parameters["acentric_factor"]
 molecular_dofs = molecule.Peng_Robinson_parameters["molecular_dofs"]
 
 ''' Helmholtz energy '''
-
 def attraction_func(T):
     """
         The temperature-dependent attraction function in PR
@@ -48,52 +48,24 @@ def Peng_Robinson(rho, T):
 
 
 ''' Temperature equation (rho, p) -> T for initial conditions'''
-
-@jax.jit
-def _root_func_pressure(rho, p, T):
+def root_func_pressure(T, rho, p):
     """
         function f(T) = p - p(rho,T)  to be solved for root
     """
     res = p - (rho * R_specific * T) / (1 - rho * b_PR) + (attraction_func(T) * rho**2) / (1 + 2 * b_PR * rho - b_PR**2 * rho**2)
     return res
 
-_drpdT_root = jax.grad(_root_func_pressure, 2)
+_drpdT_root = jax.grad(root_func_pressure, 0)
+drpdT_root = vectorize_root(_drpdT_root)
 
-@jax.jit
-def _solve_root_pressure(rho, p):
-    #initial guess, exact solution ignoring molecular attraction
-    T = p * (1 - b_PR * rho) / (rho * R_specific)
-    it_max = 10
-    tol = 1e-10
-
-    def cond(state):
-        T, i = state
-        return jnp.logical_and(i < it_max, jnp.abs(_root_func_pressure(rho, p, T)) > (tol * p))
-    
-    def body(state):
-        T, i = state
-        res = _root_func_pressure(rho, p, T)
-        dres = _drpdT_root(rho, p, T)
-        dres = jnp.where(jnp.abs(dres) < 1e-20, jnp.sign(dres) * 1e-20, dres)
-        step = res / dres
-        T = T - step
-        return (T, i + 1)
-    
-    return jax.lax.while_loop(cond, body, (T, jnp.array(0)))[0]
-
-for i in range(N_DIMENSIONS):
-    _solve_root_pressure = jax.vmap(_solve_root_pressure, (i, i), i)
-
-def temperature_rpt_Peng_Robinson(rho, p):
+def temperature_rpt_Peng_Robinson(rho, p, Tguess):
     """
         Solve temperature profile from density and pressure for Peng-Robinson gas
     """
-    return _solve_root_pressure(rho, p)
+    return solve_root_thermo(Tguess, rho, p, root_func_pressure, drpdT_root, 10, 1e-10)
 
 
-''' Density equation (p, T) -> rho for initial conditions'''
-
-from modules.numerical.computation import cubic_real_roots
+''' Density equation (p, T) -> rho for initial conditions''' 
 def density_ptr_Peng_Robinson(p, T):
     """
         Solve the cubic compressibility equation for Z and recover density
@@ -122,11 +94,8 @@ def density_ptr_Peng_Robinson(p, T):
 
 
 ''' Temperature equations (rho, e) -> T for simulations '''
-
 grad_attraction = jax.grad(attraction_func)
-
-@jax.jit
-def _root_func_energy(rho, e, T):
+def _root_func_energy(T, rho, e):
     """
         function f(T) = e - e(rho,T)  to be solved for root
     """
@@ -135,39 +104,16 @@ def _root_func_energy(rho, e, T):
     density_term = (1 + (1+jnp.sqrt(2)) * b_PR * rho) / (1 + (1-jnp.sqrt(2)) * b_PR * rho)
 
     return e - molecular_dofs / 2 * R_specific * T - num / (2 * jnp.sqrt(2) * b_PR) * jnp.log(density_term)
+_dredT_root = jax.grad(_root_func_energy, 0)
 
-_dredT_root = jax.grad(_root_func_energy, 2)
+root_func_energy = vectorize_root(_root_func_energy)
+dredt_root = vectorize_root(_dredT_root)
 
-@jax.jit
-def _solve_root_energy(rho, e):
-    #initial guess, exact solution ignoring molecular attraction
-    T = e / (molecular_dofs / 2 * R_specific)
-    it_max = 10
-    tol = 1e-10
-
-    def cond(state):
-        T, i = state
-        return jnp.logical_and(i < it_max, jnp.abs(_root_func_energy(rho, e, T)) > (tol * e))
-    
-    def body(state):
-        T, i = state
-        res = _root_func_energy(rho, e, T)
-        dres = _dredT_root(rho, e, T)
-        dres = jnp.where(jnp.abs(dres) < 1e-20, jnp.sign(dres) * 1e-20, dres)
-        step = res / dres
-        T = T - step
-        return (T, i + 1)
-    
-    return jax.lax.while_loop(cond, body, (T, jnp.array(0)))[0]
-
-for i in range(N_DIMENSIONS):
-    _solve_root_energy = jax.vmap(_solve_root_energy, (i, i), i)
-
-def temperature_ret_Peng_Robinson(rho, e):
+def temperature_ret_Peng_Robinson(rho, e, Tguess):
     """
         Calculate temperature from density and specific internal energy for Peng-Robinson EOS.
     """
-    return _solve_root_energy(rho, e)
+    return solve_root_thermo(Tguess, rho, e, root_func_energy, dredt_root, 1e-10, 10)
 
 
 

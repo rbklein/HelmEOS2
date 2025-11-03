@@ -14,23 +14,25 @@ from functools import partial
 EPS = jnp.finfo(DTYPE).eps
 
 ''' Auxiliary functions used in computation '''
-def solve_root_thermo(v, vconst, vaux, root_func, droot_func, tol, it_max):
-    #initial guess, exact solution ignoring molecular attraction
+def solve_root_thermo(v, vconst, vaux, root, droot, tol, it_max):
+    R = jnp.abs(vaux)
 
     def cond(state):
-        v, i = state
-        return jnp.logical_and(i < it_max, jnp.abs(root_func(v, vconst, vaux)) > (tol * jnp.abs(vaux)))
+        v, i, convd = state
+        return convd
     
     def body(state):
-        v, i = state
-        res = root_func(v, vconst, vaux)
-        dres = droot_func(v, vconst, vaux)
-        dres = jnp.where(jnp.abs(dres) < 1e-20, jnp.sign(dres) * 1e-20, dres)
-        step = res / dres
-        v = v - step
-        return (v, i + 1)
+        v, i, convd = state
+
+        res     = root(v, vconst, vaux)
+        dres    = droot(v, vconst, vaux)
+        step    = res / dres
+        v       = v - step
+
+        convd = jnp.all(jnp.logical_and(i < it_max, jnp.abs(res) > tol * R)) 
+        return v, i+1, convd
     
-    return jax.lax.while_loop(cond, body, (v, jnp.array(0)))[0]
+    return jax.lax.while_loop(cond, body, (v, 0, True))[0]
 
 def vectorize_root(f : callable):
     f_vec = f
