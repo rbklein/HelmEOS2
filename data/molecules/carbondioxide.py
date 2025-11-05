@@ -9,7 +9,7 @@ class CarbonDioxide(Molecule):
         Data for CO_2 molecules
     """
     def __init__(self):
-        self._molar_mass = 44.009e-3 #kg mol^-1 (Cabon dioxide CO_2)
+        self._molar_mass = 44.0098e-3 #kg mol^-1 (Cabon dioxide CO_2)
 
         self._ideal_gas_parameters = {
             "gamma" : 1.4  # Specific heat ratio for ideal gas
@@ -26,12 +26,12 @@ class CarbonDioxide(Molecule):
             "molecular_dofs": 5,  # Degrees of freedom for the molecules (CO_2 is a linear molecule)
         }
 
-        self._Span_Wagner_parameters = {
+        self._Wagner_parameters = {
             "gamma" : 1.4  # Specific heat ratio for ideal gas
         }
 
-        self._rho_c = 467.7 #kg m^-3 critical density
-        self._T_c = 304.128 #K critical temperature
+        self._rho_c = 10.6249e3 * self._molar_mass #kg m^-3 critical density
+        self._T_c = 304.1282 #K critical temperature
         self._p_c = 7.3773e6 #Pa critical pressure
 
         self._name = "CO_2"
@@ -51,7 +51,7 @@ class CarbonDioxide(Molecule):
 
     #Exclusively for Carbon Dioxide
     @property
-    def Span_Wagner_parameters(self): return self._Span_Wagner_parameters
+    def Wagner_parameters(self): return self._Wagner_parameters
 
     @property
     def critical_points(self): return (self._rho_c, self._T_c, self._p_c)

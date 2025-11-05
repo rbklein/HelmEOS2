@@ -8,7 +8,7 @@ from config.conf_geometry import N_DIMENSIONS
 
 ''' Consistency checks '''
 
-KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "SPAN_WAGNER"]
+KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"]
 
 assert EOS in KNOWN_EOS, f"Unknown EOS: {EOS}"
 assert MOLAR_MASS > 0, f"Molar mass should be positive"
@@ -74,24 +74,24 @@ match EOS:
         from modules.thermodynamics.gas_models.Peng_Robinson import temperature_ret_Peng_Robinson as temperature_ret
 
 
-    case "SPAN_WAGNER":
+    case "WAGNER":
 
-        from modules.thermodynamics.gas_models.Span_Wagner import check_consistency_Span_Wagner as check_consistency
+        from modules.thermodynamics.gas_models.Wagner import check_consistency_Wagner as check_consistency
 
         ''' set critical point values '''
-        from modules.thermodynamics.gas_models.Span_Wagner import rho_c, T_c, p_c
+        from modules.thermodynamics.gas_models.Wagner import rho_c, T_c, p_c
 
-        ''' set Helmholtz energy function for Span_Wagner '''
-        from modules.thermodynamics.gas_models.Span_Wagner import Span_Wagner as Helmholtz
+        ''' set Helmholtz energy function for Wagner '''
+        from modules.thermodynamics.gas_models.Wagner import Wagner as Helmholtz
 
-        ''' set temperature function for Span_Wagner gas '''        
-        from modules.thermodynamics.gas_models.Span_Wagner import temperature_rpt_Span_Wagner as temperature_rpt
+        ''' set temperature function for Wagner gas '''        
+        from modules.thermodynamics.gas_models.Wagner import temperature_rpt_Wagner as temperature_rpt
 
-        ''' set density function for Span_Wagner gas '''
-        from modules.thermodynamics.gas_models.Span_Wagner import density_ptr_Span_Wagner as density_ptr
+        ''' set density function for Wagner gas '''
+        from modules.thermodynamics.gas_models.Wagner import density_ptr_Wagner as density_ptr
 
-        ''' set temperature functions for Span_Wagner gas '''
-        from modules.thermodynamics.gas_models.Span_Wagner import temperature_ret_Span_Wagner as temperature_ret
+        ''' set temperature functions for Wagner gas '''
+        from modules.thermodynamics.gas_models.Wagner import temperature_ret_Wagner as temperature_ret
 
     case _:
         raise ValueError(f"Unknown EOS: {EOS}")

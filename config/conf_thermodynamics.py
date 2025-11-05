@@ -11,7 +11,7 @@ NAME_MOLECULE = molecule.name
 MOLAR_MASS = molecule.molar_mass #kg mol^-1
 
 #Equation of State (EOS) type
-EOS = "PENG_ROBINSON" # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON"
+EOS = "WAGNER" # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"
 
 #Equation of State parameters
 match EOS:
@@ -21,9 +21,9 @@ match EOS:
         EOS_parameters = molecule.Van_der_Waals_parameters
     case "PENG_ROBINSON":
         EOS_parameters = molecule.Peng_Robinson_parameters
-    case "SPAN_WAGNER":
+    case "WAGNER":
         assert molecule.name == "CO_2" # CO_2 exclusive
-        EOS_parameters = molecule.Span_Wagner_parameters
+        EOS_parameters = molecule.Wagner_parameters
 
 
 #Dynamic viscosity
