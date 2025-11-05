@@ -19,7 +19,7 @@ match EOS:
         from modules.thermodynamics.gas_models.ideal_gas import check_consistency_ideal as check_consistency
 
         ''' set critical point values '''
-        from modules.thermodynamics.gas_models.ideal_gas import rho_c, T_c, p_c
+        #from modules.thermodynamics.gas_models.ideal_gas import rho_c, T_c, p_c
 
         '''' set Helmholtz energy function for ideal gas '''
         from modules.thermodynamics.gas_models.ideal_gas import ideal_gas as Helmholtz
@@ -39,7 +39,7 @@ match EOS:
         from modules.thermodynamics.gas_models.Van_der_Waals import check_consistency_Van_der_Waals as check_consistency
 
         ''' set critical point values '''
-        from modules.thermodynamics.gas_models.Van_der_Waals import rho_c, T_c, p_c
+        #from modules.thermodynamics.gas_models.Van_der_Waals import rho_c, T_c, p_c
 
         ''' set Helmholtz energy function for Van der Waals '''
         from modules.thermodynamics.gas_models.Van_der_Waals import Van_der_Waals as Helmholtz
@@ -59,7 +59,7 @@ match EOS:
         from modules.thermodynamics.gas_models.Peng_Robinson import check_consistency_Peng_Robinson as check_consistency
 
         ''' set critical point values '''
-        from modules.thermodynamics.gas_models.Peng_Robinson import rho_c, T_c, p_c
+        #from modules.thermodynamics.gas_models.Peng_Robinson import rho_c, T_c, p_c
 
         ''' set Helmholtz energy function for Span_Wagner '''
         from modules.thermodynamics.gas_models.Peng_Robinson import Peng_Robinson as Helmholtz
@@ -79,7 +79,7 @@ match EOS:
         from modules.thermodynamics.gas_models.Wagner import check_consistency_Wagner as check_consistency
 
         ''' set critical point values '''
-        from modules.thermodynamics.gas_models.Wagner import rho_c, T_c, p_c
+        #from modules.thermodynamics.gas_models.Wagner import rho_c, T_c, p_c
 
         ''' set Helmholtz energy function for Wagner '''
         from modules.thermodynamics.gas_models.Wagner import Wagner as Helmholtz
@@ -193,8 +193,8 @@ def speed_of_sound(rho, T):
 
 
 ''' critical point values '''
-e_c = Helmholtz_scalar(rho_c, T_c) - T_c * dAdT_scalar(rho_c, T_c)
-eps_c = rho_c * e_c
+#e_c = Helmholtz_scalar(rho_c, T_c) - T_c * dAdT_scalar(rho_c, T_c)
+#eps_c = rho_c * e_c
 
 
 ''' all thermodynamic quantities below are used specifically in numerical fluxes'''

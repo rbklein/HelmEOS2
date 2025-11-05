@@ -5,13 +5,16 @@ Taylor-Green vortex initial conditions
 from prep_jax import *
 from modules.geometry.grid import *
 
-def Taylor_Green_vortex_3d(mesh, rho_c, p_c):
+def Taylor_Green_vortex_3d(mesh, molecule):
     """
     Generate a 3D Taylor-Green vortex pattern.
     
     Returns:
     jnp.ndarray: A stack of 3D arrays representing the Taylor-Green vortex initial condition.
     """
+
+    rho_c, T_c, p_c = molecule.critical_points
+
     rho0 = 0.01 * rho_c
     U0 = 1
     M0 = 0.1

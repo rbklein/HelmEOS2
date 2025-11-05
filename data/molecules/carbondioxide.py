@@ -16,19 +16,17 @@ class CarbonDioxide(Molecule):
         }
 
         self._Van_der_Waals_parameters = {
-            "a_VdW" : 3.6e-1 / self._molar_mass**2,  # Van der Waals parameter a on mass basis (molar coeff / molar mass**2)
-            "b_VdW": 4.267e-5 / self._molar_mass,   # Van der Waals parameter b on mass basis (molar coeff / molar mass)
+            #"a_VdW" : 3.6565212264615676e-1 / self._molar_mass**2,  # Van der Waals parameter a on mass basis (molar coeff / molar mass**2)
+            #"b_VdW": 4.284532535660459e-05 / self._molar_mass,   # Van der Waals parameter b on mass basis (molar coeff / molar mass)
             "molecular_dofs": 5,  # Degrees of freedom for the molecules (CO_2 is a linear molecule)
         }
 
         self._Peng_Robinson_parameters = {
-            "acentric_factor" : 0.228, # Parameter used in Peng-Robinson (no units)
+            "acentric_factor" : 0.22394, # Parameter used in Peng-Robinson (no units)
             "molecular_dofs": 5,  # Degrees of freedom for the molecules (CO_2 is a linear molecule)
         }
 
-        self._Wagner_parameters = {
-            "gamma" : 1.4  # Specific heat ratio for ideal gas
-        }
+        self._Wagner_parameters = { }
 
         self._rho_c = 10.6249e3 * self._molar_mass #kg m^-3 critical density
         self._T_c = 304.1282 #K critical temperature

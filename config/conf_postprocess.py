@@ -11,7 +11,7 @@
     - entropy
     - velocity
     - vorticity
-    - reduced distance to critical point
+    X - reduced distance to critical point (removed due to ambiguity between molecule critical point and EOS critical point)
     - speed of sound
     - local Mach number
 

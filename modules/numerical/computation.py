@@ -32,7 +32,9 @@ def solve_root_thermo(v, vconst, vaux, root, droot, tol, it_max):
         convd = jnp.all(jnp.logical_and(i < it_max, jnp.abs(res) > tol * R)) 
         return v, i+1, convd
     
-    return jax.lax.while_loop(cond, body, (v, 0, True))[0]
+    sol, it, _ = jax.lax.while_loop(cond, body, (v, 0, True))
+    #assert it < it_max, "Newton did not converge" # Not jittable
+    return sol
 
 def vectorize_root(f : callable):
     f_vec = f

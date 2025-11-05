@@ -101,10 +101,12 @@ def random_velocity_solenoidal(key: jax.random.KeyArray, E: jnp.ndarray):
 
 
 
-def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray], rho_c : float, p_c) -> jnp.ndarray:
+def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray], molecule) -> jnp.ndarray:
     """
         Generate a 2D turbulence initial condition.
     """
+
+    rho_c, T_c, p_c = molecule.critical_points
 
     dx, dy = GRID_SPACING
     nx, ny = GRID_RESOLUTION

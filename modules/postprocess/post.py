@@ -26,7 +26,7 @@ KNOWN_POSTPROCESSING_STEPS = [
     "VORTICITY",
     "ENERGY_SPECTRUM",
     "PV",
-    "CRITICAL_DISTANCE",
+    #"CRITICAL_DISTANCE",
     "TOTAL_ENTROPY",
     "SPEED_OF_SOUND",
     "LOCAL_MACH",
@@ -42,7 +42,7 @@ SCALAR_FIELDS = [
     "ENTROPY",
     "VELOCITY",
     "VORTICITY",
-    "CRITICAL_DISTANCE",
+    #"CRITICAL_DISTANCE",
     "SPEED_OF_SOUND",
     "LOCAL_MACH",
 ]
@@ -181,9 +181,9 @@ def plot_postprocess(u, T, fig, rows, cmap = 'viridis', freeze_image: bool = Fal
                             #do something else when 3D plotting is implemented
                             field = jnp.linalg.norm(vorticity(u, T), axis=0)
                             title = "Vorticity Magnitude"
-                    case "CRITICAL_DISTANCE":
-                        field = jnp.sqrt((rho / rho_c - 1.0)**2 + (T / T_c - 1.0)**2 + (p / p_c - 1.0)**2)
-                        title = "Critical distance"
+                    #case "CRITICAL_DISTANCE":
+                    #    field = jnp.sqrt((rho / rho_c - 1.0)**2 + (T / T_c - 1.0)**2 + (p / p_c - 1.0)**2)
+                    #    title = "Critical distance"
                     case"SPEED_OF_SOUND":
                         field = speed_of_sound(rho, T)
                         title = "Speed of Sound"
@@ -269,8 +269,8 @@ def update_postprocess(u, T, fig, plot_grid):
                         elif N_DIMENSIONS == 3:
                             #do something else when 3D plotting is implemented
                             field = jnp.linalg.norm(vorticity(u, T), axis=0)
-                    case "CRITICAL_DISTANCE":
-                        field = jnp.sqrt((rho / rho_c - 1.0)**2 + (T / T_c - 1.0)**2 + (p / p_c - 1.0)**2)
+                    #case "CRITICAL_DISTANCE":
+                    #    field = jnp.sqrt((rho / rho_c - 1.0)**2 + (T / T_c - 1.0)**2 + (p / p_c - 1.0)**2)
                     case"SPEED_OF_SOUND":
                         field = speed_of_sound(rho, T)
                     case "LOCAL_MACH":

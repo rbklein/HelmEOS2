@@ -1,5 +1,8 @@
 """
 The Helmholtz energy and other functions of the Wagner equation
+
+see (referred to as KW-article): The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures
+and: Ideal-Gas Thermodynamic Properties for Natural-Gas Applications
 """
 
 from prep_jax import *

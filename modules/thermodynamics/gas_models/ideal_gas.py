@@ -16,9 +16,6 @@ def check_consistency_ideal():
 
 R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas constant
 
-''' set critical point values for ideal gas (does not have a critical point)'''
-
-#Critical values for Nitrogen, to use for initial conditions
 rho_c, T_c, p_c = molecule.critical_points
 
 ''' Helmholtz Energies '''

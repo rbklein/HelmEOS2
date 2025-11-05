@@ -13,6 +13,12 @@ from config.conf_thermodynamics import *
 from modules.thermodynamics.EOS import *
 from modules.geometry.grid import GRID_SPACING
 
+from modules.postprocess.post import init_postprocess, plot_postprocess, update_postprocess, NUM_ITS_PER_UPDATE
+from modules.numerical.computation import midpoint_integrate
+
+from functools import partial
+from pathlib import Path
+
 ''' Consistency checks '''
 
 KNOWN_TIME_STEP_METHODS = ["RK4", "FE"]
@@ -46,9 +52,6 @@ def check_CFL(u, T):
     cfl = (dt * (v_max + c)) / GRID_SPACING[0]
     return cfl
 
-from modules.postprocess.post import init_postprocess, plot_postprocess, update_postprocess, NUM_ITS_PER_UPDATE
-from modules.numerical.computation import midpoint_integrate
-
 @jax.jit
 def integrate(u, T):
     """
@@ -81,8 +84,6 @@ def integrate(u, T):
     )[0]  # Perform the integration over the specified number of time steps
     return u, T
 
-# UPDATE TO TEMPERATURE CARRY IMPLEMENTATION
-from functools import partial
 def integrate_interactive(u, T):
     """
     Interactive integration using a JIT-compiled jax.lax.scan for each interval
@@ -120,8 +121,7 @@ def integrate_interactive(u, T):
 
     return u, T
 
-
-from pathlib import Path
+# UPDATE TO TEMPERATURE CARRY
 def integrate_experiment(u):
     """
     A time-integrator that can be customized to perform numerical experiments
