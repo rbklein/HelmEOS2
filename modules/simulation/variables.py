@@ -10,7 +10,7 @@ from config.conf_geometry import N_DIMENSIONS
 from typing import Tuple
 
 from modules.thermodynamics.EOS     import temperature_rpt, total_energy
-from modules.thermodynamics.gas_models.ideal_gas import temperature_rpt_ideal
+from modules.thermodynamics.gas_models.Van_der_Waals import temperature_rpt_Van_der_Waals as rpt
 
 def convert(v : jnp.ndarray, vars : str) -> Tuple[jnp.ndarray, jnp.ndarray]:
     match vars:
@@ -28,7 +28,7 @@ def rvp2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
     vel = v[1:(N_DIMENSIONS+1), ...]
     p   = v[N_DIMENSIONS + 1]
 
-    Tguess  = temperature_rpt_ideal(rho, p, None)
+    Tguess  = rpt(rho, p, None)
     T       = temperature_rpt(rho, p, Tguess)
 
     m = vel * rho

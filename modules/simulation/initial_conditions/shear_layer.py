@@ -22,7 +22,7 @@ def chan_shear_layer_2d(mesh, molecule):
     sig2 = sig**2
 
     #velocity difference between layers
-    du0 = 100 #Mach order 0.1
+    du0 = 10 #Mach order 0.1
 
     #number of roll ups
     k = 1
@@ -32,10 +32,13 @@ def chan_shear_layer_2d(mesh, molecule):
     yp = y_trans + 1/2
     ym = y_trans - 1/2
 
-    rho = rho_c * (1 + 1 / (1 + jnp.exp(-yp/sig2)) - 1 / (1 + jnp.exp(-ym/sig2)))
-    u = du0 * (1 / (1 + jnp.exp(-yp/sig2)) - 1 / (1 + jnp.exp(-ym/sig2)) - 1/2)
-    v = alpha * du0 * jnp.sin(k * jnp.pi * x_trans) * (1/(1+jnp.exp(-yp/sig2)) - 1/(1+jnp.exp(-ym/sig2)))
-    p = 2.0 * p_c * jnp.ones_like(mesh[0])
+    amp = 0.4
+    base = 0.8
+
+    rho = rho_c * (base + amp * (1 / (1 + jnp.exp(-yp/sig2)) - 1 / (1 + jnp.exp(-ym/sig2))))
+    u = du0 * (amp * (1 / (1 + jnp.exp(-yp/sig2)) - 1 / (1 + jnp.exp(-ym/sig2))) - 1/2)
+    v = alpha * du0 * jnp.sin(k * jnp.pi * x_trans) * amp * (1/(1+jnp.exp(-yp/sig2)) - 1/(1+jnp.exp(-ym/sig2)))
+    p = 1.2 * p_c * jnp.ones_like(mesh[0])
     
     return jnp.stack((rho, u, v, p), axis = 0)
 

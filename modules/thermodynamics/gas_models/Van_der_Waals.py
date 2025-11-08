@@ -4,7 +4,7 @@ The Helmholtz energy and other functions of the Van der Waals equation
 
 from prep_jax import *
 from config.conf_thermodynamics import *
-from modules.numerical.computation import cubic_real_roots
+from modules.numerical.computation import cubic_root_single
 
 ''' check parameter consistency '''
 
@@ -72,8 +72,7 @@ def density_ptr_Van_der_Waals(p, T, rhoguess):
 
     #solve cubic and take first real root (assumes only one real root)
     coeffs = jnp.stack((p3, p2, p1, p0), axis = 0)
-    r, mask, num_real = cubic_real_roots(coeffs)
-    rho = r[..., 0]
+    rho = cubic_root_single(coeffs)
     return rho
 
 

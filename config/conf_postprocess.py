@@ -26,11 +26,11 @@
 # sequence of post-processing steps to be applied
 PLOT_SEQUENCE = [
     "DENSITY",
-    "PRESSURE_FLUCTUATIONS",
-    "VELOCITY",
-    "VORTICITY",
-    "LOCAL_MACH",
-    "SPEED_OF_SOUND",
+    "MOMENTUM",
+    "TOTAL_ENERGY",
+    "TEMPERATURE",
+    "PRESSURE",
+    "ENTROPY",
 ]
 
 #TO DO: entropy production (scalar field) evolution over time same for kinetic energy 

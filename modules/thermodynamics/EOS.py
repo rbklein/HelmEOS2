@@ -191,6 +191,29 @@ def speed_of_sound(rho, T):
     s = 2 * rho * dAdrho(rho, T) + rho**2 * d2Ad2rho(rho, T) - rho**2 * (d2AdrhodT(rho,T)**2) / d2Ad2T(rho,T)
     return jnp.sqrt(jnp.abs(s))
 
+def c_p(rho, T):
+    """
+        Mass-specific isobaric heat capacity c_p.
+        Uses A = A(rho, T) with:
+            p = rho**2 * dAdrho
+            c_v = -T * d2Ad2T
+        Identity used:
+            c_p = c_v + T * ((∂p/∂T)_rho)**2 / (rho**2 * (∂p/∂rho)_T)
+                 = -T*A_TT + T * (rho**2*A_rhoT)**2 / (rho**2*(2*rho*A_rho + rho**2*A_rhorho))
+                 = -T*A_TT + T * (rho**2 * A_rhoT**2) / (2*rho*A_rho + rho**2*A_rhorho)
+    """
+    A_rho      = dAdrho(rho, T)
+    A_rhorho   = d2Ad2rho(rho, T)
+    A_TT       = d2Ad2T(rho, T)
+    A_rhoT     = d2AdrhodT(rho, T)
+
+    c_v = -T * A_TT
+    dp_drho_T = 2 * rho * A_rho + rho**2 * A_rhorho      # (∂p/∂ρ)_T
+    dp_dT_rho = rho**2 * A_rhoT                           # (∂p/∂T)_ρ
+
+    cp = c_v + T * (dp_dT_rho**2) / (rho**2 * dp_drho_T)
+    return cp
+
 
 ''' critical point values '''
 #e_c = Helmholtz_scalar(rho_c, T_c) - T_c * dAdT_scalar(rho_c, T_c)

@@ -5,7 +5,7 @@ The Helmholtz energy and other functions of the Peng-Robinson equation
 from prep_jax import *
 from config.conf_thermodynamics import *
 from config.conf_geometry import *
-from modules.numerical.computation import solve_root_thermo, vectorize_root, cubic_real_roots
+from modules.numerical.computation import solve_root_thermo, vectorize_root, cubic_root_single
 
 ''' check parameter consistency '''
 
@@ -25,7 +25,7 @@ R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas cons
 rho_c, T_c, p_c = molecule.critical_points
 
 # reported in: Fully Compressible Low-Mach Number Simulations of Carbon-dioxide at Supercritical Pressures and Trans-critical Temperatures, Sengupta et al.
-a_PR = 0.457235 * (R_specific * T_c**2) / p_c
+a_PR = 0.457235 * (R_specific**2 * T_c**2) / p_c
 b_PR = 0.077796 * (R_specific * T_c) / p_c
 kappa = 0.37464 + 1.54226 * molecule.Peng_Robinson_parameters["acentric_factor"] - 0.26992 * molecule.Peng_Robinson_parameters["acentric_factor"]**2
 molecular_dofs = molecule.Peng_Robinson_parameters["molecular_dofs"]
@@ -66,7 +66,7 @@ def temperature_rpt_Peng_Robinson(rho, p, Tguess):
 
 
 ''' Density equation (p, T) -> rho for initial conditions''' 
-def density_ptr_Peng_Robinson(p, T):
+def density_ptr_Peng_Robinson(p, T, rhoguess):
     """
         Solve the cubic compressibility equation for Z and recover density
 
@@ -74,7 +74,7 @@ def density_ptr_Peng_Robinson(p, T):
         'A new Two-Constant Equation of State' by Peng and Robinson
     """
     #compute PR's A, B parameters
-    A = (a_PR * p) / (R_specific**2 * T**2)
+    A = (attraction_func(T) * p) / (R_specific**2 * T**2)
     B = (b_PR * p) / (R_specific * T)
 
     #compute coefficients
@@ -83,10 +83,14 @@ def density_ptr_Peng_Robinson(p, T):
     p1 = A - 3*B**2 - 2*B
     p0 = -(A * B - B**2 - B**3)
 
-    #compute compressibility factor
+    # #compute compressibility factor
+    # coeffs = jnp.stack((p3, p2, p1, p0), axis = 0)
+    # r, mask, num_real = cubic_real_roots(coeffs)
+    # Z = r[..., 0]
+
+    #compute compressibility factor (assumes single root for speed)
     coeffs = jnp.stack((p3, p2, p1, p0), axis = 0)
-    r, mask, num_real = cubic_real_roots(coeffs)
-    Z = r[..., 0]
+    Z = cubic_root_single(coeffs)
 
     #compute density from compressibility factor
     rho = p / (Z * R_specific * T)

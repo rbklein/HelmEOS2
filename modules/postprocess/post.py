@@ -25,7 +25,7 @@ KNOWN_POSTPROCESSING_STEPS = [
     "VELOCITY",
     "VORTICITY",
     "ENERGY_SPECTRUM",
-    "PV",
+    #"PV", inactive until fixed
     #"CRITICAL_DISTANCE",
     "TOTAL_ENTROPY",
     "SPEED_OF_SOUND",
@@ -72,8 +72,8 @@ if "VORTICITY" in PLOT_SEQUENCE:
     elif N_DIMENSIONS == 3:
         from modules.postprocess.derived_quantities.vorticity import vorticity_3d as vorticity
 
-if "PV" in PLOT_SEQUENCE:
-    from modules.postprocess.plot.pv_diagram import plot_pv as pv_diagram
+# if "PV" in PLOT_SEQUENCE:
+#     from modules.postprocess.plot.pv_diagram import plot_pv as pv_diagram
 
 assert COLORMAP in list(colormaps), f"Unknown colormap: {COLORMAP}, use valid matplotlib cmap"
 
@@ -208,11 +208,11 @@ def plot_postprocess(u, T, fig, rows, cmap = 'viridis', freeze_image: bool = Fal
 
             else:
                 match step:
-                    case "PV":
-                        rho_arr = jnp.ravel(rho[slices_pv])
-                        p_arr = jnp.ravel(p[slices_pv])
-                        ax = pv_diagram(rho_arr, p_arr, fig, ax)
-                        plot_row.append((ax))
+                    # case "PV":
+                    #     rho_arr = jnp.ravel(rho[slices_pv])
+                    #     p_arr = jnp.ravel(p[slices_pv])
+                    #     ax = pv_diagram(rho_arr, p_arr, fig, ax)
+                    #     plot_row.append((ax))
                     case "ENERGY_SPECTRUM":
                         plot_row.append((ax))
                         pass  # Placeholder for energy spectrum plot
@@ -292,11 +292,11 @@ def update_postprocess(u, T, fig, plot_grid):
 
             else:
                 match step:
-                    case "PV":
-                        ax = plot_vars
-                        rho_arr = jnp.ravel(rho[slices_pv])
-                        p_arr = jnp.ravel(pressure(rho, T)[slices_pv])
-                        pv_diagram(rho_arr, p_arr, fig, ax)
+                    # case "PV":
+                    #     ax = plot_vars
+                    #     rho_arr = jnp.ravel(rho[slices_pv])
+                    #     p_arr = jnp.ravel(pressure(rho, T)[slices_pv])
+                    #     pv_diagram(rho_arr, p_arr, fig, ax)
                     case "ENERGY_SPECTRUM":
                         pass  # Placeholder for energy spectrum plot
                     case _:

@@ -11,6 +11,7 @@ from config.conf_geometry import *
 
 from modules.numerical.computation import solve_root_thermo, vectorize_root
 from modules.thermodynamics.gas_models.Jaeschke_Schley_ideal import Jaeschke_Schley
+#from modules.thermodynamics.gas_models.ideal_gas import ideal_gas
 
 ''' check parameter consistency '''
 
@@ -50,6 +51,8 @@ _residual_coeffs = [
     -0.0153809489533
 ]
 
+
+
 _temperature_powers = [
     0.0,    1.25,   1.625,  0.375,
     0.375,  1.375,  1.125,  1.375,
@@ -76,16 +79,11 @@ _exp_powers = [
     5.0,    6.0,    6.0
 ]
 
-_residual_coeffs     = jnp.array(_residual_coeffs)
-_temperature_powers  = jnp.array(_temperature_powers)
-_density_powers      = jnp.array(_density_powers)
-_exp_powers          = jnp.array(_exp_powers)
+# _residual_coeffs     = jnp.array(_residual_coeffs)
+# _temperature_powers  = jnp.array(_temperature_powers)
+# _density_powers      = jnp.array(_density_powers)
+# _exp_powers          = jnp.array(_exp_powers)
 
-
-
-
-
-#CHECK UNITS
 
 ''' Helmholtz energy '''
 def Wagner_ideal(rho, T):
@@ -98,16 +96,16 @@ def Wagner_residual(rho, T):
     '''
         computes the residual Helmholtz energy of the Kunz-Wagner real gas equation of state
     '''
-    ar     = 0.0
+    ar     = jnp.zeros_like(rho)
     rho_r   = rho / rho_c
-    T_r     = T / T_c
+    T_r     = T_c / T
 
     for i in range(4):
-        ar += _residual_coeffs[i] * rho_r**_density_powers[i] * T_r**_temperature_powers[i]
+        ar += _residual_coeffs[i] * (rho_r**_density_powers[i]) * (T_r**_temperature_powers[i])
 
     for i in range(18):
         ip = i + 4
-        ar += _residual_coeffs[ip] * rho_r**_density_powers[ip] * T_r**_temperature_powers[ip] * jnp.exp(-rho_r**_exp_powers[i])
+        ar += _residual_coeffs[ip] * (rho_r**_density_powers[ip]) * (T_r**_temperature_powers[ip]) * jnp.exp(-rho_r**_exp_powers[i])
 
     return R_specific * T * ar
 
@@ -129,9 +127,9 @@ drpdT_root = vectorize_root(_drpdT_root)
 
 def temperature_rpt_Wagner(rho, p, Tguess):
     """
-        Solve temperature profile from density and pressure for Span-Wagner gas
+        Solve temperature profile from density and pressure for Wagner gas
     """
-    return solve_root_thermo(Tguess, rho, p, root_func_pressure_T, drpdT_root, 1e-10, 10)
+    return solve_root_thermo(Tguess, rho, p, root_func_pressure_T, drpdT_root, 1e-10, 100)
 
 
 ''' Density equation (p, T) -> rho for initial conditions'''
@@ -143,7 +141,7 @@ drpdrho_root = vectorize_root(_drpdrho_root)
 
 def density_ptr_Wagner(p, T, rhoguess):
     """
-        Solve density profile from pressure and temperature for Span-Wagner gas
+        Solve density profile from pressure and temperature for Wagner gas
     """
     return solve_root_thermo(rhoguess, T, p, root_func_pressure_rho, drpdrho_root, 1e-10, 10)
 
@@ -159,7 +157,7 @@ dredT_root = vectorize_root(_dredT_root)
 
 def temperature_ret_Wagner(rho, e, Tguess):
     """
-        Calculate temperature from density and specific internal energy for Span-Wagner EOS.
+        Calculate temperature from density and specific internal energy for Wagner EOS.
     """
     return solve_root_thermo(Tguess, rho, e, root_func_energy_T, dredT_root, 1e-10, 10)
 
