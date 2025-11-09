@@ -21,9 +21,7 @@ if __name__ == "__main__":
     print(r'$p_c$: ', p_c)
 
     # simulate
-    #u, T = integrate_interactive(u, T) 
-
-    #negative values due to reference choice?
+    u, T = integrate_interactive(u, T) 
 
     # postprocess
     fig, plot_grid  = init_postprocess()

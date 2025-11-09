@@ -22,6 +22,8 @@ KNOWN_POSTPROCESSING_STEPS = [
     "PRESSURE_FLUCTUATIONS",
     "TEMPERATURE",
     "ENTROPY",
+    "INTERNAL_ENERGY",
+    "HELMHOLTZ",
     "VELOCITY",
     "VORTICITY",
     "ENERGY_SPECTRUM",
@@ -40,6 +42,8 @@ SCALAR_FIELDS = [
     "PRESSURE_FLUCTUATIONS",
     "TEMPERATURE",
     "ENTROPY",
+    "INTERNAL_ENERGY",
+    "HELMHOLTZ",
     "VELOCITY",
     "VORTICITY",
     #"CRITICAL_DISTANCE",
@@ -170,6 +174,12 @@ def plot_postprocess(u, T, fig, rows, cmap = 'viridis', freeze_image: bool = Fal
                     case "ENTROPY":
                         field = entropy(rho, T)
                         title = "Entropy"
+                    case "INTERNAL_ENERGY":
+                        field = internal_energy(rho, T)
+                        title = "Internal energy"
+                    case "HELMHOLTZ":
+                        field = Helmholtz(rho, T)
+                        title = "Helmholtz energy"
                     case "VELOCITY":
                         field = jnp.linalg.norm(u[1:1+N_DIMENSIONS] / rho, axis = 0)
                         title = "Velocity Magnitude"
@@ -261,6 +271,10 @@ def update_postprocess(u, T, fig, plot_grid):
                         field = T
                     case "ENTROPY":
                         field = entropy(rho, T)
+                    case "INTERNAL_ENERGY":
+                        field = internal_energy(rho, T)
+                    case "HELMHOLTZ":
+                        field = Helmholtz(rho, T)
                     case "VELOCITY":
                         field = jnp.linalg.norm(u[1:1+N_DIMENSIONS] / rho, axis = 0)
                     case "VORTICITY":

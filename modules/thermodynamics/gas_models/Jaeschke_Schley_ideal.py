@@ -28,8 +28,8 @@ _b24 = jnp.array([-1.060440000, 0.013930000]) # cosh coeffs
 _theta24 = jnp.array([-2.844425476, 1.121596090]) * T_c
 
 # reference values mentioned in KW-article
-T_ref = 298.15      # K
-p_ref = 0.101325e6  # Pa
+T_ref = 10 #298.15      # K
+p_ref = 10 * R_specific #0.101325e6  # Pa
 rho_ref = p_ref / (R_specific * T_ref) # kg m^-3 
 
 coth = lambda x: 1.0 / jnp.tanh(x)
@@ -73,6 +73,9 @@ def Jaeschke_Schley(rho, T):
 
         Integrals are exactly evaluated using integral_calculator.com
     '''
+    #enthalpy_terms  = enthalpy_integral(T) - enthalpy_integral(T_ref) # + 0.0 reference enthalpy
+    #entropy_terms   = entropy_integral(T) - entropy_integral(T_ref) - R_specific * jnp.log(T / T_ref) - R_specific * jnp.log(rho / rho_ref) # + 0.0 reference entropy
+    
     enthalpy_terms  = enthalpy_integral(T) - enthalpy_integral(T_ref) # + 0.0 reference enthalpy
     entropy_terms   = entropy_integral(T) - entropy_integral(T_ref) - R_specific * jnp.log(T / T_ref) - R_specific * jnp.log(rho / rho_ref) # + 0.0 reference entropy
     return enthalpy_terms - R_specific * T - T * entropy_terms

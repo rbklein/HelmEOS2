@@ -9,6 +9,8 @@
     - pressure fluctuations
     - temperature
     - entropy
+    - internal energy
+    - helmholtz energy
     - velocity
     - vorticity
     X - reduced distance to critical point (removed due to ambiguity between molecule critical point and EOS critical point)
@@ -31,12 +33,14 @@ PLOT_SEQUENCE = [
     "TEMPERATURE",
     "PRESSURE",
     "ENTROPY",
+    "INTERNAL_ENERGY",
+    "HELMHOLTZ"
 ]
 
 #TO DO: entropy production (scalar field) evolution over time same for kinetic energy 
 
-MAX_PLOTS_PER_ROW = 3  # Maximum number of plots per row in the output figure
+MAX_PLOTS_PER_ROW = 4  # Maximum number of plots per row in the output figure
 
 COLORMAP = 'magma'
 MAX_TIME_SERIES_LENGTH = 30
-NUM_ITS_PER_UPDATE = 1000
+NUM_ITS_PER_UPDATE = 100

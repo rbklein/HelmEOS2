@@ -145,7 +145,7 @@ d2Ad2rho    = _vectorize_thermo(d2Ad2rho_scalar)
 d2Ad2T      = _vectorize_thermo(d2Ad2T_scalar)
 d2AdrhodT   = _vectorize_thermo(d2AdrhodT_scalar)
 
-''' Helmholtz third derivatives mapped over n dimensions (please stop this)'''
+''' Helmholtz third derivatives mapped over n dimensions'''
 d3Ad3rho_scalar     = jax.grad(d2Ad2rho_scalar, argnums = 0)
 d3Ad2rhodT_scalar   = jax.grad(d2Ad2rho_scalar, argnums = 1)
 d3Ad2Tdrho_scalar   = jax.grad(d2Ad2T_scalar, argnums = 0)
