@@ -59,7 +59,10 @@ for step in PLOT_SEQUENCE:
     assert step in KNOWN_POSTPROCESSING_STEPS, f"Unknown post-processing step: {step}"
 
 if set(PLOT_SEQUENCE) & set(SCALAR_FIELDS):
-    if N_DIMENSIONS == 2:
+    if N_DIMENSIONS == 1:
+        from modules.postprocess.plot.scalar_field import plot_scalar_field_1d as plot_scalar_field
+        from modules.postprocess.plot.scalar_field import update_scalar_field_1d as update_scalar_field
+    elif N_DIMENSIONS == 2:
         from modules.postprocess.plot.scalar_field import plot_scalar_field_2d as plot_scalar_field
         from modules.postprocess.plot.scalar_field import update_scalar_field_2d as update_scalar_field
     elif N_DIMENSIONS == 3:
@@ -71,7 +74,9 @@ if set(PLOT_SEQUENCE) & set(INTEGRAL_VALUES):
     from modules.geometry.grid import CELL_VOLUME
 
 if "VORTICITY" in PLOT_SEQUENCE:
-    if N_DIMENSIONS == 2:
+    if N_DIMENSIONS == 1:
+        raise ValueError("Vorticity is not defined in 1 dimension")
+    elif N_DIMENSIONS == 2:
         from modules.postprocess.derived_quantities.vorticity import vorticity_2d as vorticity
     elif N_DIMENSIONS == 3:
         from modules.postprocess.derived_quantities.vorticity import vorticity_3d as vorticity
@@ -198,7 +203,7 @@ def plot_postprocess(u, T, fig, rows, cmap = 'viridis', freeze_image: bool = Fal
                         field = speed_of_sound(rho, T)
                         title = "Speed of Sound"
                     case "LOCAL_MACH":
-                        field = jnp.linalg.norm(u[1:N_DIMENSIONS] / rho, axis = 0) / speed_of_sound(rho, T)
+                        field = jnp.linalg.norm(u[1:1+N_DIMENSIONS] / rho, axis = 0) / speed_of_sound(rho, T)
                         title = "Mach number"
                     case _:
                         raise ValueError(f"Postprocessing for scalar field: {step}, not implemented")
@@ -288,7 +293,7 @@ def update_postprocess(u, T, fig, plot_grid):
                     case"SPEED_OF_SOUND":
                         field = speed_of_sound(rho, T)
                     case "LOCAL_MACH":
-                        field = jnp.linalg.norm(u[1:N_DIMENSIONS] / rho, axis = 0) / speed_of_sound(rho, T)
+                        field = jnp.linalg.norm(u[1:1+N_DIMENSIONS] / rho, axis = 0) / speed_of_sound(rho, T)
                     case _:
                         raise ValueError(f"Postprocessing for scalar field: {step}, not implemented")
 

@@ -132,3 +132,26 @@ def div_y_naive_heat_flux_2d(u, T):
 
 def div_naive_heat_flux_2d(u, T):
     return div_x_naive_heat_flux_2d(u, T) + div_y_naive_heat_flux_2d(u, T)
+
+
+''' 1D version of naive heat flux divergence'''
+def div_naive_heat_flux_1d(u, T):
+    '''
+    Assume u is padded appropriately (5, n_x + 2)
+    '''
+
+    n_x = GRID_RESOLUTION[0]
+    d_x = GRID_SPACING[0]
+
+    k = thermal_conductivity(T)
+    k_m = 0.5 * (k[1:] + k[:-1])
+
+    dT_dx = (T[1:] - T[:-1]) / d_x
+    q = k_m * dT_dx
+
+    f_rho_x = jnp.zeros((n_x + 1))
+    f_m_x = jnp.zeros((n_x + 1))
+    f_E_x = q
+
+    F = jnp.stack((f_rho_x, f_m_x, f_E_x), axis = 0)
+    return F[:, 1:] - F[:, :-1]

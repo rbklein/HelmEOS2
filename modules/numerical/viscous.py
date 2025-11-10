@@ -18,7 +18,9 @@ from modules.geometry.grid import CELL_VOLUME
 
 match NUMERICAL_VISCOUS_FLUX:
     case "NAIVE":
-        if N_DIMENSIONS == 2:
+        if N_DIMENSIONS == 1:
+            from modules.numerical.viscous_fluxes.naive_stress import div_naive_stress_1d as viscous_flux_div
+        elif N_DIMENSIONS == 2:
             from modules.numerical.viscous_fluxes.naive_stress import div_naive_stress_2d as viscous_flux_div
         elif N_DIMENSIONS == 3:
             from modules.numerical.viscous_fluxes.naive_stress import div_naive_stress_3d as viscous_flux_div

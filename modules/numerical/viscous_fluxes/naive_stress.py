@@ -235,3 +235,29 @@ def div_y_naive_stress_2d(u, T):
 def div_naive_stress_2d(u, T):
     return div_x_naive_stress_2d(u, T) + div_y_naive_stress_2d(u, T)
 
+
+
+''' 1D versions of naive stress tensor divergence '''
+
+def div_naive_stress_1d(u, T):
+    '''
+        Assume u is padded appropriately (5, n_x + 2)
+    '''
+
+    n_x = GRID_RESOLUTION[0]
+    d_x = GRID_SPACING[0]
+
+    mu  = dynamic_viscosity(T)
+    mu_m = 0.5 * (mu[1:] + mu[:-1])  #(n_x + 1) mean dynamic viscosity
+
+    ''' Du + Du^T '''
+    vel = u[1] / u[0]
+    d_vel_dx = (vel[1:] - vel[:-1]) / d_x     #(2, n_x + 1, n_y)
+    vel_m = 0.5 * (vel[1:] + vel[:-1])
+
+    f_rho_x = jnp.zeros((n_x + 1))
+    f_m1_x = mu_m * d_vel_dx
+    f_E_x = mu_m * vel_m * f_m1_x 
+
+    F = jnp.stack((f_rho_x, f_m1_x, f_E_x), axis=0)
+    return F[:, 1:] - F[:, :-1]  # Return the difference in fluxes in x-direction

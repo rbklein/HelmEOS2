@@ -18,7 +18,9 @@ from modules.geometry.grid import CELL_VOLUME
 
 match NUMERICAL_HEAT_FLUX:
     case "NAIVE":
-        if N_DIMENSIONS == 2:
+        if N_DIMENSIONS == 1:
+            from modules.numerical.heat_fluxes.naive_heat_flux import div_naive_heat_flux_1d as heat_flux_div
+        elif N_DIMENSIONS == 2:
             from modules.numerical.heat_fluxes.naive_heat_flux import div_naive_heat_flux_2d as heat_flux_div
         elif N_DIMENSIONS == 3:
             from modules.numerical.heat_fluxes.naive_heat_flux import div_naive_heat_flux_3d as heat_flux_div

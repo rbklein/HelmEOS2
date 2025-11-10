@@ -11,6 +11,7 @@ from modules.geometry.grid import *
 KNOWN_TEST_CASES = [
     "DENSITY_WAVE_3D", 
     "DENSITY_WAVE_2D", 
+    "DENSITY_WAVE_1D", 
     "TAYLOR_GREEN_VORTEX_3D", 
     "CHAN_SHEAR_LAYER_2D", 
     "TURBULENCE_2D",
@@ -38,6 +39,14 @@ match TEST_CASE:
         assert N_DIMENSIONS == 2, "DENSITY_WAVE_2D requires 2 dimensions"
         
         from modules.simulation.initial_conditions.density_wave import density_wave_2d as initial_condition
+    case "DENSITY_WAVE_1D":
+        
+        ''' set initial condition for 1D density wave '''
+
+        # Ensure the number of dimensions is 1 for this test case
+        assert N_DIMENSIONS == 1, "DENSITY_WAVE_1D requires 1 dimensions"
+        
+        from modules.simulation.initial_conditions.density_wave import density_wave_1d as initial_condition
     case "TAYLOR_GREEN_VORTEX_3D":
         
         ''' set initial condition for 3D Taylor-Green vortex '''

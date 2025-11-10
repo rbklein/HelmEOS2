@@ -23,11 +23,16 @@ from modules.geometry.grid import CELL_VOLUME
 
 match NUMERICAL_FLUX:
     case "NAIVE":
-        if N_DIMENSIONS == 2:
+        if N_DIMENSIONS == 1:
+            raise NotImplementedError(f"Naive flux not implemented in 1D")
+            #from modules.numerical.fluxes.naive import div_naive_1d as flux_div
+        elif N_DIMENSIONS == 2:
             from modules.numerical.fluxes.naive import div_naive_2d as flux_div
         elif N_DIMENSIONS == 3:
             from modules.numerical.fluxes.naive import div_naive_3d as flux_div
-    case "KEEP":    
+    case "KEEP":  
+        if N_DIMENSIONS == 1:
+            from modules.numerical.fluxes.keep_dg import div_keep_dg_1d as flux_div  
         if N_DIMENSIONS == 2:
             from modules.numerical.fluxes.keep_dg import div_keep_dg_2d as flux_div
         elif N_DIMENSIONS == 3:

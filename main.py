@@ -12,13 +12,16 @@ if __name__ == "__main__":
     from modules.postprocess.post       import init_postprocess, plot_postprocess, COLORMAP, show
 
     # prepare initial condition (density, velocity, pressure)
-    initial = initial_condition(mesh, molecule)  
-    u, T    = convert(initial, 'rvp')
+    initial, conversion = initial_condition(mesh, molecule)  
+    u, T                = convert(initial, conversion)
+
+    if len(mesh) > 1:
+        del mesh
 
     rho_c, T_c, p_c = molecule.critical_points
-    print(r'$\rho_c$: ', rho_c)
-    print(r'$T_c$: ', T_c)
-    print(r'$p_c$: ', p_c)
+    print('rho_c: ', rho_c)
+    print('T_c: ', T_c)
+    print('p_c: ', p_c)
 
     # simulate
     u, T = integrate_interactive(u, T) 
@@ -27,7 +30,3 @@ if __name__ == "__main__":
     fig, plot_grid  = init_postprocess()
     plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
     show()
-
-
-
-

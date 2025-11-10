@@ -12,6 +12,9 @@ from modules.geometry.grid import *
 def chan_shear_layer_2d(mesh, molecule):
     """
     Generate Chan's shear layer experiment
+
+    Domain  : [0, 1]^2
+    T       : 0.02
     """
 
     rho_c, T_c, p_c = molecule.critical_points
@@ -40,5 +43,5 @@ def chan_shear_layer_2d(mesh, molecule):
     v = alpha * du0 * jnp.sin(k * jnp.pi * x_trans) * amp * (1/(1+jnp.exp(-yp/sig2)) - 1/(1+jnp.exp(-ym/sig2)))
     p = 1.2 * p_c * jnp.ones_like(mesh[0])
     
-    return jnp.stack((rho, u, v, p), axis = 0)
+    return jnp.stack((rho, u, v, p), axis = 0), 'rvp'
 

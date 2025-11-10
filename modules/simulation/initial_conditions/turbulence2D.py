@@ -123,4 +123,4 @@ def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray], molecule) -> jnp.ndarr
 
     rho =  1.5 * rho_c * jnp.ones_like(mesh[0])  # Uniform density field
     p = 2.5 * p_c * jnp.ones_like(mesh[0])  # Uniform pressure field
-    return jnp.stack((rho, ux, uy, p), axis=0)
+    return jnp.stack((rho, ux, uy, p), axis=0), 'rvp'

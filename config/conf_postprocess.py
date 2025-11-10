@@ -28,19 +28,21 @@
 # sequence of post-processing steps to be applied
 PLOT_SEQUENCE = [
     "DENSITY",
-    "MOMENTUM",
-    "TOTAL_ENERGY",
+    "VELOCITY",
     "TEMPERATURE",
     "PRESSURE",
+    "LOCAL_MACH",
     "ENTROPY",
-    "INTERNAL_ENERGY",
-    "HELMHOLTZ"
 ]
 
 #TO DO: entropy production (scalar field) evolution over time same for kinetic energy 
 
-MAX_PLOTS_PER_ROW = 4  # Maximum number of plots per row in the output figure
+MAX_PLOTS_PER_ROW = 3  # Maximum number of plots per row in the output figure
 
 COLORMAP = 'magma'
 MAX_TIME_SERIES_LENGTH = 30
-NUM_ITS_PER_UPDATE = 100
+NUM_ITS_PER_UPDATE = 10
+
+# Determine index of slice to plot for a 3D simulation
+# Could be improved by only computing desire values for the slice instead of on the whole grid
+SLICE_3D = (64, slice(None), slice(None))
