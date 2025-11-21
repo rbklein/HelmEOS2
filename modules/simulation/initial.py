@@ -9,8 +9,6 @@ from modules.geometry.grid import *
 ''' Consistency checks '''
 
 KNOWN_TEST_CASES = [
-    "DENSITY_WAVE_3D", 
-    "DENSITY_WAVE_2D", 
     "DENSITY_WAVE_1D", 
     "TAYLOR_GREEN_VORTEX_3D", 
     "CHAN_SHEAR_LAYER_2D", 
@@ -23,22 +21,6 @@ assert TEST_CASE in KNOWN_TEST_CASES, f"Unknown test case: {TEST_CASE}. Known te
 
 
 match TEST_CASE: 
-    case "DENSITY_WAVE_3D":
-        
-        ''' set initial condition for 3D density wave '''
-
-        # Ensure the number of dimensions is 3 for this test case
-        assert N_DIMENSIONS == 3, "DENSITY_WAVE_3D requires 3 dimensions"
-
-        from modules.simulation.initial_conditions.density_wave import density_wave_3d as initial_condition
-    case "DENSITY_WAVE_2D":
-        
-        ''' set initial condition for 2D density wave '''
-
-        # Ensure the number of dimensions is 2 for this test case
-        assert N_DIMENSIONS == 2, "DENSITY_WAVE_2D requires 2 dimensions"
-        
-        from modules.simulation.initial_conditions.density_wave import density_wave_2d as initial_condition
     case "DENSITY_WAVE_1D":
         
         ''' set initial condition for 1D density wave '''

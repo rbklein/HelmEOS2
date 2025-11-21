@@ -21,28 +21,6 @@ def extract_1d_from_padded(arr):
     idx = (slice(None),) + (0,) * (arr.ndim - 1)
     return arr[idx]
 
-# def solve_root_thermo(v, vconst, vaux, root, droot, tol, it_max):
-#     R = jnp.abs(vaux)
-
-#     def cond(state):
-#         v, i, convd = state
-#         return convd
-    
-#     def body(state):
-#         v, i, convd = state
-
-#         res     = root(v, vconst, vaux)
-#         dres    = droot(v, vconst, vaux)
-#         step    = res / dres
-#         v       = v - step
-
-#         convd = jnp.all(jnp.logical_and(i < it_max, jnp.abs(res) > tol * R)) 
-#         return v, i+1, convd
-    
-#     sol, it, _ = jax.lax.while_loop(cond, body, (v, 0, True))
-#     #assert it < it_max, "Newton did not converge" # Not jittable
-#     return sol
-
 def solve_root_thermo(v, vconst, vaux, root, droot, tol, it_max):
     R = jnp.abs(vaux)
 

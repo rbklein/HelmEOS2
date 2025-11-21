@@ -14,7 +14,7 @@ def Taylor_Green_vortex_3d(mesh, molecule):
         Domain : [- pi L, pi L]^3
         T      : ???
     """
-    rho_c, T_c, p_c = molecule.critical_points
+    rho_c, T_c, p_c = molecule.critical_points #plural?
 
     rho0    = 1.5 * rho_c
     T0      = 1.1 * T_c

@@ -11,7 +11,7 @@ if __name__ == "__main__":
     from modules.thermodynamics.EOS     import molecule
     from modules.postprocess.post       import init_postprocess, plot_postprocess, COLORMAP, show
 
-    # prepare initial condition (density, velocity, pressure)
+    # prepare initial condition
     initial, conversion = initial_condition(mesh, molecule)  
     u, T                = convert(initial, conversion)
 
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     print('p_c: ', p_c)
 
     # simulate
-    u, T = integrate_interactive(u, T) 
+    u, T = integrate(u, T) 
 
     # postprocess
     fig, plot_grid  = init_postprocess()

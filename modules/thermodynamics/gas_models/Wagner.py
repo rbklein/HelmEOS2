@@ -26,6 +26,7 @@ R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas cons
 
 rho_c, T_c, p_c = molecule.critical_points
 
+#refprop compare
 _residual_coeffs = [
     0.52646564804653,
     -1.4995725042592,
