@@ -5,7 +5,7 @@
 if __name__ == "__main__":
     from prep_jax import *
     from modules.geometry.grid          import mesh
-    from modules.numerical.integration  import integrate, integrate_interactive, integrate_experiment
+    from modules.numerical.integration  import integrate, integrate_interactive #, integrate_experiment
     from modules.simulation.initial     import initial_condition
     from modules.simulation.variables   import convert
     from modules.thermodynamics.EOS     import molecule
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     print('p_c: ', p_c)
 
     # simulate
-    u, T = integrate(u, T) 
+    u, T = integrate_interactive(u, T) 
 
     # postprocess
     fig, plot_grid  = init_postprocess()

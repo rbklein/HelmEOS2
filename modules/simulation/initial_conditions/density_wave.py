@@ -20,7 +20,6 @@ def density_wave_1d(mesh, molecule):
     p = 2 * p_c * jnp.ones_like(mesh[0])  
     return jnp.stack((rho, u, p), axis=0), 'rvp'  # Stack to create a 2D array with shape (4, n_x, n_y)
 
-
 def density_wave_1d_isothermal(mesh, molecule):
     """
     Generate a 1D density wave pattern.

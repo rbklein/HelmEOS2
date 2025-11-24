@@ -6,9 +6,6 @@ from prep_jax import *
 from modules.geometry.grid import *
 from modules.thermodynamics.EOS import *
 
-
-
-
 def Taylor_Green_vortex_3d(mesh, molecule):
     """
         Domain : [- pi L, pi L]^3
