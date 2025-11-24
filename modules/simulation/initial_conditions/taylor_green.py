@@ -6,12 +6,15 @@ from prep_jax import *
 from modules.geometry.grid import *
 from modules.thermodynamics.EOS import *
 
-def Taylor_Green_vortex_3d(mesh, molecule):
+rho_c, T_c, p_c = molecule.critical_points
+
+@jax.jit
+def Taylor_Green_vortex_3d(mesh):
     """
         Domain : [- pi L, pi L]^3
         T      : ???
     """
-    rho_c, T_c, p_c = molecule.critical_points #plural?
+    #plural?
 
     rho0    = 1.5 * rho_c
     T0      = 1.1 * T_c
@@ -21,7 +24,7 @@ def Taylor_Green_vortex_3d(mesh, molecule):
     c0      = speed_of_sound(rho0 * jnp.ones_like(mesh[0]), T0 * jnp.ones_like(mesh[0]))[0,0,0]
     U0      = 0.1 * c0
 
-    print('ref vel: ', U0)
+    #print('ref vel: ', U0)
 
     L       = DOMAIN_SIZE[0] / (2 * jnp.pi)
     X, Y, Z = mesh[0] - jnp.pi * L, mesh[1] - jnp.pi * L, mesh[2] - jnp.pi * L
@@ -32,4 +35,4 @@ def Taylor_Green_vortex_3d(mesh, molecule):
     v = - U0 * jnp.cos(X / L) * jnp.sin(Y / L) * jnp.sin(Z / L)
     w = jnp.zeros_like(u)
 
-    return jnp.stack((u, v, w, p, T), axis = 0), 'vpt'
+    return jnp.stack((u, v, w, p, T), axis = 0), 1 #'vpt'

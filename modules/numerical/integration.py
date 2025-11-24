@@ -65,20 +65,20 @@ def integrate(u, T):
         Final state and temperature
     """
     # Define process status function
-    status = lambda it, u, T: jax.debug.print("Current time step: {it}/{its}, t: {t}, CFL: {cfl}", it=it, its = NUM_TIME_STEPS, t=(it*dt), cfl = jnp.max(check_CFL(u, T)))
+    #status = lambda it, u, T: jax.debug.print("Current time step: {it}/{its}, t: {t}, CFL: {cfl}", it=it, its = NUM_TIME_STEPS, t=(it*dt), cfl = jnp.max(check_CFL(u, T)))
 
     def scan_step(carry, _):
         it, u_prev, T_prev = carry  # Unpack the carry variable
         u = time_step(u_prev, T_prev, dt) # Compute new state
         T = temperature(u, T_prev) # Compute new temperature using previous temperature as initial guess
         it = it + 1
-        jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
-                    lambda _: status(it, u, T), 
-                    lambda _: None, 
-                    operand=None)
+        # jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
+        #             lambda _: status(it, u, T), 
+        #             lambda _: None, 
+        #             operand=None)
         return (it, u, T), None
 
-    status(0, u, T)
+    #status(0, u, T)
     it, u, T = jax.lax.scan(
         scan_step, (0, u, T), None, length=NUM_TIME_STEPS
     )[0]  # Perform the integration over the specified number of time steps

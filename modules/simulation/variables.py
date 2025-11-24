@@ -15,20 +15,20 @@ from modules.thermodynamics.gas_models.Van_der_Waals import temperature_rpt_Van_
 
 def convert(v : jnp.ndarray, vars : str) -> Tuple[jnp.ndarray, jnp.ndarray]:
     match vars:
-        case 'rvp':
+        case 0: #'rvp':
             #density + velocity + pressure (in that order)
             u, T = rvp2u(v)
-        case 'vpt':
+        case 1: #'vpt':
             #velocity + pressure + temperature (in that order)
             u, T = vpt2u(v)
-        case 'rvt':
+        case 2: #'rvt':
             #density + velocity + temperature (in that order)
             u, T = rvt2u(v)
         case _:
             raise ValueError(f"Unknown variable set: {vars}")
     return u, T
 
-
+@jax.jit
 def rvp2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
     rho = v[0]
     vel = v[1:(N_DIMENSIONS+1), ...]
@@ -49,6 +49,7 @@ def rvp2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
 
     return u, T
 
+@jax.jit
 def vpt2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
     vel = v[:N_DIMENSIONS, ...]
     p   = v[N_DIMENSIONS, ...]
@@ -68,6 +69,7 @@ def vpt2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
 
     return u, T
 
+@jax.jit
 def rvt2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
     rho = v[0, ...]
     vel = v[1:N_DIMENSIONS + 1, ...]

@@ -4,7 +4,7 @@
     Later: add option to design the initial conditions in a more flexible way.
 
      Options: 
-      - "DENSITY_WAVE_1D
+      - "DENSITY_WAVE_1D",
       - "TAYLOR_GREEN_VORTEX_3D", 
       - "CHAN_SHEAR_LAYER_2D",  
       - "TURBULENCE_2D",
@@ -19,4 +19,4 @@ TEST_CASE = "TAYLOR_GREEN_VORTEX_3D"
 BC_TYPES = [("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC")]
 
 #Total simulation time
-TOTAL_TIME = 0.1
+TOTAL_TIME = 1e-5

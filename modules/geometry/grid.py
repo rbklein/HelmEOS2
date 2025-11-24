@@ -3,6 +3,7 @@
 """
 
 from config.conf_geometry import *
+import numpy as np
 
 ''' Consistency checks '''
 
@@ -22,14 +23,14 @@ GRID_SPACING = tuple(size / res for size, res in zip(DOMAIN_SIZE, GRID_RESOLUTIO
 if SHARD_ARRAYS:
 
     assert len(SHARD_PARTITION) == len(GRID_RESOLUTION), "Sharding memory partition is not compatible with grid"
-
-    @jax.jit 
-    def initialize_mesh():
-        mesh = jnp.meshgrid(*[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], indexing='ij')  #meshgrid for the grid points
-        mesh = jax.device_put(mesh, NamedSharding(device_mesh, PartitionSpec(*SHARD_PARTITION)))
-        return mesh
     
-    mesh = initialize_mesh()
+    if N_DIMENSIONS == 3:
+        x_mesh = np.linspace(GRID_SPACING[0] / 2.0, DOMAIN_SIZE[0] - GRID_SPACING[0] / 2.0, GRID_RESOLUTION[0])
+        y_mesh = np.linspace(GRID_SPACING[1] / 2.0, DOMAIN_SIZE[1] - GRID_SPACING[1] / 2.0, GRID_RESOLUTION[1])
+        z_mesh = np.linspace(GRID_SPACING[2] / 2.0, DOMAIN_SIZE[2] - GRID_SPACING[2] / 2.0, GRID_RESOLUTION[2])
+        mesh = np.meshgrid(x_mesh, y_mesh, z_mesh)
+        mesh = [jax.device_put(mesh[i], NamedSharding(device_mesh, PartitionSpec(*SHARD_PARTITION))) for i in range(3)]
+
 else:
     mesh = jnp.meshgrid(*[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], indexing='ij')  #meshgrid for the grid points
 
