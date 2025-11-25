@@ -45,5 +45,5 @@ def chan_shear_layer_2d(mesh):
     v = alpha * du0 * jnp.sin(k * jnp.pi * x_trans) * amp * (1/(1+jnp.exp(-yp/sig2)) - 1/(1+jnp.exp(-ym/sig2)))
     p = 1.2 * p_c * jnp.ones_like(mesh[0])
     
-    return jnp.stack((rho, u, v, p), axis = 0), 0 #'rvp'
+    return jnp.stack((rho, u, v, p), axis = 0), 0 #rvp
 

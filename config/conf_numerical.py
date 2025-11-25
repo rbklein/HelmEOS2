@@ -14,11 +14,11 @@ NUMERICAL_VISCOUS_FLUX = "NAIVE"
 NUMERICAL_HEAT_FLUX = "NAIVE"
 
 #Time-stepping method
-TIME_STEP_METHOD = "RK4"
+TIME_STEP_METHOD = "WRAY"
 
 #Discrete gradient type
 DISCRETE_GRADIENT = "SYM_ITOH_ABE"
 
 #Number of time steps
-NUM_TIME_STEPS = 2
+NUM_TIME_STEPS = 3
 

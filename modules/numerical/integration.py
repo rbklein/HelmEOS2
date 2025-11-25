@@ -21,7 +21,7 @@ from pathlib import Path
 
 ''' Consistency checks '''
 
-KNOWN_TIME_STEP_METHODS = ["RK4", "FE"]
+KNOWN_TIME_STEP_METHODS = ["RK4", "FE", "WRAY"]
 
 assert TIME_STEP_METHOD in KNOWN_TIME_STEP_METHODS, f"Unknown time step method: {TIME_STEP_METHOD}"
 assert isinstance(NUM_TIME_STEPS, int) and NUM_TIME_STEPS > 0, "NUM_TIME_STEPS must be a positive integer"
@@ -38,6 +38,8 @@ match TIME_STEP_METHOD:
         from modules.numerical.integrators.RK4 import RK4 as time_step
     case "FE":
         from modules.numerical.integrators.FE import forward_euler as time_step
+    case "WRAY":
+        from modules.numerical.integrators.wray import Wray as time_step
     case _:
         raise ValueError(f"Unknown time step method: {TIME_STEP_METHOD}")
 
@@ -65,20 +67,20 @@ def integrate(u, T):
         Final state and temperature
     """
     # Define process status function
-    #status = lambda it, u, T: jax.debug.print("Current time step: {it}/{its}, t: {t}, CFL: {cfl}", it=it, its = NUM_TIME_STEPS, t=(it*dt), cfl = jnp.max(check_CFL(u, T)))
+    status = lambda it, u, T: jax.debug.print("Current time step: {it}/{its}, t: {t}, CFL: {cfl}", it=it, its = NUM_TIME_STEPS, t=(it*dt), cfl = jnp.max(check_CFL(u, T)))
 
     def scan_step(carry, _):
         it, u_prev, T_prev = carry  # Unpack the carry variable
         u = time_step(u_prev, T_prev, dt) # Compute new state
         T = temperature(u, T_prev) # Compute new temperature using previous temperature as initial guess
         it = it + 1
-        # jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
-        #             lambda _: status(it, u, T), 
-        #             lambda _: None, 
-        #             operand=None)
+        jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
+                    lambda _: status(it, u, T), 
+                    lambda _: None, 
+                    operand=None)
         return (it, u, T), None
 
-    #status(0, u, T)
+    status(0, u, T)
     it, u, T = jax.lax.scan(
         scan_step, (0, u, T), None, length=NUM_TIME_STEPS
     )[0]  # Perform the integration over the specified number of time steps

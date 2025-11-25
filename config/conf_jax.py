@@ -4,7 +4,7 @@
 
 DTYPE = "DOUBLE"
 
-SHARD_ARRAYS    = True
+SHARD_ARRAYS    = False
 SHARD_DEVICES   = 'GPU'
 SHARD_TOPOLOGY  = (2, 2)
 SHARD_LABELS    = ('a','b')

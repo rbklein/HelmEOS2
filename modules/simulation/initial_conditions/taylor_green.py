@@ -35,4 +35,4 @@ def Taylor_Green_vortex_3d(mesh):
     v = - U0 * jnp.cos(X / L) * jnp.sin(Y / L) * jnp.sin(Z / L)
     w = jnp.zeros_like(u)
 
-    return jnp.stack((u, v, w, p, T), axis = 0), 1 #'vpt'
+    return jnp.stack((u, v, w, p, T), axis = 0), 1 #vpt

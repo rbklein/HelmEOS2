@@ -13,15 +13,15 @@ from modules.thermodynamics.EOS     import temperature_rpt, density_ptr, total_e
 from modules.thermodynamics.gas_models.Peng_Robinson import density_ptr_Peng_Robinson as ptr
 from modules.thermodynamics.gas_models.Van_der_Waals import temperature_rpt_Van_der_Waals as rpt
 
-def convert(v : jnp.ndarray, vars : str) -> Tuple[jnp.ndarray, jnp.ndarray]:
+def convert(v : jnp.ndarray, vars : int) -> Tuple[jnp.ndarray, jnp.ndarray]:
     match vars:
-        case 0: #'rvp':
+        case 0: #rvp:
             #density + velocity + pressure (in that order)
             u, T = rvp2u(v)
-        case 1: #'vpt':
+        case 1: #vpt:
             #velocity + pressure + temperature (in that order)
             u, T = vpt2u(v)
-        case 2: #'rvt':
+        case 2: #rvt:
             #density + velocity + temperature (in that order)
             u, T = rvt2u(v)
         case _:
