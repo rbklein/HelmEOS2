@@ -26,7 +26,11 @@ class CarbonDioxide(Molecule):
             "molecular_dofs": 5,  # Degrees of freedom for the molecules (CO_2 is a linear molecule)
         }
 
-        self._Wagner_parameters = { }
+        self._Wagner_parameters = { 
+            "T_min" : 216, # Minimal valid temperature 
+            "T_max" : 900, # Maximal valid temperature
+            "p_max" : 300e6 # Maximal valid pressure                            
+        }
 
         self._rho_c = 10.6249e3 * self._molar_mass #kg m^-3 critical density
         self._T_c = 304.1282 #K critical temperature

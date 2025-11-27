@@ -26,6 +26,13 @@ class Nitrogen(Molecule):
             "molecular_dofs": 5,  # Degrees of freedom for the molecules
         }
 
+        # residual Helmholtz coefficients not implemented yet
+        self._Wagner_parameters = { 
+            "T_min" : 63,  # Minimal valid temperature 
+            "T_max" : 700, # Maximal valid temperature
+            "p_max" : 300e6 # Maximal valid pressure                            
+        }
+
         self._rho_c = 11.1839 * self._molar_mass #kg m^-3 critical density
         self._T_c = 126.192 #K critical temperature
         self._p_c = 3.3958e6 #Pa critical pressure

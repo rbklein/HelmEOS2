@@ -18,8 +18,8 @@ gpus = jax.devices("gpu")
 #jax.config.update('jax_platform_name', 'cpu')
 
 # Global flag to turn off memory preallocation
-import os
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+# import os
+# os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 
 match DTYPE:
     case "DOUBLE":

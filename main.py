@@ -11,8 +11,6 @@ if __name__ == "__main__":
     from modules.thermodynamics.EOS     import molecule
     from modules.postprocess.post       import init_postprocess, plot_postprocess, COLORMAP, show
 
-    jax.debug.visualize_array_sharding(mesh[0][:, :, 0])
-
     # prepare initial condition
     initial, conversion = initial_condition(mesh) 
     u, T                = convert(initial, conversion)
@@ -28,9 +26,6 @@ if __name__ == "__main__":
     print('T_c: ', T_c)
     print('p_c: ', p_c)
 
-    print('Memory layout of Temperature array at (x, y, 0): ')
-    jax.debug.visualize_array_sharding(T[:, :, 0])
-
     # simulate
     u, T = integrate(u, T) 
 
@@ -41,4 +36,3 @@ if __name__ == "__main__":
     fig, plot_grid  = init_postprocess()
     plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
     show()
-    exit()

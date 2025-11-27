@@ -56,7 +56,7 @@ def Wray(u, T, dt):
 
     # --- Stage 2 ---
     # Update temperature estimate for new u_stage
-    T_stage = temperature(u_stage, T_stage)
+    T_stage = temperature(u_stage, T_stage) 
     r = a2 * r + dt * _rhs(u_stage, T_stage)
     u_stage = u_stage + b2 * r
 

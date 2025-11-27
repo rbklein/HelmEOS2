@@ -45,4 +45,4 @@ NUM_ITS_PER_UPDATE = 10
 
 # Determine index of slice to plot for a 3D simulation
 # Could be improved by only computing desire values for the slice instead of on the whole grid
-SLICE_3D = (128//2, slice(None), slice(None))
+SLICE_3D = (64//2, slice(None), slice(None))
