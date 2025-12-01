@@ -21,7 +21,7 @@ from pathlib import Path
 
 ''' Consistency checks '''
 
-KNOWN_TIME_STEP_METHODS = ["RK4", "FE", "WRAY"]
+KNOWN_TIME_STEP_METHODS = ["RK4", "FE", "WRAY", "BE"]
 
 assert TIME_STEP_METHOD in KNOWN_TIME_STEP_METHODS, f"Unknown time step method: {TIME_STEP_METHOD}"
 assert isinstance(NUM_TIME_STEPS, int) and NUM_TIME_STEPS > 0, "NUM_TIME_STEPS must be a positive integer"
@@ -40,6 +40,8 @@ match TIME_STEP_METHOD:
         from modules.numerical.integrators.FE import forward_euler as time_step
     case "WRAY":
         from modules.numerical.integrators.wray import Wray as time_step
+    case "BE":
+        from modules.numerical.integrators.BE import backward_euler as time_step
     case _:
         raise ValueError(f"Unknown time step method: {TIME_STEP_METHOD}")
 

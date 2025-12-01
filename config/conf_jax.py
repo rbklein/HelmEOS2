@@ -2,7 +2,7 @@
     Configure JAX settings
 """
 
-DTYPE = "SINGLE" #"DOUBLE"
+DTYPE = "DOUBLE"
 
 SHARD_ARRAYS    = False
 SHARD_DEVICES   = 'GPU'
