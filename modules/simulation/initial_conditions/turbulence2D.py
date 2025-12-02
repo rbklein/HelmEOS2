@@ -9,6 +9,8 @@ from modules.geometry.grid import *
 from jax.scipy.special import gamma
 from typing import Tuple
 
+from modules.thermodynamics.EOS import *
+
 ''' Consistency checks '''
 
 # initial kinetic energy spectrum 
@@ -99,14 +101,12 @@ def random_velocity_solenoidal(key: jax.random.KeyArray, E: jnp.ndarray):
 
     return ux.real, uy.real
 
+rho_c, T_c, p_c = molecule.critical_point
 
-
-def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray], molecule) -> jnp.ndarray:
+def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray]) -> jnp.ndarray:
     """
         Generate a 2D turbulence initial condition.
     """
-
-    rho_c, T_c, p_c = molecule.critical_points
 
     dx, dy = GRID_SPACING
     nx, ny = GRID_RESOLUTION
@@ -123,4 +123,4 @@ def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray], molecule) -> jnp.ndarr
 
     rho =  1.5 * rho_c * jnp.ones_like(mesh[0])  # Uniform density field
     p = 2.5 * p_c * jnp.ones_like(mesh[0])  # Uniform pressure field
-    return jnp.stack((rho, ux, uy, p), axis=0), 'rvp'
+    return jnp.stack((rho, ux, uy, p), axis=0), 0 #rvp

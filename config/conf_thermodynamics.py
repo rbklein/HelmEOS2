@@ -11,7 +11,7 @@ NAME_MOLECULE = molecule.name
 MOLAR_MASS = molecule.molar_mass #kg mol^-1
 
 #Equation of State (EOS) type
-EOS = "VAN_DER_WAALS" # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"
+EOS = "WAGNER" # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"
 
 #Equation of State parameters
 match EOS:

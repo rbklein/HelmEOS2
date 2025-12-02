@@ -17,6 +17,7 @@ match DISCRETE_GRADIENT:
     case _:
         raise ValueError(f"Unknown discrete gradient: {DISCRETE_GRADIENT}")
 
+
 def div_keep_dg_1d(u, T):
     """
     Assume u is padded appropriately (5, n_x + 2, n_y + 2).

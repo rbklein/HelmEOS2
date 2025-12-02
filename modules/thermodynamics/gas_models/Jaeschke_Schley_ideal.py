@@ -18,7 +18,7 @@ R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas cons
 
 ''' set parameter values for Jaeschke-Schley '''
 
-rho_c, T_c, p_c = molecule.critical_points
+rho_c, T_c, p_c = molecule.critical_point
 
 # parameters from Table A3.1 converted back to b_k form
 _b0 = 2.500020000 + 1.0

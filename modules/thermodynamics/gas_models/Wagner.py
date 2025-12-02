@@ -24,7 +24,7 @@ R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas cons
 
 ''' set parameter values for Span-Wagner '''
 
-rho_c, T_c, p_c = molecule.critical_points
+rho_c, T_c, p_c = molecule.critical_point
 
 #refprop compare
 _residual_coeffs = [

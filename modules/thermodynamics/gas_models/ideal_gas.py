@@ -16,7 +16,7 @@ def check_consistency_ideal():
 
 R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas constant
 
-rho_c, T_c, p_c = molecule.critical_points
+rho_c, T_c, p_c = molecule.critical_point
 
 ''' Helmholtz Energies '''
 

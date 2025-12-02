@@ -22,7 +22,7 @@ R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas cons
 
 ''' set parameter values for Peng-Robinson '''
 
-rho_c, T_c, p_c = molecule.critical_points
+rho_c, T_c, p_c = molecule.critical_point
 
 # reported in: Fully Compressible Low-Mach Number Simulations of Carbon-dioxide at Supercritical Pressures and Trans-critical Temperatures, Sengupta et al.
 a_PR = 0.457235 * (R_specific**2 * T_c**2) / p_c
