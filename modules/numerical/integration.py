@@ -69,7 +69,13 @@ def integrate(u, T):
         Final state and temperature
     """
     # Define process status function
-    status = lambda it, u, T: jax.debug.print("Current time step: {it}/{its}, t: {t}, CFL: {cfl}", it=it, its = NUM_TIME_STEPS, t=(it*dt), cfl = jnp.max(check_CFL(u, T)))
+    status = lambda it, u, T: jax.debug.print(
+        "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
+        it=it, 
+        its = NUM_TIME_STEPS, 
+        t=(it*dt), 
+        cfl = jnp.max(check_CFL(u, T))
+    )
 
     def scan_step(carry, _):
         it, u_prev, T_prev = carry  # Unpack the carry variable
@@ -80,13 +86,20 @@ def integrate(u, T):
                     lambda _: status(it, u, T), 
                     lambda _: None, 
                     operand=None)
-        return (it, u, T), None
+        return (it, u, T), (u, T)
 
+    u0, T0 = jnp.copy(u), jnp.copy(T)
     status(0, u, T)
-    it, u, T = jax.lax.scan(
+
+    # Perform the integration over the specified number of time steps
+    (it, u, T), (u_hist, T_hist) = jax.lax.scan(
         scan_step, (0, u, T), None, length=NUM_TIME_STEPS
-    )[0]  # Perform the integration over the specified number of time steps
-    return u, T
+    )  
+
+    u_hist = jnp.concatenate([u0[jnp.newaxis, ...], u_hist], axis=0)
+    T_hist = jnp.concatenate([T0[jnp.newaxis, ...], T_hist], axis=0)
+
+    return u, T, u_hist, T_hist
 
 def integrate_interactive(u, T):
     """

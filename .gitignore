@@ -8,5 +8,7 @@ notes.txt
 output/
 archive/
 
+experiment_data/
+experiment.py
 run_experiments.py
 experiments/

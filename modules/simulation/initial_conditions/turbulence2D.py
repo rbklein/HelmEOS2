@@ -101,7 +101,7 @@ def random_velocity_solenoidal(key: jax.random.KeyArray, E: jnp.ndarray):
 
     return ux.real, uy.real
 
-rho_c, T_c, p_c = molecule.critical_points
+rho_c, T_c, p_c = molecule.critical_point
 
 def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray]) -> jnp.ndarray:
     """

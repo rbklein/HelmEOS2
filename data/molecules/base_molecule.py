@@ -19,7 +19,7 @@ class Molecule(ABC):
     def Peng_Robinson_parameters(self) -> Dict[str, float]: pass
 
     @abstractmethod
-    def critical_points(self) -> tuple[float, float, float]: pass
+    def critical_point(self) -> tuple[float, float, float]: pass
 
     @abstractmethod
     def name(self) -> str: pass

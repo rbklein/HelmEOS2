@@ -52,7 +52,7 @@ class Nitrogen(Molecule):
     def Peng_Robinson_parameters(self): return self._Peng_Robinson_parameters
 
     @property
-    def critical_points(self): return (self._rho_c, self._T_c, self._p_c)
+    def critical_point(self): return (self._rho_c, self._T_c, self._p_c)
 
     @property
     def name(self): return self._name

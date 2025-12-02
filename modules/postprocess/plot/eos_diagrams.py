@@ -8,7 +8,7 @@ from modules.thermodynamics.EOS import *
 from modules.postprocess.plot.isobar    import isobar_rho, isobar_T
 from modules.numerical.computation      import pad_1d_to_mesh, extract_1d_from_padded
 
-rho_c, T_c, p_c = molecule.critical_points
+rho_c, T_c, p_c = molecule.critical_point
 
 def plot_pT(fig, ax):
     n_isochors = 10

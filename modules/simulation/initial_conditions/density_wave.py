@@ -6,7 +6,7 @@ from prep_jax import *
 from modules.geometry.grid import *
 from modules.thermodynamics.EOS import *
 
-rho_c, T_c, p_c = molecule.critical_points
+rho_c, T_c, p_c = molecule.critical_point
 
 @jax.jit
 def density_wave_1d(mesh):

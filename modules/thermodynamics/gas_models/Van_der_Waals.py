@@ -25,7 +25,7 @@ R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas cons
 # T_c     = 8 / (R_specific * 27) * (EOS_parameters["a_VdW"] / EOS_parameters["b_VdW"])   # Critical temperature for Van der Waals
 # p_c     = 1 / 27 * (EOS_parameters["a_VdW"] / (EOS_parameters["b_VdW"]**2))             # Critical pressure for Van der Waals
 
-rho_c, T_c, p_c = molecule.critical_points
+rho_c, T_c, p_c = molecule.critical_point
 
 a_VdW = 27.0 / 64.0 * R_specific**2 * T_c**2 / p_c
 b_VdW = 1.0 / 8.0 * R_specific * T_c / p_c 

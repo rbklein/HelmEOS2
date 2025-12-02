@@ -56,7 +56,7 @@ class CarbonDioxide(Molecule):
     def Wagner_parameters(self): return self._Wagner_parameters
 
     @property
-    def critical_points(self): return (self._rho_c, self._T_c, self._p_c)
+    def critical_point(self): return (self._rho_c, self._T_c, self._p_c)
 
     @property
     def name(self): return self._name
