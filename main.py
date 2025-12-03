@@ -5,7 +5,7 @@
 if __name__ == "__main__":
     from prep_jax import *
     from modules.geometry.grid          import mesh
-    from modules.numerical.integration  import integrate, integrate_interactive #, integrate_experiment
+    from modules.numerical.integration  import integrate
     from modules.simulation.initial     import initial_condition
     from modules.simulation.variables   import convert
     from modules.thermodynamics.EOS     import molecule
@@ -27,16 +27,16 @@ if __name__ == "__main__":
     print('p_c: ', p_c)
 
     # simulate
-    u, T, u_hist, T_hist = integrate(u, T) 
+    u, T = integrate(u, T) 
 
     u.block_until_ready()
     print('finished timestepping')
 
-    u_hist.block_until_ready()
-    T_hist.block_until_ready()
+    #u_hist.block_until_ready()
+    #T_hist.block_until_ready()
 
-    jnp.save("conservative_variable_density_wave.npy", u_hist)
-    jnp.save("temperature_density_wace.npy", T_hist)
+    #jnp.save("conservative_variable_density_wave.npy", u_hist)
+    #jnp.save("temperature_density_wace.npy", T_hist)
 
     # postprocess
     fig, plot_grid  = init_postprocess()

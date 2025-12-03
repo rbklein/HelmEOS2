@@ -13,6 +13,7 @@ KNOWN_TEST_CASES = [
     "TAYLOR_GREEN_VORTEX_3D", 
     "CHAN_SHEAR_LAYER_2D", 
     "TURBULENCE_2D",
+    "MMS1_1D"
 ]
 
 assert TEST_CASE in KNOWN_TEST_CASES, f"Unknown test case: {TEST_CASE}. Known test cases are: {KNOWN_TEST_CASES}"
@@ -41,7 +42,7 @@ match TEST_CASE:
 
         ''' set initial condition for 2D supercritical shear layer '''
 
-        #Ensure the number of dimensions is 2 for this test case
+        # Ensure the number of dimensions is 2 for this test case
         assert N_DIMENSIONS == 2, "SHEAR_LAYER_2D requires 2 dimensions"
 
         from modules.simulation.initial_conditions.shear_layer import chan_shear_layer_2d as initial_condition
@@ -51,6 +52,14 @@ match TEST_CASE:
         # Ensure the number of dimensions is 2 for this test case
         assert N_DIMENSIONS == 2, "TURBULENCE_2D requires 2 dimensions"
         from modules.simulation.initial_conditions.turbulence2D import turbulence_2d as initial_condition
+    case "MMS1_1D":
+        ''' set initial condition for manufactured solution 1 '''
 
+        # Ensure 1D and correct source term
+        from config.conf_numerical import SOURCE_TERM
+        assert N_DIMENSIONS == 1, "MMS1_1D requires 1 dimension"
+        assert SOURCE_TERM == "MMS1", "MMS1_1D requires compatible source term MMS1"
+
+        from modules.simulation.initial_conditions.u_mms_1 import u_mms_1 as initial_condition
     case _:
         raise ValueError(f"Unknown test case: {TEST_CASE}")

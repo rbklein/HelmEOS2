@@ -78,28 +78,74 @@ def integrate(u, T):
     )
 
     def scan_step(carry, _):
-        it, u_prev, T_prev = carry  # Unpack the carry variable
-        u = time_step(u_prev, T_prev, dt) # Compute new state
-        T = temperature(u, T_prev) # Compute new temperature using previous temperature as initial guess
+        t, it, u_prev, T_prev = carry           # Unpack the carry variable
+        u = time_step(u_prev, T_prev, dt, t)    # Compute new state
+        T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
         it = it + 1
+        t  = t + dt
         jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
                     lambda _: status(it, u, T), 
                     lambda _: None, 
                     operand=None)
-        return (it, u, T), (u, T)
+        return (t, it, u, T), _
+
+    status(0, u, T)
+
+    # Perform the integration over the specified number of time steps
+    (t, it, u, T), _ = jax.lax.scan(
+        scan_step, (0.0, 0, u, T), None, length=NUM_TIME_STEPS
+    )  
+
+    return u, T
+
+
+@jax.jit
+def integrate_data(u, T):
+    """
+    Integrate the Compressible flow in time while gather all data
+
+    Parameters:
+        - u (array-like): initial state
+        - T (array-like): initial temperature associated to initial state
+
+    Returns:
+        Final state and temperature
+    """
+    # Define process status function
+    status = lambda it, u, T: jax.debug.print(
+        "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
+        it=it, 
+        its = NUM_TIME_STEPS, 
+        t=(it*dt), 
+        cfl = jnp.max(check_CFL(u, T))
+    )
+
+    def scan_step(carry, _):
+        t, it, u_prev, T_prev = carry           # Unpack the carry variable
+        u = time_step(u_prev, T_prev, dt, t)    # Compute new state
+        T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
+        it = it + 1
+        t  = t + dt
+        jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
+                    lambda _: status(it, u, T), 
+                    lambda _: None, 
+                    operand=None)
+        return (t, it, u, T), (u, T)
 
     u0, T0 = jnp.copy(u), jnp.copy(T)
     status(0, u, T)
 
     # Perform the integration over the specified number of time steps
-    (it, u, T), (u_hist, T_hist) = jax.lax.scan(
-        scan_step, (0, u, T), None, length=NUM_TIME_STEPS
+    (t, it, u, T), (u_hist, T_hist) = jax.lax.scan(
+        scan_step, (0.0, 0, u, T), None, length=NUM_TIME_STEPS
     )  
 
     u_hist = jnp.concatenate([u0[jnp.newaxis, ...], u_hist], axis=0)
     T_hist = jnp.concatenate([T0[jnp.newaxis, ...], T_hist], axis=0)
 
     return u, T, u_hist, T_hist
+
+
 
 def integrate_interactive(u, T):
     """
@@ -108,10 +154,11 @@ def integrate_interactive(u, T):
     """
 
     @jax.jit
-    def step(u, T, dt):
-        u = time_step(u, T, dt)
+    def step(u, T, dt, t):
+        u = time_step(u, T, dt, t)
         T = temperature(u, T)
-        return u, T
+        t = t + dt
+        return u, T, t
 
     status = lambda it, u, T: print(f"Current time step: {it}/{NUM_TIME_STEPS}, t: {it*dt}, CFL: {jnp.max(check_CFL(u, T)):.4f}")
 
@@ -124,14 +171,15 @@ def integrate_interactive(u, T):
 
     #compiled interval of steps between plot updates
     @partial(jax.jit, static_argnames=['steps'])
-    def compiled_step(u, T, steps):
-        u, T = jax.lax.scan(lambda carry, _: (step(carry[0], carry[1], dt), None), (u, T), None, length=steps)[0]
-        return u, T
+    def compiled_step(u, T, steps, t):
+        u, T, t = jax.lax.scan(lambda carry, _: (step(carry[0], carry[1], dt, carry[2]), None), (u, T, t), None, length=steps)[0]
+        return u, T, t
     
+    t = 0.0
     steps_done = 0
     while steps_done < total_steps:
         #steps = min(scan_steps, total_steps - steps_done)
-        u, T = compiled_step(u, T, scan_steps)
+        u, T, t = compiled_step(u, T, scan_steps, t)
         steps_done += scan_steps
 
         status(steps_done, u, T)
