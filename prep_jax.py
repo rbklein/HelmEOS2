@@ -15,7 +15,7 @@ cpus = jax.devices("cpu")
 gpus = jax.devices("gpu")
 
 # Global flag to set a specific platform, must be used at startup.
-#jax.config.update('jax_platform_name', 'cpu')
+# jax.config.update('jax_platform_name', 'cpu')
 
 # Global flag to turn off memory preallocation
 # import os

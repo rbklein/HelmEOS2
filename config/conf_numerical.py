@@ -13,6 +13,9 @@ NUMERICAL_VISCOUS_FLUX = "NAIVE"
 #Numerical heat flux type
 NUMERICAL_HEAT_FLUX = "NAIVE"
 
+#Numerical source term
+SOURCE_TERM = "MMS1"
+
 #Time-stepping method
 TIME_STEP_METHOD = "RK4"
 
@@ -20,5 +23,5 @@ TIME_STEP_METHOD = "RK4"
 DISCRETE_GRADIENT = "SYM_ITOH_ABE"
 
 #Number of time steps
-NUM_TIME_STEPS = 100000
+NUM_TIME_STEPS = 4
 

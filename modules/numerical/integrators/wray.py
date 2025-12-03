@@ -3,18 +3,20 @@ import jax.numpy as jnp
 from modules.numerical.flux import dudt as dudt_c
 from modules.numerical.viscous import dudt as dudt_v
 from modules.numerical.heat import dudt as dudt_q
+from modules.numerical.source import dudt as dudt_s
 from modules.thermodynamics.EOS import temperature
 
 
-def _rhs(u, T_est):
+def _rhs(u, T, t):
     """Combined RHS: convective + viscous + heat."""
     return (
-        dudt_c(u, T_est)
+        dudt_c(u, T)
         #+ dudt_v(u, T_est)
         #+ dudt_q(u, T_est)
+        + dudt_s(u, T, t)
     )
 
-def Wray(u, T, dt):
+def Wray(u, T, dt, t):
     """
     One step of Wray's 3rd order low-storage Runge-Kutta method (2N scheme).
 
@@ -51,18 +53,18 @@ def Wray(u, T, dt):
 
     # --- Stage 1 ---
     # Use the given T for the first stage (already consistent with u)
-    r = a1 * r + dt * _rhs(u_stage, T_stage)
+    r = a1 * r + dt * _rhs(u_stage, T_stage, t)
     u_stage = u_stage + b1 * r
 
     # --- Stage 2 ---
     # Update temperature estimate for new u_stage
     T_stage = temperature(u_stage, T_stage) 
-    r = a2 * r + dt * _rhs(u_stage, T_stage)
+    r = a2 * r + dt * _rhs(u_stage, T_stage, t + 8.0 * dt / 15.0)
     u_stage = u_stage + b2 * r
 
     # --- Stage 3 ---
     T_stage = temperature(u_stage, T_stage)
-    r = a3 * r + dt * _rhs(u_stage, T_stage)
+    r = a3 * r + dt * _rhs(u_stage, T_stage, t + 2.0 * dt / 3.0)
     u_stage = u_stage + b3 * r
 
     return u_stage

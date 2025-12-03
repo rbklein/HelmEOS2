@@ -193,14 +193,7 @@ def speed_of_sound(rho, T):
 
 def c_p(rho, T):
     """
-        Mass-specific isobaric heat capacity c_p.
-        Uses A = A(rho, T) with:
-            p = rho**2 * dAdrho
-            c_v = -T * d2Ad2T
-        Identity used:
-            c_p = c_v + T * ((∂p/∂T)_rho)**2 / (rho**2 * (∂p/∂rho)_T)
-                 = -T*A_TT + T * (rho**2*A_rhoT)**2 / (rho**2*(2*rho*A_rho + rho**2*A_rhorho))
-                 = -T*A_TT + T * (rho**2 * A_rhoT**2) / (2*rho*A_rho + rho**2*A_rhorho)
+        Specific isobaric heat capacity c_p.
     """
     A_rho      = dAdrho(rho, T)
     A_rhorho   = d2Ad2rho(rho, T)
@@ -208,16 +201,11 @@ def c_p(rho, T):
     A_rhoT     = d2AdrhodT(rho, T)
 
     c_v = -T * A_TT
-    dp_drho_T = 2 * rho * A_rho + rho**2 * A_rhorho      # (∂p/∂ρ)_T
-    dp_dT_rho = rho**2 * A_rhoT                           # (∂p/∂T)_ρ
+    dp_drho_T = 2 * rho * A_rho + rho**2 * A_rhorho     
+    dp_dT_rho = rho**2 * A_rhoT                        
 
     cp = c_v + T * (dp_dT_rho**2) / (rho**2 * dp_drho_T)
     return cp
-
-
-''' critical point values '''
-#e_c = Helmholtz_scalar(rho_c, T_c) - T_c * dAdT_scalar(rho_c, T_c)
-#eps_c = rho_c * e_c
 
 
 ''' all thermodynamic quantities below are used specifically in numerical fluxes'''
@@ -243,16 +231,16 @@ pressure_beta = _vectorize_thermo(pressure_beta)
 dpbdrho = _vectorize_thermo(dpbdrho)
 dpbdbeta = _vectorize_thermo(dpbdbeta)
 
-'''
-def dgbdrho(rho,T):
-    return 2 / T * dAdrho(rho, T) + rho / T * d2Ad2rho(rho, T)
+''' derivatives used in manufactured solutions '''
+pressure_rho = jax.grad(lambda rho, T: rho**2 * dAdrho_scalar(rho, T), 0)
+pressure_T   = jax.grad(lambda rho, T: rho**2 * dAdrho_scalar(rho, T), 1)
 
-def dgbdbeta(rho,T):
-    return helmholtz(rho, T) + rho * dAdrho(rho, T) - T * dAdT(rho, T) - rho * T * d2AdrhodT(rho, T)
+pressure_rho = _vectorize_thermo(pressure_rho)
+pressure_T   = _vectorize_thermo(pressure_T) 
 
-def dpbdrho(rho,T):
-    return 2 * rho / T * dAdrho(rho, T) + rho**2 / T * d2Ad2rho(rho, T)
-    
-def dpbdbeta(rho,T):
-    return rho**2 * dAdrho(rho, T) - rho**2 * T * d2AdrhodT(rho, T)
-'''
+internal_energy_rho = jax.grad(lambda rho, T: Helmholtz_scalar(rho, T) - T * dAdT_scalar(rho, T), 0)
+internal_energy_T   = jax.grad(lambda rho, T: Helmholtz_scalar(rho, T) - T * dAdT_scalar(rho, T), 1)
+
+internal_energy_rho = _vectorize_thermo(internal_energy_rho)
+internal_energy_T   = _vectorize_thermo(internal_energy_T) 
+

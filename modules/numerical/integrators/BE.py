@@ -3,6 +3,7 @@ from prep_jax import *
 from modules.numerical.flux import dudt as dudt_c
 from modules.numerical.viscous import dudt as dudt_v
 from modules.numerical.heat import dudt as dudt_q
+from modules.numerical.source import dudt as dudt_s
 from modules.thermodynamics.EOS import temperature
 
 import jax
@@ -11,16 +12,17 @@ from jax import lax
 from jax.scipy.sparse.linalg import gmres
 
 
-def _rhs(u, T_est):
+def _rhs(u, T, t):
     """Combined RHS: convective + viscous + heat."""
     return (
-        dudt_c(u, T_est)
+        dudt_c(u, T)
         # + dudt_v(u, T_est)
         # + dudt_q(u, T_est)
+        + dudt_s(u, T, t)
     )
 
 
-def backward_euler(u, T, dt):
+def backward_euler(u, T, dt, t):
     """
     One backward Euler step: solve
         u_new - u_old - dt * rhs(u_new) = 0
@@ -52,7 +54,7 @@ def backward_euler(u, T, dt):
     def root(v_flat):
         u_new = v_flat.reshape(u_shape)
         T_new = temperature(u_new, T_guess)
-        rhs = _rhs(u_new, T_new).reshape(-1)
+        rhs = _rhs(u_new, T_new, t + dt).reshape(-1)
         return v_flat - u_prev_flat - dt_arr * rhs
 
     # Initial guess for Newton: start from previous state
