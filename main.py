@@ -31,13 +31,7 @@ if __name__ == "__main__":
 
     u.block_until_ready()
     print('finished timestepping')
-
-    #u_hist.block_until_ready()
-    #T_hist.block_until_ready()
-
-    #jnp.save("conservative_variable_density_wave.npy", u_hist)
-    #jnp.save("temperature_density_wace.npy", T_hist)
-
+    
     # postprocess
     fig, plot_grid  = init_postprocess()
     plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)

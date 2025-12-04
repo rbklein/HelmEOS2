@@ -6,6 +6,7 @@ from prep_jax import *
 from config.conf_numerical import *
 from modules.geometry.grid import *
 from modules.thermodynamics.EOS import *
+from modules.simulation.initial_conditions.u_mms_1 import solution_u_mms_1
 
 rho_c, T_c, p_c = molecule.critical_point
 
@@ -19,12 +20,6 @@ def source_1d(u_num, T_num, t):
     n_x = GRID_RESOLUTION[0]
     d_x = GRID_SPACING[0]
 
-
-    '''
-    These couple lines can be replaced by initial condition function
-
-    ------------------------
-    '''
     #set parameters
     k = omega = 2 * jnp.pi
     rho0, Arho = 1.2, 0.01
@@ -37,9 +32,6 @@ def source_1d(u_num, T_num, t):
     rho = rho_c * (rho0 + Arho * jnp.cos(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.cos(omega * t))
     vel = c *     (vel0 + Avel * jnp.sin(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.cos(omega * t))
     T   = T_c   * (T0   + AT   * jnp.cos(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.sin(omega * t))
-    '''
-    ------------------------
-    '''
 
     #compute derivatives (could have been AD, but I like suffering)
     rho_t = - rho_c * omega * Arho * jnp.cos(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.sin(omega * t)

@@ -22,4 +22,4 @@ TEST_CASE = "MMS1_1D"
 BC_TYPES = [("PERIODIC", "PERIODIC")]
 
 #Total simulation time
-TOTAL_TIME = 1e-5
+TOTAL_TIME = 1.0
