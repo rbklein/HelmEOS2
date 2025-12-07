@@ -13,7 +13,7 @@ def _rhs(u, T, t):
         dudt_c(u, T)
         #+ dudt_v(u, T_est)
         #+ dudt_q(u, T_est)
-        + dudt_s(u, T, t)
+        #+ dudt_s(u, T, t)
     )
 
 def Wray(u, T, dt, t):

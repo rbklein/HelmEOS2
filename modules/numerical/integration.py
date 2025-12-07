@@ -165,9 +165,12 @@ def integrate_interactive(u, T):
     scan_steps = NUM_ITS_PER_UPDATE
     total_steps = NUM_TIME_STEPS
 
-    fig, plot_grid = init_postprocess()
-    plot_grid = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP)
+    #fig, plot_grid = init_postprocess()
+    #plot_grid = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP)
     status(0, u, T)
+
+    u_cpu = jax.device_put(u[jnp.newaxis, ...], cpus[0])
+    T_cpu = jax.device_put(T[jnp.newaxis, ...], cpus[0])
 
     #compiled interval of steps between plot updates
     @partial(jax.jit, static_argnames=['steps'])
@@ -182,7 +185,12 @@ def integrate_interactive(u, T):
         u, T, t = compiled_step(u, T, scan_steps, t)
         steps_done += scan_steps
 
+        u_interval = jax.device_put(u[jnp.newaxis, ...], cpus[0])
+        T_interval = jax.device_put(T[jnp.newaxis, ...], cpus[0])
+
+        u_cpu = jnp.concatenate((u_cpu, u_interval), axis = 0)
+
         status(steps_done, u, T)
-        update_postprocess(u, T, fig, plot_grid)
+        #update_postprocess(u, T, fig, plot_grid)
 
     return u, T

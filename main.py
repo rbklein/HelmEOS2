@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     u.block_until_ready()
     print('finished timestepping')
-    
+
     # postprocess
     fig, plot_grid  = init_postprocess()
     plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
