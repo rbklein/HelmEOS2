@@ -13,9 +13,9 @@ def check_consistency():
     """
     assert "value" in THERMAL_COND_parameters, "Constant thermal conductivity must be assigned a value"
     assert isinstance(THERMAL_COND_parameters["value"], (float, int)), "Constant thermal conductivity value must be a floating point value or an integer"
-    assert THERMAL_COND_parameters["value"] >= 0.0, "Constant bulk viscosity must be non-negative"
+    assert THERMAL_COND_parameters["value"] >= 0.0, "Constant thermal conductivity must be non-negative"
 
-def constant_thermal_conductivity(T):
+def constant_thermal_conductivity(u, T):
     """
     Implements a constant thermal conductivity
     """

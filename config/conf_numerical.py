@@ -5,7 +5,7 @@
 ''' User-defined parameters '''
 
 #Numerical flux type
-NUMERICAL_FLUX = "NAIVE"
+NUMERICAL_FLUX = "KEEP"
 
 #Numerical viscous flux type
 NUMERICAL_VISCOUS_FLUX = "NAIVE"
@@ -23,5 +23,5 @@ TIME_STEP_METHOD = "RK4"
 DISCRETE_GRADIENT = "SYM_ITOH_ABE"
 
 #Number of time steps
-NUM_TIME_STEPS = 40000
+NUM_TIME_STEPS = 10000
 

@@ -12,7 +12,7 @@ MOLAR_MASS = molecule.molar_mass #kg mol^-1
 
 # Equation of State (EOS) type
 # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"
-EOS = "PENG_ROBINSON" 
+EOS = "WAGNER" 
 
 # Equation of State parameters
 match EOS:

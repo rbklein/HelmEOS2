@@ -27,7 +27,7 @@ def chan_shear_layer_2d(mesh):
     sig2 = sig**2
 
     #velocity difference between layers
-    du0 = 10 #Mach order 0.1
+    du0 = 100 #Mach order 0.1
 
     #number of roll ups
     k = 1

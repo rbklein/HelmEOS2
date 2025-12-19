@@ -30,8 +30,11 @@ if __name__ == "__main__":
     u, T = integrate(u, T) 
 
     u.block_until_ready()
+    T.block_until_ready()
     print('finished timestepping')
     
+    jnp.save("test_T.npy", T)
+
     # postprocess
     fig, plot_grid  = init_postprocess()
     plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)

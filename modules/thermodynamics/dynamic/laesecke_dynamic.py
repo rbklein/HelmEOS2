@@ -107,6 +107,7 @@ def laesecke_residual_term(u, T):
 
 def laesecke_dynamic_viscosity(u, T):
     """
-        Computes the dynamic viscosity in mPa sec according to Laesecke and Muzny (2017)
+        Computes the dynamic viscosity in Pa sec according to Laesecke and Muzny (2017)
     """
-    return laesecke_zero_density_limit(u, T) + laesecke_linear_in_density(u, T) + laesecke_residual_term(u, T)
+    # return in Pa sec
+    return 1e-3 * (laesecke_zero_density_limit(u, T) + laesecke_linear_in_density(u, T) + laesecke_residual_term(u, T))
