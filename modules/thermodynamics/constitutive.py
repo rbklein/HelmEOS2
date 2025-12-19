@@ -7,36 +7,38 @@ from config.conf_thermodynamics import *
 
 ''' Consistency checks '''
 
-KNOWN_VISC_DYN = ["CONSTANT"]
+KNOWN_VISC_DYN = ["CONSTANT", "LAESECKE"]
 
 assert VISC_DYN in KNOWN_VISC_DYN, f"Dynamic viscosity {VISC_DYN} not known"
-if VISC_DYN == "CONSTANT":
-    assert "value" in VISC_DYN_parameters, "Constant dynamic viscosity must be assigned a value"  
-    assert isinstance(VISC_DYN_parameters["value"], (float, int)), "Constant dynamic viscosity value must be a floating point value or an integer"
-    assert VISC_DYN_parameters["value"] >= 0.0, "Constant dynamic viscosity must be non-negative"
+match VISC_DYN:
+    case "CONSTANT":
+        from modules.thermodynamics.dynamic.constant_dynamic import check_consistency as check_consistency_dynamic
+    case "LAESECKE":
+        from modules.thermodynamics.dynamic.laesecke_dynamic import check_consistency as check_consistency_dynamic
 
 KNOWN_VISC_BULK = ["CONSTANT"]
 
 assert VISC_BULK in KNOWN_VISC_BULK, f"Bulk viscosity {VISC_BULK} not known"
 if VISC_BULK == "CONSTANT":
-    assert "value" in VISC_BULK_parameters, "Constant bulk viscosity must be assigned a value"
-    assert isinstance(VISC_BULK_parameters["value"], (float, int)), "Constant bulk viscosity value must be a floating point value or an integer"
-    assert VISC_BULK_parameters["value"] >= 0.0, "Constant bulk viscosity must be non-negative"
+    from modules.thermodynamics.bulk.constant_bulk import check_consistency as check_consistency_bulk
 
 KNOWN_THERMAL_COND = ["CONSTANT"]
 
 assert THERMAL_COND in KNOWN_THERMAL_COND, f"Thermal conductivity {THERMAL_COND} not known"
 if THERMAL_COND == "CONSTANT":
-    assert "value" in THERMAL_COND_parameters, "Constant thermal conductivity must be assigned a value"
-    assert isinstance(THERMAL_COND_parameters["value"], (float, int)), "Constant thermal conductivity value must be a floating point value or an integer"
-    assert THERMAL_COND_parameters["value"] >= 0.0, "Constant bulk viscosity must be non-negative"
+    from modules.thermodynamics.conduction.constant_conductivity import check_consistency as check_consistency_thermal
 
+check_consistency_dynamic()
+check_consistency_bulk()
+check_consistency_thermal()
 
 ''' Functions '''
 
 match VISC_DYN:
     case "CONSTANT":
         from modules.thermodynamics.dynamic.constant_dynamic import constant_dynamic_viscosity as dynamic_viscosity
+    case "LAESECKE":
+        from modules.thermodynamics.dynamic.laesecke_dynamic import laesecke_dynamic_viscosity as dynamic_viscosity
     case _:
         raise ValueError(f"Unknown dynamic viscosity function: {VISC_DYN}")
 

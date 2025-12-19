@@ -12,6 +12,7 @@ from typing import Tuple
 from modules.thermodynamics.EOS     import temperature_rpt, density_ptr, total_energy
 from modules.thermodynamics.gas_models.Peng_Robinson import density_ptr_Peng_Robinson as ptr
 from modules.thermodynamics.gas_models.Van_der_Waals import temperature_rpt_Van_der_Waals as rpt
+from modules.thermodynamics.EOS import Gibbs_energy
 
 def convert(v : jnp.ndarray, vars : int) -> Tuple[jnp.ndarray, jnp.ndarray]:
     match vars:
@@ -87,3 +88,20 @@ def rvt2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
 
     return u, T
 
+@jax.jit
+def entropy_variables(u : jnp.ndarray, T : jnp.ndarray) -> jnp.ndarray:
+    g = Gibbs_energy(u[0], T)
+    v = u[1:(N_DIMENSIONS+1)] / u[0]
+
+    eta_rho = (g - 1/2 * jnp.sum(v**2, axis = 0)) / T
+    eta_m = v / T
+    eta_E = - 1.0 / T
+
+    if N_DIMENSIONS == 1:
+        eta = jnp.stack((eta_rho, eta_m[0], eta_E), axis = 0) 
+    elif N_DIMENSIONS == 2: 
+        eta  = jnp.stack((eta_rho, eta_m[0], eta_m[1], eta_E), axis=0) 
+    elif N_DIMENSIONS == 3:
+        eta  = jnp.stack((eta_rho, eta_m[0], eta_m[1], eta_m[2], eta_E), axis=0) 
+
+    return eta

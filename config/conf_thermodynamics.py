@@ -10,10 +10,11 @@ NAME_MOLECULE = molecule.name
 
 MOLAR_MASS = molecule.molar_mass #kg mol^-1
 
-#Equation of State (EOS) type
-EOS = "VAN_DER_WAALS" # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"
+# Equation of State (EOS) type
+# Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"
+EOS = "PENG_ROBINSON" 
 
-#Equation of State parameters
+# Equation of State parameters
 match EOS:
     case "IDEAL_GAS":
         EOS_parameters = molecule.ideal_gas_parameters
@@ -26,14 +27,15 @@ match EOS:
         EOS_parameters = molecule.Wagner_parameters
 
 
-#Dynamic viscosity
-VISC_DYN = "CONSTANT"
+# Dynamic viscosity 
+# Options: "CONSTANT", "LAESECKE"
+VISC_DYN = "LAESECKE"
 
-VISC_DYN_parameters = {
-    "value" : 0.0, #1e-5, #Pa s dynamic viscosity value 
-}
+#VISC_DYN_parameters = {
+#    "value" : 0.0, #1e-5, #Pa s dynamic viscosity value 
+#}
 
-#Bulk viscosity
+# Bulk viscosity
 VISC_BULK = "CONSTANT"
 
 VISC_BULK_parameters = {
@@ -50,5 +52,5 @@ THERMAL_COND_parameters = {
 ''' Constants '''
 
 UNIVERSAL_GAS_CONSTANT = 8.31446261815324 #J K^-1 mol^-1
-
+AVOGADRO_CONSTANT = 6.02214085774e23 #mol^-1
 

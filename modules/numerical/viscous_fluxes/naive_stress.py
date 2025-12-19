@@ -18,10 +18,10 @@ def div_x_naive_stress_3d(u, T):
     n_x, n_y, n_z = GRID_RESOLUTION
     d_x, d_y, d_z = GRID_SPACING
 
-    mu  = dynamic_viscosity(T)
+    mu  = dynamic_viscosity(u, T)
     mu_m = 0.5 * (mu[1:, 1:-1, 1:-1] + mu[:-1, 1:-1, 1:-1])  #(n_x + 1, n_y, n_z) mean dynamic viscosity
 
-    zeta = bulk_viscosity(T)
+    zeta = bulk_viscosity(u, T)
     zeta_m = 0.5 * (zeta[1:, 1:-1, 1:-1] + zeta[:-1, 1:-1, 1:-1])  #(n_x + 1, n_y, n_z) mean bulk viscosity
 
     ''' Du + Du^T '''
@@ -63,10 +63,10 @@ def div_y_naive_stress_3d(u, T):
     n_x, n_y, n_z = GRID_RESOLUTION
     d_x, d_y, d_z = GRID_SPACING
 
-    mu  = dynamic_viscosity(T)
+    mu  = dynamic_viscosity(u, T)
     mu_m = 0.5 * (mu[1:-1, 1:, 1:-1] + mu[1:-1, :-1, 1:-1])  #(n_x, n_y + 1, n_z) mean dynamic viscosity
 
-    zeta = bulk_viscosity(T)
+    zeta = bulk_viscosity(u, T)
     zeta_m = 0.5 * (zeta[1:-1, 1:, 1:-1] + zeta[1:-1, :-1, 1:-1])  #(n_x, n_y + 1, n_z) mean bulk viscosity
 
     ''' Du + Du^T '''
@@ -109,10 +109,10 @@ def div_z_naive_stress_3d(u, T):
     n_x, n_y, n_z = GRID_RESOLUTION
     d_x, d_y, d_z = GRID_SPACING
 
-    mu  = dynamic_viscosity(T)
+    mu  = dynamic_viscosity(u, T)
     mu_m = 0.5 * (mu[1:-1, 1:-1, 1:] + mu[1:-1, 1:-1, :-1])  #(n_x, n_y, n_z + 1) mean dynamic viscosity
 
-    zeta = bulk_viscosity(T)
+    zeta = bulk_viscosity(u, T)
     zeta_m = 0.5 * (zeta[1:-1, 1:-1, 1:] + zeta[1:-1, 1:-1, :-1])  #(n_x, n_y, n_z + 1) mean bulk viscosity
 
     ''' Du + Du^T '''
@@ -161,10 +161,10 @@ def div_x_naive_stress_2d(u, T):
     n_x, n_y = GRID_RESOLUTION
     d_x, d_y = GRID_SPACING
 
-    mu  = dynamic_viscosity(T)
+    mu  = dynamic_viscosity(u, T)
     mu_m = 0.5 * (mu[1:, 1:-1] + mu[:-1, 1:-1])  #(n_x + 1, n_y) mean dynamic viscosity
 
-    zeta = bulk_viscosity(T)
+    zeta = bulk_viscosity(u, T)
     zeta_m = 0.5 * (zeta[1:, 1:-1] + zeta[:-1, 1:-1])  #(n_x + 1, n_y) mean bulk viscosity
 
     ''' Du + Du^T '''
@@ -201,10 +201,10 @@ def div_y_naive_stress_2d(u, T):
     n_x, n_y = GRID_RESOLUTION
     d_x, d_y = GRID_SPACING
 
-    mu  = dynamic_viscosity(T)
+    mu  = dynamic_viscosity(u, T)
     mu_m = 0.5 * (mu[1:-1, 1:] + mu[1:-1, :-1])  #(n_x, n_y + 1) mean dynamic viscosity
 
-    zeta = bulk_viscosity(T)
+    zeta = bulk_viscosity(u, T)
     zeta_m = 0.5 * (zeta[1:-1, 1:] + zeta[1:-1, :-1])  #(n_x, n_y + 1) mean bulk viscosity
 
     ''' Du + Du^T '''
@@ -247,7 +247,7 @@ def div_naive_stress_1d(u, T):
     n_x = GRID_RESOLUTION[0]
     d_x = GRID_SPACING[0]
 
-    mu  = dynamic_viscosity(T)
+    mu  = dynamic_viscosity(u, T)
     mu_m = 0.5 * (mu[1:] + mu[:-1])  #(n_x + 1) mean dynamic viscosity
 
     ''' Du + Du^T '''

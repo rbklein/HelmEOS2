@@ -5,10 +5,9 @@
 from prep_jax import *
 from modules.geometry.grid import *
 
-import numpy as np
-from scipy.spatial import ConvexHull
-
-from functools import partial
+#import numpy as np
+#from scipy.spatial import ConvexHull
+#from functools import partial
 
 ''' Derived parameters '''
 EPS = jnp.finfo(DTYPE).eps
