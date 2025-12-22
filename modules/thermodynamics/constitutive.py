@@ -22,11 +22,14 @@ assert VISC_BULK in KNOWN_VISC_BULK, f"Bulk viscosity {VISC_BULK} not known"
 if VISC_BULK == "CONSTANT":
     from modules.thermodynamics.bulk.constant_bulk import check_consistency as check_consistency_bulk
 
-KNOWN_THERMAL_COND = ["CONSTANT"]
+KNOWN_THERMAL_COND = ["CONSTANT", "HUBER"]
 
 assert THERMAL_COND in KNOWN_THERMAL_COND, f"Thermal conductivity {THERMAL_COND} not known"
-if THERMAL_COND == "CONSTANT":
-    from modules.thermodynamics.conduction.constant_conductivity import check_consistency as check_consistency_thermal
+match THERMAL_COND:
+    case "CONSTANT":
+        from modules.thermodynamics.conduction.constant_conductivity import check_consistency as check_consistency_thermal
+    case "HUBER":
+        from modules.thermodynamics.conduction.huber_conduction import check_consistency as check_consistency_thermal
 
 check_consistency_dynamic()
 check_consistency_bulk()
@@ -51,6 +54,8 @@ match VISC_BULK:
 match THERMAL_COND:
     case "CONSTANT":
         from modules.thermodynamics.conduction.constant_conductivity import constant_thermal_conductivity as thermal_conductivity
+    case "HUBER":
+        from modules.thermodynamics.conduction.huber_conduction import huber_thermal_conductivity as thermal_conductivity
     case _:
         raise ValueError(f"Unknown thermal conductivity function: {THERMAL_COND}")
 

@@ -31,9 +31,7 @@ match EOS:
 # Options: "CONSTANT", "LAESECKE"
 VISC_DYN = "LAESECKE"
 
-#VISC_DYN_parameters = {
-#    "value" : 0.0, #1e-5, #Pa s dynamic viscosity value 
-#}
+VISC_DYN_parameters = { }
 
 # Bulk viscosity
 VISC_BULK = "CONSTANT"
@@ -43,14 +41,15 @@ VISC_BULK_parameters = {
 }
 
 #Thermal conductivity
-THERMAL_COND = "CONSTANT"
+# Options: "CONSTANT", "HUBER"
+THERMAL_COND = "HUBER"
 
-THERMAL_COND_parameters = {
-    "value" :  0.0, #0.001, #thermal conductivity
-}
+THERMAL_COND_parameters = { }
 
 ''' Constants '''
 
 UNIVERSAL_GAS_CONSTANT = 8.31446261815324 #J K^-1 mol^-1
 AVOGADRO_CONSTANT = 6.02214085774e23 #mol^-1
+BOLTZMANN_CONSTANT = UNIVERSAL_GAS_CONSTANT / AVOGADRO_CONSTANT #J K^-1
 
+PI = 3.141592653589793 #Also defined in conf_geometry.py

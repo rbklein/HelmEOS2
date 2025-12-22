@@ -7,7 +7,7 @@
 #Grid dimensions
 N_DIMENSIONS = 2
 
-PI = 3.141592653589793
+PI = 3.141592653589793 #Also defined in conf_thermodynamics.py
 
 #domain size (L_x, L_y, L_z), for 1D add comma
 DOMAIN_SIZE = (1.0, 1.0) #tuple of floats representing the size in each dimension

@@ -18,7 +18,7 @@ def div_x_naive_heat_flux_3d(u, T):
     n_x, n_y, n_z = GRID_RESOLUTION
     d_x, d_y, d_z = GRID_SPACING
 
-    k = thermal_conductivity(T)
+    k = thermal_conductivity(u, T)
     k_m = 0.5 * (k[1:, 1:-1, 1:-1] + k[:-1, 1:-1, 1:-1])
 
     dT_dx = (T[1:, 1:-1, 1:-1] - T[:-1, 1:-1, 1:-1]) / d_x
@@ -41,7 +41,7 @@ def div_y_naive_heat_flux_3d(u, T):
     n_x, n_y, n_z = GRID_RESOLUTION
     d_x, d_y, d_z = GRID_SPACING
 
-    k = thermal_conductivity(T)
+    k = thermal_conductivity(u, T)
     k_m = 0.5 * (k[1:-1, 1:, 1:-1] + k[1:-1, :-1, 1:-1])
 
     dT_dy = (T[1:-1, 1:, 1:-1] - T[1:-1, :-1, 1:-1]) / d_y
@@ -64,7 +64,7 @@ def div_z_naive_heat_flux_3d(u, T):
     n_x, n_y, n_z = GRID_RESOLUTION
     d_x, d_y, d_z = GRID_SPACING
 
-    k = thermal_conductivity(T)
+    k = thermal_conductivity(u, T)
     k_m = 0.5 * (k[1:-1, 1:-1, 1:] + k[1:-1, 1:-1, :-1])
 
     dT_dz = (T[1:-1, 1:-1, 1:] - T[1:-1, 1:-1, :-1]) / d_z
@@ -94,7 +94,7 @@ def div_x_naive_heat_flux_2d(u, T):
     n_x, n_y = GRID_RESOLUTION
     d_x, d_y = GRID_SPACING
 
-    k = thermal_conductivity(T)
+    k = thermal_conductivity(u, T)
     k_m = 0.5 * (k[1:, 1:-1] + k[:-1, 1:-1])
 
     dT_dx = (T[1:, 1:-1] - T[:-1, 1:-1]) / d_x
@@ -116,7 +116,7 @@ def div_y_naive_heat_flux_2d(u, T):
     n_x, n_y = GRID_RESOLUTION
     d_x, d_y = GRID_SPACING
 
-    k = thermal_conductivity(T)
+    k = thermal_conductivity(u, T)
     k_m = 0.5 * (k[1:-1, 1:] + k[1:-1, :-1])
 
     dT_dy = (T[1:-1, 1:] - T[1:-1, :-1]) / d_y
@@ -143,7 +143,7 @@ def div_naive_heat_flux_1d(u, T):
     n_x = GRID_RESOLUTION[0]
     d_x = GRID_SPACING[0]
 
-    k = thermal_conductivity(T)
+    k = thermal_conductivity(u, T)
     k_m = 0.5 * (k[1:] + k[:-1])
 
     dT_dx = (T[1:] - T[:-1]) / d_x

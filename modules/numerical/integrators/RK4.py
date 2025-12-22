@@ -13,7 +13,7 @@ def _rhs(u, T, t):
     return (
         dudt_c(u, T)
         + dudt_v(u, T)
-        #+ dudt_q(u, T)
+        + dudt_q(u, T)
         # + dudt_s(u, T, t)
     )
 

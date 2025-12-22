@@ -33,7 +33,7 @@ if __name__ == "__main__":
     T.block_until_ready()
     print('finished timestepping')
     
-    jnp.save("test_T.npy", T)
+    #jnp.save("test_T.npy", T)
 
     # postprocess
     fig, plot_grid  = init_postprocess()

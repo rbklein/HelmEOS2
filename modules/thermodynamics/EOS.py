@@ -191,6 +191,14 @@ def speed_of_sound(rho, T):
     s = 2 * rho * dAdrho(rho, T) + rho**2 * d2Ad2rho(rho, T) - rho**2 * (d2AdrhodT(rho,T)**2) / d2Ad2T(rho,T)
     return jnp.sqrt(jnp.abs(s))
 
+def c_v(rho, T):
+    """
+        Specific isochoric heat capacity c_v.
+    """
+    A_TT = d2Ad2T(rho, T)
+    c_v = -T * A_TT
+    return c_v
+
 def c_p(rho, T):
     """
         Specific isobaric heat capacity c_p.
@@ -243,4 +251,3 @@ internal_energy_T   = jax.grad(lambda rho, T: Helmholtz_scalar(rho, T) - T * dAd
 
 internal_energy_rho = _vectorize_thermo(internal_energy_rho)
 internal_energy_T   = _vectorize_thermo(internal_energy_T) 
-
