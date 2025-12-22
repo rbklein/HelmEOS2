@@ -15,7 +15,7 @@ def Taylor_Green_vortex_3d(mesh):
         T      : ???
     """
 
-    rho0    = 0.8 * rho_c
+    rho0    = 1.1925 * rho_c
     T0      = 1.1 * T_c
 
     # Determine p0, c0 from rho0 and T0
@@ -34,8 +34,6 @@ def Taylor_Green_vortex_3d(mesh):
     v = - U0 * jnp.cos(X / L) * jnp.sin(Y / L) * jnp.sin(Z / L)
     w = jnp.zeros_like(u)
 
-    print(rho_c, T_c, p_c)
-    print(rho0, T0, p0, c0)
-    print(rho0 / rho_c, T0 / T_c, p0 / p_c)
+    print(c0, U0)
 
     return jnp.stack((u, v, w, p, T), axis = 0), 1 #vpt
