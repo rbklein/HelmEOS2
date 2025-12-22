@@ -8,15 +8,14 @@ from modules.thermodynamics.EOS import *
 
 rho_c, T_c, p_c = molecule.critical_point
 
-@jax.jit
+#@jax.jit
 def Taylor_Green_vortex_3d(mesh):
     """
         Domain : [- pi L, pi L]^3
         T      : ???
     """
-    #plural?
 
-    rho0    = 1.5 * rho_c
+    rho0    = 0.8 * rho_c
     T0      = 1.1 * T_c
 
     # Determine p0, c0 from rho0 and T0
@@ -34,5 +33,9 @@ def Taylor_Green_vortex_3d(mesh):
     u = U0 * jnp.sin(X / L) * jnp. cos(Y / L) * jnp.sin(Z / L)
     v = - U0 * jnp.cos(X / L) * jnp.sin(Y / L) * jnp.sin(Z / L)
     w = jnp.zeros_like(u)
+
+    print(rho_c, T_c, p_c)
+    print(rho0, T0, p0, c0)
+    print(rho0 / rho_c, T0 / T_c, p0 / p_c)
 
     return jnp.stack((u, v, w, p, T), axis = 0), 1 #vpt

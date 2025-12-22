@@ -15,6 +15,7 @@ if __name__ == "__main__":
     initial, conversion = initial_condition(mesh) 
     u, T                = convert(initial, conversion)
 
+    '''
     u.block_until_ready()
     print('finished initial condition')
 
@@ -33,9 +34,10 @@ if __name__ == "__main__":
     T.block_until_ready()
     print('finished timestepping')
     
-    #jnp.save("test_T.npy", T)
+    jnp.save("test_T.npy", T)
 
     # postprocess
     fig, plot_grid  = init_postprocess()
     plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
     show()
+    '''
