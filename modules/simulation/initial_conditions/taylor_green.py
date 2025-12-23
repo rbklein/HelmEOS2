@@ -5,25 +5,27 @@ Taylor-Green vortex initial conditions
 from prep_jax import *
 from modules.geometry.grid import *
 from modules.thermodynamics.EOS import *
+from modules.numerical.computation import pad_1d_to_mesh, extract_1d_from_padded
 
 rho_c, T_c, p_c = molecule.critical_point
 
-#@jax.jit
+@jax.jit
 def Taylor_Green_vortex_3d(mesh):
     """
         Domain : [- pi L, pi L]^3
         T      : ???
     """
 
-    rho0    = 1.1925 * rho_c
-    T0      = 1.1 * T_c
+    rho0    = pad_1d_to_mesh(jnp.array([1.1925 * rho_c]))
+    T0      = pad_1d_to_mesh(jnp.array([1.1 * T_c]))
 
     # Determine p0, c0 from rho0 and T0
-    p0      = pressure(rho0 * jnp.ones_like(mesh[0]), T0 * jnp.ones_like(mesh[0]))[0,0,0]
-    c0      = speed_of_sound(rho0 * jnp.ones_like(mesh[0]), T0 * jnp.ones_like(mesh[0]))[0,0,0]
+    p0      = pressure(rho0, T0)[0,0,0]
+    c0      = speed_of_sound(rho0, T0)[0,0,0]
     U0      = 0.1 * c0
-
-    #print('ref vel: ', U0)
+    
+    rho0    = extract_1d_from_padded(rho0)[0]
+    T0      = extract_1d_from_padded(T0)[0]
 
     L       = DOMAIN_SIZE[0] / (2 * jnp.pi)
     X, Y, Z = mesh[0] - jnp.pi * L, mesh[1] - jnp.pi * L, mesh[2] - jnp.pi * L
@@ -33,7 +35,5 @@ def Taylor_Green_vortex_3d(mesh):
     u = U0 * jnp.sin(X / L) * jnp. cos(Y / L) * jnp.sin(Z / L)
     v = - U0 * jnp.cos(X / L) * jnp.sin(Y / L) * jnp.sin(Z / L)
     w = jnp.zeros_like(u)
-
-    print(c0, U0)
 
     return jnp.stack((u, v, w, p, T), axis = 0), 1 #vpt

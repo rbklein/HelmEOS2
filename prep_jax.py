@@ -5,8 +5,6 @@
 """
 
 import jax
-from functools import partial
-
 from config.conf_jax import *
 
 print('Workstation devices: ', jax.devices(backend="cpu"), jax.devices(backend="gpu"))

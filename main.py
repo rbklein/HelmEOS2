@@ -7,19 +7,20 @@ if __name__ == "__main__":
     from modules.geometry.grid          import mesh
     from modules.numerical.integration  import integrate
     from modules.simulation.initial     import initial_condition
-    from modules.simulation.variables   import convert
+    from modules.simulation.variables   import get_convert
     from modules.thermodynamics.EOS     import molecule
-    from modules.postprocess.post       import init_postprocess, plot_postprocess, COLORMAP, show
+    #from modules.postprocess.post       import init_postprocess, plot_postprocess, COLORMAP, show
 
     # prepare initial condition
     initial, conversion = initial_condition(mesh) 
-    u, T                = convert(initial, conversion)
+    del mesh
+
+    convert             = get_convert(conversion)
+    u, T                = convert(initial)
+    del initial 
 
     u.block_until_ready()
     print('finished initial condition')
-
-    if len(mesh) > 1:
-        del mesh
 
     rho_c, T_c, p_c = molecule.critical_point
     print('rho_c: ', rho_c)
@@ -31,8 +32,7 @@ if __name__ == "__main__":
 
     u.block_until_ready()
     T.block_until_ready()
-    print('finished timestepping')
-    
+
     jnp.save("test_u.npy", u)
     jnp.save("test_T.npy", T)
 
@@ -40,4 +40,5 @@ if __name__ == "__main__":
     #fig, plot_grid  = init_postprocess()
     #plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
     #show()
+    
     

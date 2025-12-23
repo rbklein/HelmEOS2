@@ -6,28 +6,28 @@ Conversion functions are added on a as-needed basis
 
 from prep_jax import *
 from config.conf_geometry import N_DIMENSIONS
+from config.conf_thermodynamics import R_specific
 
 from typing import Tuple
 
 from modules.thermodynamics.EOS     import temperature_rpt, density_ptr, total_energy
-from modules.thermodynamics.gas_models.Peng_Robinson import density_ptr_Peng_Robinson as ptr
+#from modules.thermodynamics.gas_models.Peng_Robinson import density_ptr_Peng_Robinson as ptr
 from modules.thermodynamics.gas_models.Van_der_Waals import temperature_rpt_Van_der_Waals as rpt
 from modules.thermodynamics.EOS import Gibbs_energy
 
-def convert(v : jnp.ndarray, vars : int) -> Tuple[jnp.ndarray, jnp.ndarray]:
+def get_convert(vars : int):
     match vars:
         case 0: #rvp:
             #density + velocity + pressure (in that order)
-            u, T = rvp2u(v)
+            return rvp2u
         case 1: #vpt:
             #velocity + pressure + temperature (in that order)
-            u, T = vpt2u(v)
+            return vpt2u
         case 2: #rvt:
             #density + velocity + temperature (in that order)
-            u, T = rvt2u(v)
+            return rvt2u
         case _:
             raise ValueError(f"Unknown variable set: {vars}")
-    return u, T
 
 @jax.jit
 def rvp2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
@@ -56,8 +56,7 @@ def vpt2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
     p   = v[N_DIMENSIONS, ...]
     T   = v[N_DIMENSIONS + 1, ...]
 
-    rhoguess    = ptr(p, T, None)
-    rho         = density_ptr(p, T, rhoguess)
+    rho         = density_ptr(p, T, p / (R_specific * T))
     m           = vel * rho
     E           = total_energy(rho, T, vel)
 
@@ -87,6 +86,7 @@ def rvt2u(v : jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
         u  = jnp.stack((rho, m[0], m[1], m[2], E), axis=0) 
 
     return u, T
+
 
 @jax.jit
 def entropy_variables(u : jnp.ndarray, T : jnp.ndarray) -> jnp.ndarray:

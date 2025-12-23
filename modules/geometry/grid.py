@@ -27,7 +27,6 @@ if SHARD_ARRAYS:
     # Construct mesh on cpu and pass around sharded
     mesh = np.meshgrid(*[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], indexing='ij')
     mesh = [jax.device_put(mesh[i], NamedSharding(device_mesh, PartitionSpec(*SHARD_PARTITION))) for i in range(N_DIMENSIONS)]
-
 else:
     mesh = jnp.meshgrid(*[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], indexing='ij')  #meshgrid for the grid points
 

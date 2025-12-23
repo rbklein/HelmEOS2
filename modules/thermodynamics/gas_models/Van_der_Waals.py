@@ -16,8 +16,6 @@ def check_consistency_Van_der_Waals():
 
 ''' Derived parameters '''
 
-R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas constant
-
 
 ''' set critical point values for Van der Waals '''
 

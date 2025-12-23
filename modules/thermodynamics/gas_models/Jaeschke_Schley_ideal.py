@@ -14,8 +14,6 @@ from config.conf_thermodynamics import *
 
 ''' Derived parameters '''
 
-R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas constant
-
 ''' set parameter values for Jaeschke-Schley '''
 
 rho_c, T_c, p_c = molecule.critical_point
@@ -28,8 +26,8 @@ _b24 = jnp.array([-1.060440000, 0.013930000]) # cosh coeffs
 _theta24 = jnp.array([-2.844425476, 1.121596090]) * T_c
 
 # reference values mentioned in KW-article
-T_ref = 10 #298.15      # K
-p_ref = 10 * R_specific #0.101325e6  # Pa
+T_ref = 273.15 # 298.15      # 10 # K
+p_ref = 0.101325e6  # 10 * R_specific # Pa
 rho_ref = p_ref / (R_specific * T_ref) # kg m^-3 
 
 coth = lambda x: 1.0 / jnp.tanh(x)

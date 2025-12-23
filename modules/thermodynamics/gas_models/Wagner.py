@@ -20,8 +20,6 @@ def check_consistency_Wagner():
 
 ''' Derived parameters '''
 
-R_specific = UNIVERSAL_GAS_CONSTANT / MOLAR_MASS #J K^-1 kg^-1 specific gas constant
-
 ''' set parameter values for Span-Wagner '''
 
 rho_c, T_c, p_c = molecule.critical_point

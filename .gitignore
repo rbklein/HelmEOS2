@@ -12,3 +12,4 @@ experiment_data/
 experiment.py
 run_experiments.py
 experiments/
+jax_profile_logs/
