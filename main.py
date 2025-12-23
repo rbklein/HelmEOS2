@@ -11,6 +11,9 @@ if __name__ == "__main__":
     from modules.thermodynamics.EOS     import molecule
     #from modules.postprocess.post       import init_postprocess, plot_postprocess, COLORMAP, show
 
+    profiler_dir = "./jax_profile_logs/"
+    jax.profiler.start_trace(profiler_dir)
+
     # prepare initial condition
     initial, conversion = initial_condition(mesh) 
     del mesh
@@ -32,6 +35,8 @@ if __name__ == "__main__":
 
     u.block_until_ready()
     T.block_until_ready()
+
+    jax.profiler.stop_trace()
 
     jnp.save("test_u.npy", u)
     jnp.save("test_T.npy", T)

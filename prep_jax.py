@@ -4,6 +4,10 @@
     This should be used in all files where jax numpy is used.
 """
 
+# Global flag to turn off memory preallocation
+import os
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
+
 import jax
 from config.conf_jax import *
 
@@ -11,13 +15,6 @@ print('Workstation devices: ', jax.devices(backend="cpu"), jax.devices(backend="
 
 cpus = jax.devices("cpu")
 gpus = jax.devices("gpu")
-
-# Global flag to set a specific platform, must be used at startup.
-# jax.config.update('jax_platform_name', 'cpu')
-
-# Global flag to turn off memory preallocation
-# import os
-# os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 
 match DTYPE:
     case "DOUBLE":
