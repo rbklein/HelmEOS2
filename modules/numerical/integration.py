@@ -77,7 +77,7 @@ def integrate(u, T):
         cfl = jnp.max(check_CFL(u, T))
     )
 
-    def scan_step(carry, _):
+    def step(_, carry):
         t, it, u_prev, T_prev = carry           # Unpack the carry variable
         u = time_step(u_prev, T_prev, dt, t)    # Compute new state
         T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
@@ -87,13 +87,13 @@ def integrate(u, T):
                     lambda _: status(it, u, T), 
                     lambda _: None, 
                     operand=None)
-        return (t, it, u, T), _
+        return (t, it, u, T)
 
     status(0, u, T)
 
     # Perform the integration over the specified number of time steps
-    (t, it, u, T), _ = jax.lax.scan(
-        scan_step, (0.0, 0, u, T), None, length=NUM_TIME_STEPS
+    (t, it, u, T), _ = jax.lax.fori_loop(
+        0, NUM_TIME_STEPS, step, (0.0, 0, u, T) #, None, length=NUM_TIME_STEPS
     )  
 
     return u, T
