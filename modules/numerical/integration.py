@@ -92,7 +92,7 @@ def integrate(u, T):
     status(0, u, T)
 
     # Perform the integration over the specified number of time steps
-    (t, it, u, T), _ = jax.lax.fori_loop(
+    t, it, u, T = jax.lax.fori_loop(
         0, NUM_TIME_STEPS, step, (0.0, 0, u, T) #, None, length=NUM_TIME_STEPS
     )  
 
