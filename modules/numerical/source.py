@@ -25,6 +25,7 @@ match SOURCE_TERM:
         from modules.numerical.sources.s_mms_1 import source_1d as source
     case _:
         raise ValueError(f"Unknown source term: {SOURCE_TERM}")
-    
+
+@jax.jit
 def dudt(u, T, t):
     return source(u, T, t)

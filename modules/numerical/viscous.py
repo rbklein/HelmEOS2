@@ -27,6 +27,7 @@ match NUMERICAL_VISCOUS_FLUX:
     case _:
         raise ValueError(f"Unknown viscous numerical flux: {NUMERICAL_VISCOUS_FLUX}")
     
+@jax.jit
 def dudt(u, T):
     """
     Calculate the time derivative of u using the specified numerical viscous flux.

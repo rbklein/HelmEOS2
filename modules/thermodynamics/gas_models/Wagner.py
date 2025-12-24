@@ -9,7 +9,7 @@ from prep_jax import *
 from config.conf_thermodynamics import *
 from config.conf_geometry import *
 
-from modules.numerical.computation import solve_root_thermo, vectorize_root
+from modules.numerical.computation import solve_root_thermo, vectorize_root, EPS
 from modules.thermodynamics.gas_models.Jaeschke_Schley_ideal import Jaeschke_Schley
 #from modules.thermodynamics.gas_models.ideal_gas import ideal_gas
 
@@ -148,8 +148,8 @@ def density_ptr_Wagner(p, T, rhoguess):
 ''' Temperature equations (rho, e) -> T for simulations '''
 _dAdT                   = jax.grad(Wagner, 1)
 _e                      = lambda rho, T: Wagner(rho, T) - T * _dAdT(rho, T)
-_root_func_energy_T     = lambda T, rho, e: e - _e(rho, T)
-_dredT_root             = jax.grad(_root_func_energy_T, 0)
+_root_func_energy_T     = jax.jit(lambda T, rho, e: e - _e(rho, T))
+_dredT_root             = jax.jit(jax.jacfwd(_root_func_energy_T, 0))
 
 root_func_energy_T = vectorize_root(_root_func_energy_T)
 dredT_root = vectorize_root(_dredT_root)

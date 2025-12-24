@@ -14,23 +14,37 @@ assert len(GRID_RESOLUTION) == N_DIMENSIONS, "Grid resolution must match the num
 assert all(isinstance(v, int) for v in GRID_RESOLUTION), "Grid resolution must be integers"
 
 
-
 ''' Derived parameters '''
 from prep_jax import *
 
 GRID_SPACING = tuple(size / res for size, res in zip(DOMAIN_SIZE, GRID_RESOLUTION))  # Spacing between grid points in each dimension
+CELL_VOLUME  = jnp.prod(jnp.array(GRID_SPACING))  # Volume of each grid cell
 
-if SHARD_ARRAYS:
+''' Functions '''
 
-    assert len(SHARD_PARTITION) == len(GRID_RESOLUTION), "Sharding memory partition is not compatible with grid"
+def construct_mesh():
+    '''
+    Construct the mesh in a single- or multi-device setting
+    '''
+    if SHARD_ARRAYS:
+        assert len(SHARD_PARTITION) == len(GRID_RESOLUTION), "Sharding memory partition is not compatible with grid"
 
-    # Construct mesh on cpu and pass around sharded
-    mesh = np.meshgrid(*[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], indexing='ij')
-    mesh = [jax.device_put(mesh[i], NamedSharding(device_mesh, PartitionSpec(*SHARD_PARTITION))) for i in range(N_DIMENSIONS)]
-else:
-    mesh = jnp.meshgrid(*[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], indexing='ij')  #meshgrid for the grid points
+        # Construct mesh on cpu and pass around sharded
+        mesh = np.meshgrid(
+            *[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], 
+            indexing='ij'
+        )
 
-CELL_VOLUME = jnp.prod(jnp.array(GRID_SPACING))  # Volume of each grid cell
+        mesh = [jax.device_put(mesh[i], NamedSharding(device_mesh, PartitionSpec(*SHARD_PARTITION))) for i in range(N_DIMENSIONS)]
+    else:
+        mesh = jnp.meshgrid(
+            *[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], 
+            indexing='ij'
+        )  #meshgrid for the grid points
+
+    return mesh
+
+
 
 
 

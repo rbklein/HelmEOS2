@@ -4,7 +4,7 @@
 
 if __name__ == "__main__":
     from prep_jax import *
-    from modules.geometry.grid          import mesh
+    from modules.geometry.grid          import construct_mesh
     from modules.numerical.integration  import integrate
     from modules.simulation.initial     import initial_condition
     from modules.simulation.variables   import get_convert
@@ -15,6 +15,7 @@ if __name__ == "__main__":
     #jax.profiler.start_trace(profiler_dir)
 
     # prepare initial condition
+    mesh                = construct_mesh()
     u, conversion       = initial_condition(mesh) 
     convert             = get_convert(conversion)
     u, T                = convert(u)

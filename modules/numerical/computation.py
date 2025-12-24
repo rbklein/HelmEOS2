@@ -20,30 +20,38 @@ def extract_1d_from_padded(arr):
     idx = (slice(None),) + (0,) * (arr.ndim - 1)
     return arr[idx]
 
-def solve_root_thermo(v, vconst, vaux, root, droot, tol, it_max):
-    R = jnp.abs(vaux)
+# def solve_root_thermo(v, vconst, vaux, root, droot, tol, it_max):
+#     R = jnp.abs(vaux)
 
-    def cond(state):
-        v, i, not_done, status = state
-        return not_done
+#     def cond(state):
+#         v, i, not_done, status = state
+#         return not_done
     
-    def body(state):
-        v, i, convd, status = state
+#     def body(state):
+#         v, i, convd, status = state
 
+#         res     = root(v, vconst, vaux)
+#         dres    = droot(v, vconst, vaux)
+#         step    = res / dres
+#         v       = v - step
+
+#         i           = i+1
+#         status      = i < it_max
+#         not_convd   = jnp.logical_not(jnp.all(jnp.abs(res) < tol * R))
+#         not_done    = jnp.logical_and(status, not_convd) 
+
+#         return v, i, not_done, status
+    
+#     sol, it, _, status = jax.lax.while_loop(cond, body, (v, 0, True, True))
+#     return sol
+
+def solve_root_thermo(v, vconst, vaux, root, droot, _1, _2):
+    for _ in range(6):
         res     = root(v, vconst, vaux)
         dres    = droot(v, vconst, vaux)
         step    = res / dres
         v       = v - step
-
-        i           = i+1
-        status      = i < it_max
-        not_convd   = jnp.logical_not(jnp.all(jnp.abs(res) < tol * R))
-        not_done    = jnp.logical_and(status, not_convd) 
-
-        return v, i, not_done, status
-    
-    sol, it, _, status = jax.lax.while_loop(cond, body, (v, 0, True, True))
-    return sol
+    return v
 
 def vectorize_root(f : callable):
     f_vec = f

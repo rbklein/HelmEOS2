@@ -5,7 +5,7 @@
 from prep_jax import *
 from config.conf_geometry import *
 from config.conf_postprocess import *
-from modules.geometry.grid import mesh
+from config.conf_geometry import *
 
 if N_DIMENSIONS == 2:
     Lx, Ly = DOMAIN_SIZE
@@ -18,7 +18,8 @@ def plot_scalar_field_1d(scalar_field, fig, ax, title ="Scalar Field", cmap ='vi
     """
     Plot a scalar field in 1D.
     """
-    im,      = ax.plot(mesh[0], scalar_field)
+    x = jnp.linspace(0, DOMAIN_SIZE[0], GRID_RESOLUTION[0])
+    im,      = ax.plot(x, scalar_field)
     ax.set_ylabel(title)
     ax.set_xlabel('x')
     ax.grid()

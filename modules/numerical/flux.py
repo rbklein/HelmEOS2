@@ -40,7 +40,7 @@ match NUMERICAL_FLUX:
     case _:
         raise ValueError(f"Unknown numerical flux: {NUMERICAL_FLUX}")
 
-
+@jax.jit
 def dudt(u, T):
     """
     Calculate the time derivative of u using the specified numerical flux.
