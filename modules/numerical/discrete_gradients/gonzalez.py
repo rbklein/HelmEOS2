@@ -1,19 +1,21 @@
 """
     Functions to compute the Gonzalez discrete gradient used in numerical fluxes
 """
+from prep_jax import *
 
-from modules.thermodynamics.EOS import *
-from modules.numerical.computation import zero_by_zero
+from modules.numerical.computation  import zero_by_zero
+from jax.numpy                      import ndarray
+from typing                         import Tuple
 
 def gonzalez_2vars(
         f : callable,
         dfdx : callable,
         dfdy : callable,
-        x_1 : jnp.ndarray | float,
-        x_2 : jnp.ndarray | float,
-        y_1 : jnp.ndarray | float,
-        y_2 : jnp.ndarray | float
-) -> tuple[jnp.ndarray, jnp.ndarray] | tuple[float, float]:
+        x_1 : ndarray | float,
+        x_2 : ndarray | float,
+        y_1 : ndarray | float,
+        y_2 : ndarray | float
+) -> Tuple[ndarray, ndarray] | Tuple[float, float]:
     """
     Compute the Gonzalez discrete gradient of a function f
     taking two variables, with a robust division operator

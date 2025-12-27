@@ -2,22 +2,20 @@
     Functions for numerical integration.
 """
 
-from prep_jax import *
-from config.conf_numerical import *
-from config.conf_simulation import *
-from config.conf_postprocess import *
-
-from config.conf_geometry import *
+from prep_jax                   import *
+from config.conf_numerical      import *
+from config.conf_simulation     import *
+from config.conf_postprocess    import *
+from config.conf_geometry       import *
 from config.conf_thermodynamics import *
 
-from modules.thermodynamics.EOS import *
-from modules.geometry.grid import GRID_SPACING
-
-from modules.postprocess.post import init_postprocess, plot_postprocess, update_postprocess, NUM_ITS_PER_UPDATE
-from modules.numerical.computation import midpoint_integrate
-
-from functools import partial
-from pathlib import Path
+from modules.thermodynamics.EOS     import temperature, speed_of_sound
+from modules.geometry.grid          import GRID_SPACING
+from jax.numpy                      import max, abs
+from jax                            import jit
+from jax.lax                        import scan
+from jax.debug                      import print as jax_print
+from functools                      import partial
 
 ''' Consistency checks '''
 
@@ -41,7 +39,8 @@ match TIME_STEP_METHOD:
     case "WRAY":
         from modules.numerical.integrators.wray import Wray as time_step
     case "BE":
-        from modules.numerical.integrators.BE import backward_euler as time_step
+        #from modules.numerical.integrators.BE import backward_euler as time_step
+        raise NotImplementedError(f"Backward Euler out of order")
     case _:
         raise ValueError(f"Unknown time step method: {TIME_STEP_METHOD}")
 
@@ -52,7 +51,7 @@ def check_CFL(u, T):
     CFL is define as the max_i |u_i| * dt / dx
     """
     c = speed_of_sound(u[0], T)
-    v_max = jnp.max(jnp.abs(u[1:(N_DIMENSIONS+1)] / u[0]), axis = 0) 
+    v_max = max(abs(u[1:(N_DIMENSIONS+1)] / u[0]), axis = 0) 
     cfl = (dt * (v_max + c)) / GRID_SPACING[0]
     return cfl
 
@@ -69,12 +68,12 @@ def integrate(u, T):
         Final state and temperature
     """
     # Define process status function
-    status = lambda it, u, T: jax.debug.print(
+    status = lambda it, u, T: jax_print(
         "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
         it=it, 
         its = NUM_TIME_STEPS, 
         t=(it*dt), 
-        cfl = jnp.max(check_CFL(u, T))
+        cfl = max(check_CFL(u, T))
     )
     
     def step(carry):
@@ -103,46 +102,5 @@ def integrate(u, T):
     # t, it, u, T = jax.lax.fori_loop(
     #     0, NUM_TIME_STEPS, step, (0.0, 0, u, T), unroll = False #, None, length=NUM_TIME_STEPS
     # )  
-
-    return u, T
-
-
-def integrate_interactive(u, T):
-    """
-    Interactive integration using a JIT-compiled jax.lax.scan for each interval
-    between update_postprocess calls.
-    """
-
-    @jax.jit
-    def step(u, T, dt, t):
-        u = time_step(u, T, dt, t)
-        T = temperature(u, T)
-        t = t + dt
-        return u, T, t
-
-    status = lambda it, u, T: print(f"Current time step: {it}/{NUM_TIME_STEPS}, t: {it*dt}, CFL: {jnp.max(check_CFL(u, T)):.4f}")
-
-    scan_steps = NUM_ITS_PER_UPDATE
-    total_steps = NUM_TIME_STEPS
-
-    fig, plot_grid = init_postprocess()
-    plot_grid = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP)
-    status(0, u, T)
-
-    #compiled interval of steps between plot updates
-    @partial(jax.jit, static_argnames=['steps'])
-    def compiled_step(u, T, steps, t):
-        u, T, t = jax.lax.scan(lambda carry, _: (step(carry[0], carry[1], dt, carry[2]), None), (u, T, t), None, length=steps)[0]
-        return u, T, t
-    
-    t = 0.0
-    steps_done = 0
-    while steps_done < total_steps:
-        #steps = min(scan_steps, total_steps - steps_done)
-        u, T, t = compiled_step(u, T, scan_steps, t)
-        steps_done += scan_steps
-
-        status(steps_done, u, T)
-        update_postprocess(u, T, fig, plot_grid)
 
     return u, T

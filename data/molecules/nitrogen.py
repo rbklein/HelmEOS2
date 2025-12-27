@@ -2,7 +2,7 @@
 Nitrogen molecule
 """
 
-from data.molecules.base_molecule import *
+from data.molecules.base_molecule import Molecule
 
 class Nitrogen(Molecule):
     """

@@ -2,9 +2,11 @@
     Functions for calculating source terms in numerical simulations.
 """
 
-from prep_jax import *
-from config.conf_numerical import *
-from config.conf_geometry import *
+from prep_jax               import *
+from config.conf_numerical  import *
+from config.conf_geometry   import *
+
+from jax import jit
 
 ''' Consistency checks '''
 
@@ -26,6 +28,7 @@ match SOURCE_TERM:
     case _:
         raise ValueError(f"Unknown source term: {SOURCE_TERM}")
 
-@jax.jit
+#broken
+@jit
 def dudt(u, T, t):
     return source(u, T, t)

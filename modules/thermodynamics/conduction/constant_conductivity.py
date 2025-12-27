@@ -2,8 +2,10 @@
     Implements a constant thermal conductivity
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
+
+from jax.numpy import ones_like
 
 ''' Functions '''
 
@@ -19,5 +21,5 @@ def constant_thermal_conductivity(u, T):
     """
     Implements a constant thermal conductivity
     """
-    return THERMAL_COND_parameters["value"] * jnp.ones_like(T)
+    return THERMAL_COND_parameters["value"] * ones_like(T)
 

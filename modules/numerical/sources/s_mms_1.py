@@ -2,15 +2,16 @@
 Manufactured solution #1 for the Euler equation
 """
 
-from prep_jax import *
-from config.conf_numerical import *
-from modules.geometry.grid import *
-from modules.thermodynamics.EOS import *
-from modules.simulation.initial_conditions.u_mms_1 import solution_u_mms_1
+from prep_jax               import *
+from config.conf_numerical  import *
+
+from modules.geometry.grid      import GRID_RESOLUTION, GRID_SPACING, DOMAIN_SIZE
+from modules.thermodynamics.EOS import speed_of_sound, pressure, pressure_rho, pressure_T, internal_energy, internal_energy_rho, internal_energy_T, molecule
+from jax.numpy                  import stack, pi, ones_like, cos, sin
 
 rho_c, T_c, p_c = molecule.critical_point
 
-def source_1d(u_num, T_num, t):
+def source_1d(u_num, T_num, mesh, t):
     """
     Source term s for manufactured solution number 1
 
@@ -21,27 +22,27 @@ def source_1d(u_num, T_num, t):
     d_x = GRID_SPACING[0]
 
     #set parameters
-    k = omega = 2 * jnp.pi
+    k = omega = 2 * pi
     rho0, Arho = 1.2, 0.01
     T0,   AT   = 1.2, 0.01
 
-    c = speed_of_sound(rho0 * rho_c * jnp.ones_like(mesh[0]), T0 * T_c * jnp.ones_like(mesh[0]))[0]
+    c = speed_of_sound(rho0 * rho_c * ones_like(mesh[0]), T0 * T_c * ones_like(mesh[0]))[0]
     vel0, Avel = 0.1, 0.01
 
     #compute solutions
-    rho = rho_c * (rho0 + Arho * jnp.cos(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.cos(omega * t))
-    vel = c *     (vel0 + Avel * jnp.sin(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.cos(omega * t))
-    T   = T_c   * (T0   + AT   * jnp.cos(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.sin(omega * t))
+    rho = rho_c * (rho0 + Arho * cos(k * mesh[0] / DOMAIN_SIZE[0]) * cos(omega * t))
+    vel = c *     (vel0 + Avel * sin(k * mesh[0] / DOMAIN_SIZE[0]) * cos(omega * t))
+    T   = T_c   * (T0   + AT   * cos(k * mesh[0] / DOMAIN_SIZE[0]) * sin(omega * t))
 
     #compute derivatives (could have been AD, but I like suffering)
-    rho_t = - rho_c * omega * Arho * jnp.cos(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.sin(omega * t)
-    rho_x = - rho_c * k / DOMAIN_SIZE[0] *  Arho * jnp.sin(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.cos(omega * t)
+    rho_t = - rho_c * omega * Arho * cos(k * mesh[0] / DOMAIN_SIZE[0]) * sin(omega * t)
+    rho_x = - rho_c * k / DOMAIN_SIZE[0] *  Arho * sin(k * mesh[0] / DOMAIN_SIZE[0]) * cos(omega * t)
 
-    vel_t = - c * omega * Avel * jnp.sin(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.sin(omega * t)
-    vel_x = c * k / DOMAIN_SIZE[0] * Avel * jnp.cos(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.cos(omega * t)
+    vel_t = - c * omega * Avel * sin(k * mesh[0] / DOMAIN_SIZE[0]) * sin(omega * t)
+    vel_x = c * k / DOMAIN_SIZE[0] * Avel * cos(k * mesh[0] / DOMAIN_SIZE[0]) * cos(omega * t)
 
-    T_t = T_c * omega * AT * jnp.cos(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.cos(omega * t)
-    T_x = - T_c * k / DOMAIN_SIZE[0] * AT * jnp.sin(k * mesh[0] / DOMAIN_SIZE[0]) * jnp.sin(omega * t)
+    T_t = T_c * omega * AT * cos(k * mesh[0] / DOMAIN_SIZE[0]) * cos(omega * t)
+    T_x = - T_c * k / DOMAIN_SIZE[0] * AT * sin(k * mesh[0] / DOMAIN_SIZE[0]) * sin(omega * t)
 
     #source rho
     s_rho = rho_t + rho_x * vel + rho * vel_x
@@ -65,5 +66,5 @@ def source_1d(u_num, T_num, t):
 
     s_E = E_t + vel_x * (E + p) + vel * (E_x + p_x)
 
-    return jnp.stack((s_rho, s_m, s_E), axis = 0)
+    return stack((s_rho, s_m, s_E), axis = 0)
 

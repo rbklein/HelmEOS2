@@ -2,11 +2,12 @@
     Implementation of a naive viscous flux
 """
 
-from prep_jax import *
-from config.conf_numerical import *
-from modules.geometry.grid import *
-from modules.thermodynamics.EOS import *
-from modules.thermodynamics.constitutive import *
+from prep_jax               import *
+from config.conf_numerical  import *
+
+from modules.geometry.grid                  import GRID_RESOLUTION, GRID_SPACING
+from modules.thermodynamics.constitutive    import dynamic_viscosity, bulk_viscosity
+from jax.numpy                              import stack, zeros
 
 ''' 3D Versions of naive stress tensor divergence '''
 
@@ -46,13 +47,13 @@ def div_x_naive_stress_3d(u, T):
 
     vel_m = 0.5 * (vel[:, 1:, 1:-1, 1:-1] + vel[:, :-1, 1:-1, 1:-1])
 
-    f_rho_x = jnp.zeros((n_x + 1, n_y, n_z))
+    f_rho_x = zeros((n_x + 1, n_y, n_z))
     f_m1_x = mu_m * (du_dx + d_vel_dx[0]) + (zeta_m - 2/3 * mu_m) * div_vel     #compute second viscosity from bulk and dynamic viscosity
     f_m2_x = mu_m * (du_dy_m + d_vel_dx[1])
     f_m3_x = mu_m * (du_dz_m + d_vel_dx[2])
     f_E_x = mu_m * (vel_m[0] * f_m1_x + vel_m[1] * f_m2_x + vel_m[2] * f_m3_x) 
 
-    F = jnp.stack((f_rho_x, f_m1_x, f_m2_x, f_m3_x, f_E_x), axis=0)
+    F = stack((f_rho_x, f_m1_x, f_m2_x, f_m3_x, f_E_x), axis=0)
     return d_y * d_z * (F[:, 1:, :, :] - F[:, :-1, :, :])  # Return the difference in fluxes in x-direction
 
 def div_y_naive_stress_3d(u, T):
@@ -92,13 +93,13 @@ def div_y_naive_stress_3d(u, T):
 
     vel_m = 0.5 * (vel[:, 1:-1, 1:, 1:-1] + vel[:, 1:-1, :-1, 1:-1])
 
-    f_rho_y = jnp.zeros((n_x, n_y + 1, n_z))
+    f_rho_y = zeros((n_x, n_y + 1, n_z))
     f_m1_y = mu_m * (dv_dx_m + d_vel_dy[0]) 
     f_m2_y = mu_m * (dv_dy + d_vel_dy[1]) + (zeta_m - 2/3 * mu_m) * div_vel     #compute second viscosity from bulk and dynamic viscosity
     f_m3_y = mu_m * (dv_dz_m + d_vel_dy[2])
     f_E_y = mu_m * (vel_m[0] * f_m1_y + vel_m[1] * f_m2_y + vel_m[2] * f_m3_y) 
 
-    F = jnp.stack((f_rho_y, f_m1_y, f_m2_y, f_m3_y, f_E_y), axis=0)
+    F = stack((f_rho_y, f_m1_y, f_m2_y, f_m3_y, f_E_y), axis=0)
     return d_x * d_z * (F[:, :, 1:, :] - F[:, :, :-1, :])  # Return the difference in fluxes in y-direction
 
 def div_z_naive_stress_3d(u, T):
@@ -137,13 +138,13 @@ def div_z_naive_stress_3d(u, T):
 
     vel_m = 0.5 * (vel[:, 1:-1, 1:-1, 1:] + vel[:, 1:-1, 1:-1, :-1])
 
-    f_rho_z = jnp.zeros((n_x, n_y, n_z + 1))
+    f_rho_z = zeros((n_x, n_y, n_z + 1))
     f_m1_z = mu_m * (dw_dx_m + d_vel_dz[0]) 
     f_m2_z = mu_m * (dw_dy_m + d_vel_dz[1]) 
     f_m3_z = mu_m * (dw_dz + d_vel_dz[2]) + (zeta_m - 2/3 * mu_m) * div_vel     #compute second viscosity from bulk and dynamic viscosity
     f_E_y = mu_m * (vel_m[0] * f_m1_z + vel_m[1] * f_m2_z + vel_m[2] * f_m3_z) 
 
-    F = jnp.stack((f_rho_z, f_m1_z, f_m2_z, f_m3_z, f_E_y), axis=0)
+    F = stack((f_rho_z, f_m1_z, f_m2_z, f_m3_z, f_E_y), axis=0)
     return d_x * d_y * (F[:, :, :, 1:] - F[:, :, :, :-1])  # Return the difference in fluxes in y-direction
 
 def div_naive_stress_3d(u, T):
@@ -185,12 +186,12 @@ def div_x_naive_stress_2d(u, T):
 
     vel_m = 0.5 * (vel[:, 1:, 1:-1] + vel[:, :-1, 1:-1])
 
-    f_rho_x = jnp.zeros((n_x + 1, n_y))
+    f_rho_x = zeros((n_x + 1, n_y))
     f_m1_x = mu_m * (du_dx + d_vel_dx[0]) + (zeta_m - mu_m) * div_vel     #compute second viscosity from bulk and dynamic viscosity
     f_m2_x = mu_m * (du_dy_m + d_vel_dx[1])
     f_E_x = mu_m * (vel_m[0] * f_m1_x + vel_m[1] * f_m2_x) 
 
-    F = jnp.stack((f_rho_x, f_m1_x, f_m2_x, f_E_x), axis=0)
+    F = stack((f_rho_x, f_m1_x, f_m2_x, f_E_x), axis=0)
     return d_y * (F[:, 1:, :] - F[:, :-1, :])  # Return the difference in fluxes in x-direction
 
 def div_y_naive_stress_2d(u, T):
@@ -224,12 +225,12 @@ def div_y_naive_stress_2d(u, T):
 
     vel_m = 0.5 * (vel[:, 1:-1, 1:] + vel[:, 1:-1, :-1])
 
-    f_rho_y = jnp.zeros((n_x, n_y + 1))
+    f_rho_y = zeros((n_x, n_y + 1))
     f_m1_y = mu_m * (dv_dx_m + d_vel_dy[0]) 
     f_m2_y = mu_m * (dv_dy + d_vel_dy[1]) + (zeta_m - mu_m) * div_vel     #compute second viscosity from bulk and dynamic viscosity
     f_E_y = mu_m * (vel_m[0] * f_m1_y + vel_m[1] * f_m2_y) 
 
-    F = jnp.stack((f_rho_y, f_m1_y, f_m2_y, f_E_y), axis=0)
+    F = stack((f_rho_y, f_m1_y, f_m2_y, f_E_y), axis=0)
     return d_x * (F[:, :, 1:] - F[:, :, :-1])  # Return the difference in fluxes in y-direction
 
 def div_naive_stress_2d(u, T):
@@ -255,9 +256,9 @@ def div_naive_stress_1d(u, T):
     d_vel_dx = (vel[1:] - vel[:-1]) / d_x     #(2, n_x + 1, n_y)
     vel_m = 0.5 * (vel[1:] + vel[:-1])
 
-    f_rho_x = jnp.zeros((n_x + 1))
+    f_rho_x = zeros((n_x + 1))
     f_m1_x = mu_m * d_vel_dx
     f_E_x = mu_m * vel_m * f_m1_x 
 
-    F = jnp.stack((f_rho_x, f_m1_x, f_E_x), axis=0)
+    F = stack((f_rho_x, f_m1_x, f_E_x), axis=0)
     return F[:, 1:] - F[:, :-1]  # Return the difference in fluxes in x-direction

@@ -4,20 +4,22 @@
     ``Reference Correlation of the Thermal Conductivity of Carbon Dioxide from the Triple Point to 1100 K and up to 200 MPa''
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
-from modules.thermodynamics.EOS import *
+
+from modules.thermodynamics.EOS import pressure_rho, c_p, c_v
+from jax.numpy import array, sqrt, ones_like, zeros_like, exp, atan
 
 ''' Parameters '''
 
-huber_zero_density_limit_coeffs = jnp.array([
+huber_zero_density_limit_coeffs = array([
     1.51874307e-2,
     2.80674040e-2,
     2.28564190e-2,
     -7.41624210e-3,
 ])
 
-huber_residual_coeffs_const = jnp.array([
+huber_residual_coeffs_const = array([
     1.00128e-2,
     5.60488e-2,
     -8.11620e-2,
@@ -26,7 +28,7 @@ huber_residual_coeffs_const = jnp.array([
     2.53248e-3,
 ])
 
-huber_residual_coeffs_temp = jnp.array([
+huber_residual_coeffs_temp = array([
     4.30829e-3,
     -3.58563e-2,
     6.71480e-2,
@@ -50,9 +52,9 @@ def huber_zero_density_limit(u, T):
         Zero-density limit of the thermal conductivity in W m^-1 K^-1 according to Huber et al. (2016)
     """
     T_r = T / T_c
-    num = jnp.sqrt(T_r)
+    num = sqrt(T_r)
 
-    den = jnp.zeros_like(T)
+    den = zeros_like(T)
     for i in range(4):
         exponent = i
         den += huber_zero_density_limit_coeffs[i] / (T_r**exponent)
@@ -67,7 +69,7 @@ def huber_residual_term(u, T):
     rho_r = u[0] / rho_c
     T_r = T / T_c
 
-    term = jnp.zeros_like(T)
+    term = zeros_like(T)
     for i in range(6):
         exponent = i + 1
         term += (huber_residual_coeffs_const[i] + huber_residual_coeffs_temp[i] * T_r) * (rho_r**exponent)
@@ -93,12 +95,12 @@ def huber_critical_enhancement(u, T):
 
     xi_coeff = ((p_c * u[0]) / (gamma_capital * rho_c**2))**(nu / gamma_small)
     p_rho = pressure_rho(u[0], T)
-    p_rho_ref = pressure_rho(u[0], T_ref * jnp.ones_like(T))
+    p_rho_ref = pressure_rho(u[0], T_ref * ones_like(T))
     xi = xi_0 * xi_coeff * (1 / p_rho - (T_ref / T) * 1 / p_rho_ref)**(nu / gamma_small)
 
     omega_exponent = - 1 / (q_D_inv / xi + (((xi * rho_c) / (q_D_inv * u[0]))**2) / 3)
-    Omega_0 = 2 / PI * (1 - jnp.exp(omega_exponent))
-    Omega = 2 / PI * ((Cp - Cv) / Cp * jnp.atan(xi / q_D_inv) + Cv / Cp * xi / q_D_inv)
+    Omega_0 = 2 / PI * (1 - exp(omega_exponent))
+    Omega = 2 / PI * ((Cp - Cv) / Cp * atan(xi / q_D_inv) + Cv / Cp * xi / q_D_inv)
 
     viscosity = laesecke_dynamic_viscosity(u, T)
     term = u[0] * Cp * R_D * BOLTZMANN_CONSTANT * T / (6 * PI * viscosity * xi) * (Omega - Omega_0)

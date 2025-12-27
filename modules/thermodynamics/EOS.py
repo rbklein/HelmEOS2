@@ -19,9 +19,12 @@ Assumptions:
 - All thermodynamic quantities below are per unit mass, except pressure which is per volume.
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
-from config.conf_geometry import N_DIMENSIONS
+from config.conf_geometry       import *
+
+from jax.numpy  import sum, abs, sqrt
+from jax        import vmap, grad, jacfwd
 
 # -----------------------------
 # Consistency checks
@@ -78,7 +81,7 @@ def internal_energy_u(u):
     rho = u[0]
     rhou = u[1 : N_DIMENSIONS + 1]
     rhoE = u[N_DIMENSIONS + 1]
-    ke = 0.5 * jnp.sum(rhou * rhou, axis=0) / (rho * rho)
+    ke = 0.5 * sum(rhou * rhou, axis=0) / (rho * rho)
     return rhoE / rho - ke
 
 # Temperature from conservative variables (u, Tguess) -> T
@@ -92,23 +95,23 @@ def _vectorize_thermo(f: callable) -> callable:
     Vectorizes a scalar thermodynamic function to work elementwise over arrays
     of dim = N_DIMENSIONS (e.g., 3D mesh).
     """
-    f_vec = jax.vmap(f, in_axes=(0, 0), out_axes=0)
+    f_vec = vmap(f, in_axes=(0, 0), out_axes=0)
     for i in range(1, N_DIMENSIONS):
-        f_vec = jax.vmap(f_vec, in_axes=(i, i), out_axes=i)
+        f_vec = vmap(f_vec, in_axes=(i, i), out_axes=i)
     return f_vec
 
 # -----------------------------
 # Helmholtz derivatives (memory-aware)
 # -----------------------------
 # First derivatives: reverse-mode is fine and typically cheapest.
-dAdrho_scalar = jax.grad(Helmholtz_scalar, argnums=0)
-dAdT_scalar   = jax.grad(Helmholtz_scalar, argnums=1)
+dAdrho_scalar = grad(Helmholtz_scalar, argnums=0)
+dAdT_scalar   = grad(Helmholtz_scalar, argnums=1)
 
 # Second derivatives: use forward-over-reverse for much lower peak memory vs grad(grad(.))
 # (i.e., avoid reverse-over-reverse).
-d2Ad2rho_scalar  = jax.jacfwd(dAdrho_scalar, argnums=0)
-d2AdrhodT_scalar = jax.jacfwd(dAdrho_scalar, argnums=1)
-d2Ad2T_scalar    = jax.jacfwd(dAdT_scalar,   argnums=1)
+d2Ad2rho_scalar  = jacfwd(dAdrho_scalar, argnums=0)
+d2AdrhodT_scalar = jacfwd(dAdrho_scalar, argnums=1)
+d2Ad2T_scalar    = jacfwd(dAdT_scalar,   argnums=1)
 
 # Vectorized versions used on fields
 Helmholtz = _vectorize_thermo(Helmholtz_scalar)
@@ -149,7 +152,7 @@ def speed_of_sound(rho, T):
     A_rT   = d2AdrhodT(rho, T)
     A_TT   = d2Ad2T(rho, T)
     a2 = 2.0 * rho * A_rho + (rho * rho) * A_rr - (rho * rho) * (A_rT * A_rT) / A_TT
-    return jnp.sqrt(jnp.abs(a2))
+    return sqrt(abs(a2))
 
 def c_v(rho, T):
     """
@@ -181,7 +184,7 @@ def c_p(rho, T):
 # Miscallaneous dynamic quantities
 # -----------------------------
 def kinetic_energy(rho, v):
-    return 0.5 * rho * jnp.sum(v**2, axis = 0)
+    return 0.5 * rho * sum(v**2, axis = 0)
 
 def total_energy(rho, T, v):
     return rho * internal_energy(rho, T) + kinetic_energy(rho, v)

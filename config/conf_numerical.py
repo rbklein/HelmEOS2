@@ -20,8 +20,9 @@ SOURCE_TERM = "NONE"
 TIME_STEP_METHOD = "WRAY"
 
 #Discrete gradient type
+#Options: "SYM_ITOH_ABE", "GONZALEZ"
 DISCRETE_GRADIENT = "SYM_ITOH_ABE"
 
 #Number of time steps
-NUM_TIME_STEPS = 6250 # 50_000 
+NUM_TIME_STEPS = 10 # 6250 # 50_000 
 

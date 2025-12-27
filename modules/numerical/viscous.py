@@ -2,10 +2,12 @@
     Contains functions that construct the viscous flux divergence
 """
 
-from prep_jax import *
-from config.conf_numerical import *
-from config.conf_geometry import *
-from modules.simulation.boundary import apply_boundary_conditions, apply_temperature_boundary_condition
+from prep_jax               import *
+from config.conf_numerical  import *
+from config.conf_geometry   import *
+
+from modules.simulation.boundary    import apply_boundary_conditions, apply_temperature_boundary_condition
+from jax                            import jit
 
 ''' Consistency checks '''
 
@@ -27,7 +29,7 @@ match NUMERICAL_VISCOUS_FLUX:
     case _:
         raise ValueError(f"Unknown viscous numerical flux: {NUMERICAL_VISCOUS_FLUX}")
     
-@jax.jit
+@jit
 def dudt(u, T):
     """
     Calculate the time derivative of u using the specified numerical viscous flux.

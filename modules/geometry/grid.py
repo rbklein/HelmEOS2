@@ -2,8 +2,8 @@
     Functions for the grid geometry.
 """
 
-from config.conf_geometry import *
-import numpy as np
+from prep_jax               import *
+from config.conf_geometry   import *
 
 ''' Consistency checks '''
 
@@ -15,10 +15,13 @@ assert all(isinstance(v, int) for v in GRID_RESOLUTION), "Grid resolution must b
 
 
 ''' Derived parameters '''
-from prep_jax import *
+from jax        import device_put
+from jax.numpy  import prod, array, linspace, meshgrid
+from numpy      import meshgrid as np_meshgrid
+
 
 GRID_SPACING = tuple(size / res for size, res in zip(DOMAIN_SIZE, GRID_RESOLUTION))  # Spacing between grid points in each dimension
-CELL_VOLUME  = jnp.prod(jnp.array(GRID_SPACING))  # Volume of each grid cell
+CELL_VOLUME  = prod(array(GRID_SPACING))  # Volume of each grid cell
 
 ''' Functions '''
 
@@ -30,15 +33,15 @@ def construct_mesh():
         assert len(SHARD_PARTITION) == len(GRID_RESOLUTION), "Sharding memory partition is not compatible with grid"
 
         # Construct mesh on cpu and pass around sharded
-        mesh = np.meshgrid(
-            *[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], 
+        mesh = np_meshgrid(
+            *[linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], 
             indexing='ij'
         )
 
-        mesh = [jax.device_put(mesh[i], NamedSharding(device_mesh, PartitionSpec(*SHARD_PARTITION))) for i in range(N_DIMENSIONS)]
+        mesh = [device_put(mesh[i], NamedSharding(device_mesh, PartitionSpec(*SHARD_PARTITION))) for i in range(N_DIMENSIONS)]
     else:
-        mesh = jnp.meshgrid(
-            *[jnp.linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], 
+        mesh = meshgrid(
+            *[linspace(spacing/2, size - spacing/2, num) for size, num, spacing in zip(DOMAIN_SIZE, GRID_RESOLUTION, GRID_SPACING)], 
             indexing='ij'
         )  #meshgrid for the grid points
 

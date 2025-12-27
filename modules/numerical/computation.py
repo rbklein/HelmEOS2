@@ -3,14 +3,14 @@
 """
 
 from prep_jax import *
-from modules.geometry.grid import *
+from config.conf_geometry import *
 
-#import numpy as np
-#from scipy.spatial import ConvexHull
-#from functools import partial
+from modules.geometry.grid  import GRID_SPACING, CELL_VOLUME
+from jax.numpy              import finfo, sum, sqrt, maximum, cbrt
+from jax                    import vmap
 
 ''' Derived parameters '''
-EPS = jnp.finfo(DTYPE).eps
+EPS = finfo(DTYPE).eps
 
 ''' Auxiliary functions used in computation '''
 def pad_1d_to_mesh(arr):
@@ -56,25 +56,27 @@ def solve_root_thermo(v, vconst, vaux, root, droot, _1, _2):
 def vectorize_root(f : callable):
     f_vec = f
     for i in range(N_DIMENSIONS):
-        f_vec = jax.vmap(f_vec, (i,i,i), i)
+        f_vec = vmap(f_vec, (i,i,i), i)
     return f_vec
 
 def spatial_average(field):
-    integral = jnp.sum(field)
+    integral = sum(field)
     for i in range(N_DIMENSIONS):
         integral *= GRID_SPACING[i] / DOMAIN_SIZE[i]
     return integral
 
 def midpoint_integrate(field):
     field_scaled = field * CELL_VOLUME
-    integral = jnp.sum(field_scaled)
+    integral = sum(field_scaled)
     return integral
 
 def zero_by_zero(num, den):
     """
     Robust division operator for 0/0 = 0 scenarios (thanks to Alessia)
+
+    Does not work well in single precision
     """
-    return den * (jnp.sqrt(2) * num) / (jnp.sqrt(den**4 + jnp.maximum(den, 1e-14)**4))
+    return den * (sqrt(2) * num) / (sqrt(den**4 + maximum(den, 100 * EPS)**4))
 
 def cubic_root_single(coeffs):
     '''
@@ -86,6 +88,6 @@ def cubic_root_single(coeffs):
     q = (2 * b**3 - 9 * a * b * c + 27 * (a**2) * d) / (27 * a**3)
     delta = (q**2) / 4 + (p**3) / 27
 
-    u = jnp.cbrt(-q/2 + jnp.sqrt(delta))
-    v = jnp.cbrt(-q/2 - jnp.sqrt(delta))
+    u = cbrt(-q/2 + sqrt(delta))
+    v = cbrt(-q/2 - sqrt(delta))
     return u + v - b / (3 * a)

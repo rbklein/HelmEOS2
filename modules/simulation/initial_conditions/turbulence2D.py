@@ -4,6 +4,7 @@
     generated with ChatGPT 5
 """
 
+'''
 from prep_jax import *
 from modules.geometry.grid import *
 from jax.scipy.special import gamma
@@ -11,7 +12,7 @@ from typing import Tuple
 
 from modules.thermodynamics.EOS import *
 
-''' Consistency checks '''
+#
 
 # initial kinetic energy spectrum 
 # should be configured so that max(E(kxmax),E(kymax)) < epsilon
@@ -124,3 +125,4 @@ def turbulence_2d(mesh : Tuple[jnp.ndarray, jnp.ndarray]) -> jnp.ndarray:
     rho =  1.5 * rho_c * jnp.ones_like(mesh[0])  # Uniform density field
     p = 2.5 * p_c * jnp.ones_like(mesh[0])  # Uniform pressure field
     return jnp.stack((rho, ux, uy, p), axis=0), 0 #rvp
+'''

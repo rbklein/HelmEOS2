@@ -5,13 +5,15 @@ see (referred to as KW-article): The GERG-2004 Wide-Range Equation of State for 
 and: Ideal-Gas Thermodynamic Properties for Natural-Gas Applications
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
-from config.conf_geometry import *
+from config.conf_geometry       import *
 
-from modules.numerical.computation import solve_root_thermo, vectorize_root, EPS
-from modules.thermodynamics.gas_models.Jaeschke_Schley_ideal import Jaeschke_Schley
-#from modules.thermodynamics.gas_models.ideal_gas import ideal_gas
+from modules.numerical.computation                              import solve_root_thermo, vectorize_root
+from modules.thermodynamics.gas_models.Jaeschke_Schley_ideal    import Jaeschke_Schley
+from jax.numpy                                                  import array, zeros_like, exp
+from jax                                                        import grad, jit, jacfwd
+
 
 ''' check parameter consistency '''
 
@@ -25,7 +27,7 @@ def check_consistency_Wagner():
 rho_c, T_c, p_c = molecule.critical_point
 
 #refprop compare
-_residual_coeffs = [
+_residual_coeffs = array([
     0.52646564804653,
     -1.4995725042592,
     0.27329786733782,
@@ -48,35 +50,35 @@ _residual_coeffs = [
     -0.22130790113593,
     0.015190189957331,
     -0.0153809489533
-]
+])
 
 
 
-_temperature_powers = [
+_temperature_powers = array([
     0.0,    1.25,   1.625,  0.375,
     0.375,  1.375,  1.125,  1.375,
     0.125,  1.625,  3.75,   3.5,
     7.5,    8.0,    6.0,    16.0,
     11.0,   24.0,   26.0,   28.0,
     24.0,   26.0
-]
+])
 
-_density_powers = [
+_density_powers = array([
     1.0,    1.0,    2.0,    3.0,
     3.0,    3.0,    4.0,    5.0, 
     6.0,    6.0,    1.0,    4.0,
     1.0,    1.0,    3.0,    3.0,
     4.0,    5.0,    5.0,    5.0,
     5.0,    5.0
-]
+])
 
-_exp_powers = [
+_exp_powers = array([
     1.0,    1.0,    1.0,
     1.0,    1.0,    1.0,    2.0,
     2.0,    3.0,    3.0,    3.0,
     3.0,    3.0,    5.0,    5.0,
     5.0,    6.0,    6.0
-]
+])
 
 # _residual_coeffs     = jnp.array(_residual_coeffs)
 # _temperature_powers  = jnp.array(_temperature_powers)
@@ -95,7 +97,7 @@ def Wagner_residual(rho, T):
     '''
         computes the residual Helmholtz energy of the Kunz-Wagner real gas equation of state
     '''
-    ar     = jnp.zeros_like(rho)
+    ar     = zeros_like(rho)
     rho_r   = rho / rho_c
     T_r     = T_c / T
 
@@ -104,7 +106,7 @@ def Wagner_residual(rho, T):
 
     for i in range(18):
         ip = i + 4
-        ar += _residual_coeffs[ip] * (rho_r**_density_powers[ip]) * (T_r**_temperature_powers[ip]) * jnp.exp(-rho_r**_exp_powers[i])
+        ar += _residual_coeffs[ip] * (rho_r**_density_powers[ip]) * (T_r**_temperature_powers[ip]) * exp(-rho_r**_exp_powers[i])
 
     return R_specific * T * ar
 
@@ -116,10 +118,10 @@ def Wagner(rho, T):
 
 
 ''' Temperature equation (rho, p) -> T for initial conditions'''
-_dAdrho                 = jax.grad(Wagner, 0)
+_dAdrho                 = grad(Wagner, 0)
 _p                      = lambda rho, T: rho**2 * _dAdrho(rho, T)
 _root_func_pressure_T   = lambda T, rho, p: p - _p(rho, T)
-_drpdT_root             = jax.grad(_root_func_pressure_T, 0)
+_drpdT_root             = grad(_root_func_pressure_T, 0)
 
 root_func_pressure_T = vectorize_root(_root_func_pressure_T)
 drpdT_root = vectorize_root(_drpdT_root)
@@ -133,7 +135,7 @@ def temperature_rpt_Wagner(rho, p, Tguess):
 
 ''' Density equation (p, T) -> rho for initial conditions'''
 _root_func_pressure_rho = lambda rho, T, p: p - _p(rho, T)
-_drpdrho_root           = jax.grad(_root_func_pressure_rho, 0)
+_drpdrho_root           = grad(_root_func_pressure_rho, 0)
 
 root_func_pressure_rho = vectorize_root(_root_func_pressure_rho)
 drpdrho_root = vectorize_root(_drpdrho_root)
@@ -146,10 +148,10 @@ def density_ptr_Wagner(p, T, rhoguess):
 
 
 ''' Temperature equations (rho, e) -> T for simulations '''
-_dAdT                   = jax.grad(Wagner, 1)
+_dAdT                   = grad(Wagner, 1)
 _e                      = lambda rho, T: Wagner(rho, T) - T * _dAdT(rho, T)
-_root_func_energy_T     = jax.jit(lambda T, rho, e: e - _e(rho, T))
-_dredT_root             = jax.jit(jax.jacfwd(_root_func_energy_T, 0))
+_root_func_energy_T     = lambda T, rho, e: e - _e(rho, T)
+_dredT_root             = jacfwd(_root_func_energy_T, 0)
 
 root_func_energy_T = vectorize_root(_root_func_energy_T)
 dredT_root = vectorize_root(_dredT_root)

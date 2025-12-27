@@ -2,13 +2,16 @@
 Density Wave initial conditions
 """
 
-from prep_jax import *
-from modules.geometry.grid import *
-from modules.thermodynamics.EOS import *
+from prep_jax               import *
+
+from modules.geometry.grid      import DOMAIN_SIZE
+from modules.thermodynamics.EOS import molecule
+from jax.numpy                  import stack, ones_like, sin, pi
+from jax                        import jit
 
 rho_c, T_c, p_c = molecule.critical_point
 
-@jax.jit
+@jit
 def density_wave_1d(mesh):
     """
     Generate a 1D density wave pattern.
@@ -17,7 +20,7 @@ def density_wave_1d(mesh):
     jnp.ndarray: A stack of 2D arrays representing the density wave initial condition.
     """
 
-    rho = rho_c * (1 + 0.25 * jnp.sin(2 * jnp.pi * mesh[0] / DOMAIN_SIZE[0]))
-    u = 10 * jnp.ones_like(mesh[0]) 
-    p = 2 * p_c * jnp.ones_like(mesh[0])  
-    return jnp.stack((rho, u, p), axis=0), 0 #rvp  # Stack to create a 2D array with shape (4, n_x, n_y)
+    rho = rho_c * (1 + 0.25 * sin(2 * pi * mesh[0] / DOMAIN_SIZE[0]))
+    u = 10 * ones_like(mesh[0]) 
+    p = 2 * p_c * ones_like(mesh[0])  
+    return stack((rho, u, p), axis=0), 0 #rvp  # Stack to create a 2D array with shape (4, n_x, n_y)
