@@ -29,7 +29,7 @@ from jax        import vmap, grad, jacfwd
 # -----------------------------
 # Consistency checks
 # -----------------------------
-KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"]
+KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "KUNZ_WAGNER", "KUNZ_WAGNER_MANUAL"]
 assert EOS in KNOWN_EOS, f"Unknown EOS: {EOS}"
 assert MOLAR_MASS > 0, "Molar mass should be positive"
 
@@ -38,7 +38,7 @@ assert MOLAR_MASS > 0, "Molar mass should be positive"
 # -----------------------------
 match EOS:
     case "IDEAL_GAS":
-        from modules.thermodynamics.gas_models.ideal_gas import check_consistency_ideal_gas as check_consistency
+        from modules.thermodynamics.gas_models.ideal_gas import check_consistency_ideal as check_consistency
         from modules.thermodynamics.gas_models.ideal_gas import ideal_gas as Helmholtz_scalar
         from modules.thermodynamics.gas_models.ideal_gas import temperature_rpt_ideal as temperature_rpt
         from modules.thermodynamics.gas_models.ideal_gas import density_ptr_ideal as density_ptr
@@ -58,12 +58,19 @@ match EOS:
         from modules.thermodynamics.gas_models.Peng_Robinson import density_ptr_Peng_Robinson as density_ptr
         from modules.thermodynamics.gas_models.Peng_Robinson import temperature_ret_Peng_Robinson as temperature_ret
 
-    case "WAGNER":
-        from modules.thermodynamics.gas_models.Wagner import check_consistency_Wagner as check_consistency
-        from modules.thermodynamics.gas_models.Wagner import Wagner as Helmholtz_scalar
-        from modules.thermodynamics.gas_models.Wagner import temperature_rpt_Wagner as temperature_rpt
-        from modules.thermodynamics.gas_models.Wagner import density_ptr_Wagner as density_ptr
-        from modules.thermodynamics.gas_models.Wagner import temperature_ret_Wagner as temperature_ret
+    case "KUNZ_WAGNER":
+        from modules.thermodynamics.gas_models.Kunz_Wagner import check_consistency_Wagner as check_consistency
+        from modules.thermodynamics.gas_models.Kunz_Wagner import Kunz_Wagner as Helmholtz_scalar
+        from modules.thermodynamics.gas_models.Kunz_Wagner import temperature_rpt_Kunz_Wagner as temperature_rpt
+        from modules.thermodynamics.gas_models.Kunz_Wagner import density_ptr_Kunz_Wagner as density_ptr
+        from modules.thermodynamics.gas_models.Kunz_Wagner import temperature_ret_Kunz_Wagner as temperature_ret
+
+    case "KUNZ_WAGNER_MANUAL":
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import check_consistency_Wagner as check_consistency
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import Kunz_Wagner as Helmholtz_scalar
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import temperature_rpt_Kunz_Wagner as temperature_rpt
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import density_ptr_Kunz_Wagner as density_ptr
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import temperature_ret_Kunz_Wagner as temperature_ret
 
     case _:
         raise ValueError(f"Unknown EOS: {EOS}")
@@ -103,24 +110,44 @@ def _vectorize_thermo(f: callable) -> callable:
 # -----------------------------
 # Helmholtz derivatives (memory-aware)
 # -----------------------------
-# First derivatives: reverse-mode is fine and typically cheapest.
-dAdrho_scalar = grad(Helmholtz_scalar, argnums=0)
-dAdT_scalar   = grad(Helmholtz_scalar, argnums=1)
+if EOS != "KUNZ_WAGNER_MANUAL":
+    # First derivatives: 
+    dAdrho_scalar = grad(Helmholtz_scalar, argnums=0)
+    dAdT_scalar   = grad(Helmholtz_scalar, argnums=1)
 
-# Second derivatives: use forward-over-reverse for much lower peak memory vs grad(grad(.))
-# (i.e., avoid reverse-over-reverse).
-d2Ad2rho_scalar  = jacfwd(dAdrho_scalar, argnums=0)
-d2AdrhodT_scalar = jacfwd(dAdrho_scalar, argnums=1)
-d2Ad2T_scalar    = jacfwd(dAdT_scalar,   argnums=1)
+    # Second derivatives: 
+    d2Ad2rho_scalar  = jacfwd(dAdrho_scalar, argnums=0)
+    d2AdrhodT_scalar = jacfwd(dAdrho_scalar, argnums=1)
+    d2Ad2T_scalar    = jacfwd(dAdT_scalar,   argnums=1)
 
-# Vectorized versions used on fields
-Helmholtz = _vectorize_thermo(Helmholtz_scalar)
-dAdrho    = _vectorize_thermo(dAdrho_scalar)
-dAdT      = _vectorize_thermo(dAdT_scalar)
+    # Vectorized versions used on fields
+    Helmholtz = _vectorize_thermo(Helmholtz_scalar)
+    dAdrho    = _vectorize_thermo(dAdrho_scalar)
+    dAdT      = _vectorize_thermo(dAdT_scalar)
 
-d2Ad2rho  = _vectorize_thermo(d2Ad2rho_scalar)
-d2AdrhodT = _vectorize_thermo(d2AdrhodT_scalar)
-d2Ad2T    = _vectorize_thermo(d2Ad2T_scalar)
+    d2Ad2rho  = _vectorize_thermo(d2Ad2rho_scalar)
+    d2AdrhodT = _vectorize_thermo(d2AdrhodT_scalar)
+    d2Ad2T    = _vectorize_thermo(d2Ad2T_scalar)
+else:
+    ''' The necessary derivatives are already computed manually locally '''
+
+    # First derivatives:
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _dAdrho as dAdrho_scalar
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _dAdT as dAdT_scalar
+
+    # Second derivatives: 
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _d2Adrho2 as d2Ad2rho_scalar
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _d2AdrhodT as d2AdrhodT_scalar
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _d2AdT2 as d2Ad2T_scalar
+
+    Helmholtz   = Helmholtz_scalar
+    dAdrho      = dAdrho_scalar
+    dAdT        = dAdT_scalar 
+
+    d2Ad2rho    = d2Ad2rho_scalar
+    d2AdrhodT   = d2AdrhodT_scalar
+    d2Ad2T      = d2Ad2T_scalar
+
 
 # -----------------------------
 # Core thermodynamic quantities
@@ -245,13 +272,22 @@ def dpbdbeta_scalar(rho, beta):
     return (rho * rho) * (A_rho - A_rT / beta)
 
 # Vectorize beta-form functions over fields
-Gibbs_beta   = _vectorize_thermo(Gibbs_beta_scalar)
-dgbdrho      = _vectorize_thermo(dgbdrho_scalar)
-dgbdbeta     = _vectorize_thermo(dgbdbeta_scalar)
+if EOS != "KUNZ_WAGNER_MANUAL":
+    Gibbs_beta   = _vectorize_thermo(Gibbs_beta_scalar)
+    dgbdrho      = _vectorize_thermo(dgbdrho_scalar)
+    dgbdbeta     = _vectorize_thermo(dgbdbeta_scalar)
 
-pressure_beta = _vectorize_thermo(pressure_beta_scalar)
-dpbdrho       = _vectorize_thermo(dpbdrho_scalar)
-dpbdbeta      = _vectorize_thermo(dpbdbeta_scalar)
+    pressure_beta = _vectorize_thermo(pressure_beta_scalar)
+    dpbdrho       = _vectorize_thermo(dpbdrho_scalar)
+    dpbdbeta      = _vectorize_thermo(dpbdbeta_scalar)
+else:
+    Gibbs_beta   = Gibbs_beta_scalar
+    dgbdrho      = dgbdrho_scalar
+    dgbdbeta     = dgbdbeta_scalar
+
+    pressure_beta = pressure_beta_scalar
+    dpbdrho       = dpbdrho_scalar
+    dpbdbeta      = dpbdbeta_scalar
 
 # -----------------------------
 # Derivatives used in manufactured solutions (avoid grad; use analytic forms)
@@ -265,9 +301,6 @@ def pressure_T_scalar(rho, T):
     A_rT = d2AdrhodT_scalar(rho, T)
     return (rho * rho) * A_rT
 
-pressure_rho = _vectorize_thermo(pressure_rho_scalar)
-pressure_T   = _vectorize_thermo(pressure_T_scalar)
-
 def internal_energy_rho_scalar(rho, T):
     A_rho = dAdrho_scalar(rho, T)
     A_rT  = d2AdrhodT_scalar(rho, T)
@@ -279,8 +312,16 @@ def internal_energy_T_scalar(rho, T):
     # e_T = -T * A_TT
     return -T * A_TT
 
-internal_energy_rho = _vectorize_thermo(internal_energy_rho_scalar)
-internal_energy_T   = _vectorize_thermo(internal_energy_T_scalar)
+if EOS != "KUNZ_WAGNER_MANUAL":
+    pressure_rho        = _vectorize_thermo(pressure_rho_scalar)
+    pressure_T          = _vectorize_thermo(pressure_T_scalar)
+    internal_energy_rho = _vectorize_thermo(internal_energy_rho_scalar)
+    internal_energy_T   = _vectorize_thermo(internal_energy_T_scalar)
+else:
+    pressure_rho        = pressure_rho_scalar
+    pressure_T          = pressure_T_scalar
+    internal_energy_rho = internal_energy_rho_scalar
+    internal_energy_T   = internal_energy_T_scalar
 
 # -----------------------------
 # Optional: Third derivatives

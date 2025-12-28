@@ -30,7 +30,7 @@ def get_convert(vars : int):
         case _:
             raise ValueError(f"Unknown variable set: {vars}")
 
-@jit
+#@jit
 def rvp2u(v : ndarray) -> Tuple[ndarray, ndarray]:
     rho = v[0]
     vel = v[1:(N_DIMENSIONS+1), ...]
@@ -51,7 +51,7 @@ def rvp2u(v : ndarray) -> Tuple[ndarray, ndarray]:
 
     return u, T
 
-@jit
+#@jit
 def vpt2u(v : ndarray) -> Tuple[ndarray, ndarray]:
     vel = v[:N_DIMENSIONS, ...]
     p   = v[N_DIMENSIONS, ...]
@@ -70,7 +70,7 @@ def vpt2u(v : ndarray) -> Tuple[ndarray, ndarray]:
 
     return u, T
 
-@jit
+#@jit
 def rvt2u(v : ndarray) -> Tuple[ndarray, ndarray]:
     rho = v[0, ...]
     vel = v[1:N_DIMENSIONS + 1, ...]
@@ -88,7 +88,7 @@ def rvt2u(v : ndarray) -> Tuple[ndarray, ndarray]:
 
     return u, T
 
-@jit
+#@jit
 def entropy_variables(u : ndarray, T : ndarray) -> ndarray:
     g = Gibbs_energy(u[0], T)
     v = u[1:(N_DIMENSIONS+1)] / u[0]

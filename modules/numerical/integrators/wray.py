@@ -12,13 +12,8 @@ from modules.thermodynamics.EOS import temperature
 def _rhs(u, T, t):
     """Combined RHS: convective + viscous + heat."""
     rhs = dudt_c(u, T)
-    rhs.block_until_ready()
-
     rhs += dudt_v(u, T)
-    rhs.block_until_ready()
-
     rhs += dudt_q(u, T)
-    rhs.block_until_ready()
 
     return rhs
 

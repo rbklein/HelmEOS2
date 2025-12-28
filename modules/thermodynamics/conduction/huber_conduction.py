@@ -8,7 +8,8 @@ from prep_jax                   import *
 from config.conf_thermodynamics import *
 
 from modules.thermodynamics.EOS import pressure_rho, c_p, c_v
-from jax.numpy import array, sqrt, ones_like, zeros_like, exp, atan
+from jax.numpy                  import array, sqrt, ones_like, zeros_like, exp, atan
+from jax.lax                    import fori_loop
 
 ''' Parameters '''
 
@@ -55,9 +56,12 @@ def huber_zero_density_limit(u, T):
     num = sqrt(T_r)
 
     den = zeros_like(T)
-    for i in range(4):
+
+    def zero_lim_body(i, ac):
         exponent = i
-        den += huber_zero_density_limit_coeffs[i] / (T_r**exponent)
+        return ac + huber_zero_density_limit_coeffs[i] / (T_r**exponent)
+
+    den = fori_loop(0, 4, zero_lim_body, den)
     
     #correct units from mW to W
     return 1e-3 * num / den
@@ -70,10 +74,12 @@ def huber_residual_term(u, T):
     T_r = T / T_c
 
     term = zeros_like(T)
-    for i in range(6):
-        exponent = i + 1
-        term += (huber_residual_coeffs_const[i] + huber_residual_coeffs_temp[i] * T_r) * (rho_r**exponent)
 
+    def residual_body(i, ac):
+        exponent = i + 1
+        return ac + (huber_residual_coeffs_const[i] + huber_residual_coeffs_temp[i] * T_r) * (rho_r**exponent)
+
+    term = fori_loop(0, 6, residual_body, term)
     return term
 
 from modules.thermodynamics.dynamic.laesecke_dynamic import laesecke_dynamic_viscosity

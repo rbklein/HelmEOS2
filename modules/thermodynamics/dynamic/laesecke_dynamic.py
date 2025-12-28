@@ -7,7 +7,8 @@
 from prep_jax                   import *
 from config.conf_thermodynamics import *
 
-from jax.numpy import array, sqrt, ones_like, exp, pow
+from jax.numpy  import array, sqrt, ones_like, exp, pow
+from jax.lax    import fori_loop
 
 ''' Parameters '''
 
@@ -88,8 +89,11 @@ def laesecke_linear_in_density(u, T):
     T_red = T / _energy_scaling_parameter 
 
     virial_term = laesecke_virial_coeffs[0] * ones_like(T)
-    for i in range(8):
-        virial_term += laesecke_virial_coeffs[i+1] / pow(T_red, laesecke_virial_exponents[i])
+    
+    def virial_body(i, ac):
+        return ac + laesecke_virial_coeffs[i+1] / pow(T_red, laesecke_virial_exponents[i])
+
+    virial_term = fori_loop(0, 8, virial_body, virial_term)
 
     return eta_0 * virial_term * _sigma3Na / MOLAR_MASS * u[0] #check units
 

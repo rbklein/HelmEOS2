@@ -3,7 +3,7 @@
 """
 
 # Options: "SINGLE", "DOUBLE"
-USE_DTYPE = "SINGLE" 
+USE_DTYPE = "DOUBLE" 
 
 SHARD_ARRAYS    = False
 SHARD_DEVICES   = 'GPU'

@@ -30,7 +30,6 @@ match NUMERICAL_HEAT_FLUX:
     case _:
         raise ValueError(f"Unknown numerical heat flux: {NUMERICAL_HEAT_FLUX}")
     
-@jit
 def dudt(u, T):
     """
     Calculate the time derivative of u using the specified numerical heat flux.

@@ -47,7 +47,6 @@ def Peng_Robinson(rho, T):
 
     return - R_specific * T * (1 + log((1-rho*b_PR) * T**(molecular_dofs / 2) / rho)) - alpha / (2 * sqrt(2) * b_PR) * log(density_term)
 
-
 ''' Temperature equation (rho, p) -> T for initial conditions'''
 def root_func_pressure(T, rho, p):
     """

@@ -29,6 +29,5 @@ match SOURCE_TERM:
         raise ValueError(f"Unknown source term: {SOURCE_TERM}")
 
 #broken
-@jit
 def dudt(u, T, t):
     return source(u, T, t)
