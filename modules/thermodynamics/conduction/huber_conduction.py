@@ -84,6 +84,9 @@ def huber_residual_term(u, T):
 
 from modules.thermodynamics.dynamic.laesecke_dynamic import laesecke_dynamic_viscosity
 
+#from jax.debug import print as jax_print
+#from jax.numpy import any, all, isnan
+
 def huber_critical_enhancement(u, T):
     """
         Critical enhancement to the thermal conductivity in W m^-1 K^-1 according to Huber et al. (2016)
@@ -98,6 +101,15 @@ def huber_critical_enhancement(u, T):
     
     Cv = c_v(u[0], T)
     Cp = c_p(u[0], T)
+
+    # jax_print("{rho}, {T}, {rhonan}, {Tnan}, {cv}, {cp}", 
+    #           rho = all(u[0] > 0), 
+    #           T = all(T > 0.0), 
+    #           rhonan = any(isnan(u[0])), 
+    #           Tnan = any(isnan(T)), 
+    #           cv = any(isnan(Cv)), 
+    #           cp = any(isnan(Cp))
+    #     )
 
     xi_coeff = ((p_c * u[0]) / (gamma_capital * rho_c**2))**(nu / gamma_small)
     p_rho = pressure_rho(u[0], T)
@@ -116,5 +128,6 @@ def huber_thermal_conductivity(u, T):
     """
         Total thermal conductivity in W m^-1 K^-1 according to Huber et al. (2016)
     """
+    #jax_print("{rho}", rho = any(T > 0))
     return huber_zero_density_limit(u, T) + huber_residual_term(u, T) + huber_critical_enhancement(u, T)
 

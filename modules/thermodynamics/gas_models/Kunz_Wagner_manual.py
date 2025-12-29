@@ -165,7 +165,7 @@ def d2residual_drho2(rho, T):
 
     def body1(i, ar):
         c = _cr[i] * (T_r ** _ct[i]) * (1 / rho_c)**2
-        return ar + c * (_crho[i] * (_crho[i] - 1.0) * rho_r ** (_crho[i] - 2.0))
+        return ar + c * (_crho[i] * (_crho[i] - 1.0) * (rho_r ** (_crho[i] - 2.0)))
     
     ar = fori_loop(0, 4, body1, ar)
 
@@ -175,7 +175,7 @@ def d2residual_drho2(rho, T):
         """
         ip = i + 4
         c = _cr[ip] * (T_r ** _ct[ip]) * (1 / rho_c)**2
-        term1 = _ce[i]**2 * rho_r**(2 * _ce[i])
+        term1 = (_ce[i]**2) * rho_r**(2 * _ce[i])
         term2 = ((1 - 2 * _crho[ip]) * _ce[i] - _ce[i]**2) * rho_r**_ce[i]
         term3 = _crho[ip]**2 - _crho[ip]
         return ar + c * (rho_r ** (_crho[ip] - 2)) * (term1 + term2 + term3) * (exp(-rho_r**_ce[i]))

@@ -22,7 +22,7 @@ TEST_CASE = "CHAN_SHEAR_LAYER_2D"
 BC_TYPES = [("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC")]
 
 #Total simulation time
-TOTAL_TIME = 0.04
+TOTAL_TIME = 0.04 
 
 
 
