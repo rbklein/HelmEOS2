@@ -196,7 +196,7 @@ def dresidual_dT(rho, T):
     ar = zeros_like(rho)
     def body1(i, ar):
         c = _cr[i] * (rho_r ** _crho[i])
-        return ar + c * (1 - _ct[i]) * (1 / T_r) ** _ct[i]
+        return ar + c * (1 - _ct[i]) * (T_r ** _ct[i])
     
     ar = fori_loop(0, 4, body1, ar)
 
@@ -207,7 +207,7 @@ def dresidual_dT(rho, T):
             * (rho_r ** _crho[ip])
             * exp(-(rho_r ** _ce[i]))
         )
-        return ar + c * (1 - _ct[ip]) * (1 / T_r) ** _ct[ip]
+        return ar + c * (1 - _ct[ip]) * (T_r ** _ct[ip])
 
     ar = fori_loop(0, 18, body2, ar)
 
@@ -224,7 +224,7 @@ def d2residual_dT2(rho, T):
     ar = zeros_like(rho)
     def body1(i, ar):
         c = _cr[i] * (rho_r ** _crho[i]) * (1 / T_c)
-        return ar + c * (_ct[i] - 1) * _ct[i] * (1 / T_r) ** (_ct[i] + 1)
+        return ar + c * (_ct[i] - 1) * _ct[i] * (T_r ** (_ct[i] + 1))
     
     ar = fori_loop(0, 4, body1, ar)
 
@@ -236,7 +236,7 @@ def d2residual_dT2(rho, T):
             * exp(-(rho_r ** _ce[i]))
             * (1 / T_c)
         )
-        return ar + c * (_ct[ip] - 1) * _ct[ip] * (1 / T_r) ** (_ct[ip] + 1)
+        return ar + c * (_ct[ip] - 1) * _ct[ip] * (T_r ** (_ct[ip] + 1))
 
     ar = fori_loop(0, 18, body2, ar)
 
@@ -252,7 +252,7 @@ def d2residual_drhodT(rho, T):
     ar = zeros_like(rho)
     def body1(i, ar):
         c = _cr[i] * (_crho[i] * rho_r ** (_crho[i] - 1)) * (1 / rho_c)
-        return ar + c * (1 - _ct[i]) * (1 / T_r) ** _ct[i]
+        return ar + c * (1 - _ct[i]) * (T_r ** _ct[i])
     
     ar = fori_loop(0, 4, body1, ar)
 
@@ -265,7 +265,7 @@ def d2residual_drhodT(rho, T):
             * exp(-rho_r**_ce[i])
             * (1 / rho_c)
         )
-        return ar + c * (1 - _ct[ip]) * (1 / T_r) ** _ct[ip]
+        return ar + c * (1 - _ct[ip]) * (T_r ** _ct[ip])
 
     ar = fori_loop(0, 18, body2, ar)
 
@@ -280,9 +280,9 @@ _d2Adrho2               = lambda rho, T: Jaeschke_Schley_drho2(rho, T) + d2resid
 _d2AdT2                 = lambda rho, T: Jaeschke_Schley_dT2(rho, T) + d2residual_dT2(rho, T)
 
 ''' Temperature equation (rho, p) -> T for initial conditions'''
-_p                      = lambda rho, T: rho**2 * _dAdrho(rho, T)
+_p                     = lambda rho, T: rho**2 * _dAdrho(rho, T)
 root_func_pressure_T   = lambda T, rho, p: p - _p(rho, T)
-drpdT_root             = lambda T, rho, p: p - rho**2 * _d2AdrhodT(rho, T)
+drpdT_root             = lambda T, rho, p: - rho**2 * _d2AdrhodT(rho, T)
 
 def temperature_rpt_Kunz_Wagner(rho, p, Tguess):
     """
@@ -293,7 +293,7 @@ def temperature_rpt_Kunz_Wagner(rho, p, Tguess):
 
 ''' Density equation (p, T) -> rho for initial conditions'''
 root_func_pressure_rho = lambda rho, T, p: p - _p(rho, T)
-drpdrho_root           = lambda rho, T, p: p - 2 * rho * _dAdrho(rho, T) - rho**2 * _d2Adrho2(rho, T)
+drpdrho_root           = lambda rho, T, p: - 2 * rho * _dAdrho(rho, T) - rho**2 * _d2Adrho2(rho, T)
 
 
 def density_ptr_Kunz_Wagner(p, T, rhoguess):
@@ -306,7 +306,7 @@ def density_ptr_Kunz_Wagner(p, T, rhoguess):
 ''' Temperature equations (rho, e) -> T for simulations '''
 _e                      = lambda rho, T: Kunz_Wagner(rho, T) - T * _dAdT(rho, T)
 root_func_energy_T     = lambda T, rho, e: e - _e(rho, T)
-dredT_root             = lambda T, rho, e: e - _d2AdT2(rho, T)
+dredT_root             = lambda T, rho, e: T * _d2AdT2(rho, T)
 
 def temperature_ret_Kunz_Wagner(rho, e, Tguess):
     """

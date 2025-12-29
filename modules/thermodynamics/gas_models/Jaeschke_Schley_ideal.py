@@ -30,8 +30,8 @@ _b24 = array([-1.060440000, 0.013930000]) # cosh coeffs
 _theta24 = array([-2.844425476, 1.121596090]) * T_c
 
 # reference values mentioned in KW-article
-T_ref = 273.15 # 298.15      # 10 # K
-p_ref = 0.101325e6  # 10 * R_specific # Pa
+T_ref = 10 # K # 273.15 # 298.15 # 
+p_ref = 10 * R_specific # Pa 0.101325e6  # 
 rho_ref = p_ref / (R_specific * T_ref) # kg m^-3 
 
 
@@ -64,16 +64,16 @@ def enthalpy_integral(T):
     """
     linear_term = _b0 * T
 
-    def tanh_body(i, acc):
-        return acc - _b13[i] * _theta13[i] * tanh(_theta13[i] / T)
-
     def coth_body(i, acc):
-        return acc + _b24[i] * _theta24[i] * coth(_theta24[i] / T)
+        return acc + _b13[i] * _theta13[i] * coth(_theta13[i] / T)
+    
+    def tanh_body(i, acc):
+        return acc - _b24[i] * _theta24[i] * tanh(_theta24[i] / T)
 
-    tanh_term = fori_loop(0, 2, tanh_body, zeros_like(T))
     coth_term = fori_loop(0, 2, coth_body, zeros_like(T))
+    tanh_term = fori_loop(0, 2, tanh_body, zeros_like(T))
 
-    return R_specific * (linear_term + tanh_term + coth_term)
+    return R_specific * (linear_term + coth_term + tanh_term )
 
 
 def entropy_integral(T):
