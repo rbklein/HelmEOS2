@@ -81,25 +81,19 @@ def integrate(u, T):
         T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
         it = it + 1
         t  = t + dt
-        cond((it % NUM_ITS_PER_UPDATE) == 0, 
-                    lambda _: status(it, u, T), 
-                    lambda _: None, 
-                    operand=None)
+        # cond((it % NUM_ITS_PER_UPDATE) == 0, 
+        #             lambda _: status(it, u, T), 
+        #             lambda _: None, 
+        #             operand=None)
         return (t, it, u, T)
 
     status(0, u, T)
-
-    # carry = (0.0, 0, u, T)
-    # for _ in range(NUM_TIME_STEPS):
-    #     carry = step(carry)
-    #     if (carry[1] % NUM_ITS_PER_UPDATE) == 0:
-    #         status(carry[1], carry[2], carry[3])
-    
-    # t, it, u, T = carry
 
     # Perform the integration over the specified number of time steps
     t, it, u, T = fori_loop(
         0, NUM_TIME_STEPS, step, (0.0, 0, u, T)
     )  
+
+    status(it, u, T)
 
     return u, T

@@ -12,7 +12,7 @@ from modules.numerical.computation import pad_1d_to_mesh, extract_1d_from_padded
 
 rho_c, T_c, p_c = molecule.critical_point
 
-#@jit
+@jit
 def Taylor_Green_vortex_3d(mesh):
     """
         Domain : [- pi L, pi L]^3

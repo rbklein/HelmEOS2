@@ -168,7 +168,3 @@ def temperature_ret_Kunz_Wagner(rho, e, Tguess):
         Calculate temperature from density and specific internal energy for Wagner EOS.
     """
     return solve_root_thermo(Tguess, rho, e, root_func_energy_T, dredT_root, 1e-10, 10)
-
-_d2Ad2rho = grad(_dAdrho, 0)
-_d2AdrhodT = grad(_dAdT, 0)
-_d2Ad2T = grad(_dAdT, 1)
