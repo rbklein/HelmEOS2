@@ -2,9 +2,13 @@
     This file contains functions to compute the vorticity or curl of the velocity field
 """
 
-from prep_jax import *
-from modules.geometry.grid import *
-from modules.simulation.boundary import apply_boundary_conditions
+from prep_jax               import *
+from config.conf_geometry   import *
+
+from modules.geometry.grid          import GRID_SPACING, CELL_VOLUME
+from modules.simulation.boundary    import apply_boundary_conditions
+from modules.thermodynamics.EOS     import entropy, kinetic_energy
+from jax.numpy                      import stack, sum
 
 def vorticity_2d(u, T):
     """
@@ -44,7 +48,22 @@ def vorticity_3d(u, T):
     curl_y = vel_x_z - vel_z_x
     curl_z = vel_y_x - vel_x_y
 
-    return jnp.stack((curl_x, curl_y, curl_z), axis = 0)
+    return stack((curl_x, curl_y, curl_z), axis = 0)
+
+def total_enstrophy(u, T):
+    w = vorticity_3d(u, T)
+    return sum(w**2) * CELL_VOLUME
+
+def total_entropy(u, T):
+    rho = u[0]
+    s = - rho * entropy(rho, T)
+    return sum(s) * CELL_VOLUME
+
+def total_kinetic_energy(u, T):
+    rho = u[0]
+    k = kinetic_energy(rho, u[1:N_DIMENSIONS+1] / rho)
+    return sum(k) * CELL_VOLUME
+
 
 if N_DIMENSIONS == 2:
     vorticity = vorticity_2d

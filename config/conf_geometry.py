@@ -5,26 +5,16 @@
 ''' User-defined parameters '''
 
 #Grid dimensions
-N_DIMENSIONS = 2
+N_DIMENSIONS = 3
 
 PI = 3.141592653589793 # Also defined in conf_thermodynamics.py
 
 #domain size (L_x, L_y, L_z), for 1D add comma
-DOMAIN_SIZE = (1.0, 1.0) # tuple of floats representing the size in each dimension
+DOMAIN_SIZE = (2 * PI, 2 * PI, 2 * PI) # tuple of floats representing the size in each dimension
 
 #grid resolution (n_x, n_y, n_z)
-GRID_RESOLUTION = (1024, 1024) # (128, 128, 128) # tuple of integers representing the number of grid cells in each dimension
+GRID_RESOLUTION = (1024, 1024, 1024) # tuple of integers representing the number of grid cells in each dimension
 
 
-# #Grid dimensions
-# N_DIMENSIONS = 3
-
-# PI = 3.141592653589793 # Also defined in conf_thermodynamics.py
-
-# #domain size (L_x, L_y, L_z), for 1D add comma
-# DOMAIN_SIZE = (2 * PI, 2 * PI, 2 * PI) # tuple of floats representing the size in each dimension
-
-# #grid resolution (n_x, n_y, n_z)
-# GRID_RESOLUTION = (64, 64, 64) # (128, 128, 128) # tuple of integers representing the number of grid cells in each dimension
 
 

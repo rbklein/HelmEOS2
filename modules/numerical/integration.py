@@ -11,10 +11,12 @@ from config.conf_thermodynamics import *
 
 from modules.thermodynamics.EOS     import temperature, speed_of_sound
 from modules.geometry.grid          import GRID_SPACING
-from jax.numpy                      import max, abs
+from jax.numpy                      import max, abs, stack
 from jax                            import jit
-from jax.lax                        import fori_loop, cond
+from jax.lax                        import fori_loop, scan, cond
 from jax.debug                      import print as jax_print
+
+from modules.postprocess.derived_quantities.vorticity import total_enstrophy, total_entropy, total_kinetic_energy
 
 ''' Consistency checks '''
 
@@ -81,10 +83,7 @@ def integrate(u, T):
         T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
         it = it + 1
         t  = t + dt
-        # cond((it % NUM_ITS_PER_UPDATE) == 0, 
-        #             lambda _: status(it, u, T), 
-        #             lambda _: None, 
-        #             operand=None)
+        
         return (t, it, u, T)
 
     status(0, u, T)
@@ -97,3 +96,43 @@ def integrate(u, T):
     status(it, u, T)
 
     return u, T
+
+
+@jit
+def integrate_data(u, T):
+    """
+    Integrate the Compressible flow in time
+
+    Parameters:
+        - u (array-like): initial state
+        - T (array-like): initial temperature associated to initial state
+
+    Returns:
+        Final state and temperature
+    """    
+    def step(carry, _):
+        t, u_prev, T_prev = carry           # Unpack the carry variable
+        u = time_step(u_prev, T_prev, dt, t)    # Compute new state
+        T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
+        t  = t + dt
+        
+        k = total_kinetic_energy(u, T)
+        s = total_enstrophy(u, T)
+        p = total_enstrophy(u, T)
+
+        data = stack((k, s, p))
+        return (t, u, T), data
+
+    # Perform the integration over the specified number of time steps
+    (t, u, T), data = scan(
+        step, (0.0, u, T), None, length = NUM_TIME_STEPS
+    )  
+
+    return u, T, data
+
+
+
+# cond((it % NUM_ITS_PER_UPDATE) == 0, 
+        #             lambda _: status(it, u, T), 
+        #             lambda _: None, 
+        #             operand=None)
