@@ -16,6 +16,7 @@ if __name__ == "__main__":
     u, conversion       = initial_condition(mesh) 
     convert             = get_convert(conversion)
     u, T                = convert(u)
+    del mesh
 
     u.block_until_ready()
     print('finished initial condition')
