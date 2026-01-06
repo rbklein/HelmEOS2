@@ -19,7 +19,9 @@ def Taylor_Green_vortex_3d(mesh):
         T      : ???
     """
 
-    rho0    = pad_1d_to_mesh(array([1.1925 * rho_c]))
+    # rho0    = pad_1d_to_mesh(array([1.1925 * rho_c]))
+    # T0      = pad_1d_to_mesh(array([1.1 * T_c]))
+    rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
     T0      = pad_1d_to_mesh(array([1.1 * T_c]))
 
     # Determine p0, c0 from rho0 and T0
@@ -35,8 +37,8 @@ def Taylor_Green_vortex_3d(mesh):
 
     p = p0 + rho0 * U0**2 / 16.0 * (cos(2 * X / L) + cos(2 * Y / L)) * (cos(2 * Z / L) + 2)
     T = T0 * ones_like(p)
-    u = U0 * sin(X / L) * cos(Y / L) * sin(Z / L)
-    v = - U0 * cos(X / L) * sin(Y / L) * sin(Z / L)
+    u = U0 * sin(X / L) * cos(Y / L) * cos(Z / L)
+    v = - U0 * cos(X / L) * sin(Y / L) * cos(Z / L)
     w = zeros_like(u)
 
     return stack((u, v, w, p, T), axis = 0), 1 #vpt

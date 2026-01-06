@@ -3,6 +3,10 @@ The Helmholtz energy and other functions of the Wagner equation
 
 see (referred to as KW-article): The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures
 and: Ideal-Gas Thermodynamic Properties for Natural-Gas Applications
+
+216.592 /approx. 0.7        Lower temperature limit [K / reduced]
+1100.0 / approx. 3.6        Upper temperature limit [K / reduced]
+800000.0 / approx. 108      Upper pressure limit [kPa / reduced]
 """
 
 from prep_jax                   import *

@@ -5,7 +5,7 @@
 if __name__ == "__main__":
     from prep_jax import *
     from modules.geometry.grid          import construct_mesh
-    from modules.numerical.integration  import integrate_data, check_CFL
+    from modules.numerical.integration  import integrate, check_CFL
     from modules.simulation.initial     import initial_condition
     from modules.simulation.variables   import get_convert
     from modules.thermodynamics.EOS     import molecule
@@ -20,10 +20,10 @@ if __name__ == "__main__":
 
     u.block_until_ready()
     print('finished initial condition')
-    print('CFL: ', check_CFL(u, T).max)
+    print('CFL: ', check_CFL(u, T).max())
 
     # simulate
-    u, T, data = integrate_data(u, T) 
+    u, T, data = integrate(u, T) 
 
     u.block_until_ready()
     T.block_until_ready()
@@ -32,11 +32,11 @@ if __name__ == "__main__":
     from jax.numpy import save
     save("test_u.npy", u)
     save("test_T.npy", T)
-    save("data.npy", data)
+    # save("data.npy", data)
 
     # postprocess
-    #fig, plot_grid  = init_postprocess()
-    #plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
-    #show()
+    # fig, plot_grid  = init_postprocess()
+    # plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
+    # show()
     
     

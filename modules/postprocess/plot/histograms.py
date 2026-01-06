@@ -1,6 +1,7 @@
 from config.conf_thermodynamics import *
-from modules.thermodynamics.EOS import *
-import numpy as np
+
+from modules.thermodynamics.EOS import pressure
+from numpy import linspace, ravel, log10, histogram2d
 
 rho_c, T_c, p_c = molecule.critical_point
 
@@ -19,22 +20,19 @@ def compute_pT_histogram(u, T, p_range=(1.0, 2.0), T_range=(1.0, 2.0), n_bins=20
     p = pressure(rho, T)
 
     # bin edges
-    p_edges = np.linspace(p_range[0], p_range[1], n_bins + 1) * p_c
-    T_edges = np.linspace(T_range[0], T_range[1], n_bins + 1) * T_c
+    p_edges = linspace(p_range[0], p_range[1], n_bins + 1) * p_c
+    T_edges = linspace(T_range[0], T_range[1], n_bins + 1) * T_c
 
     # flatten to 1D samples
-    p1 = np.ravel(p)
-    T1 = np.ravel(T)
+    p1 = ravel(p)
+    T1 = ravel(T)
 
     # 2D histogram: note order (x, y) => (p, T)
-    H, _, _ = np.histogram2d(p1, T1, bins=(p_edges, T_edges))
-
-    # match your previous dtype
-    H = H.astype(np.int64)
+    H, _, _ = histogram2d(p1, T1, bins=(p_edges, T_edges))
 
     # centers + log scaling
     p_cent = 0.5 * (p_edges[:-1] + p_edges[1:])
     T_cent = 0.5 * (T_edges[:-1] + T_edges[1:])
-    Z = np.log10(H + 1)
+    Z = log10(H + 1)
 
     return H, Z, p_cent, T_cent, p_edges, T_edges

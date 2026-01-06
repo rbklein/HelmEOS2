@@ -32,5 +32,7 @@ TEST_CASE = "TAYLOR_GREEN_VORTEX_3D"
 #Boundary condition type ([x_1, x_2], [y_1, y_2](, [z_1, z_2]))
 BC_TYPES = [("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC")]
 
+_num_conv_times = 5
+
 #Total simulation time
-TOTAL_TIME = 0.75
+TOTAL_TIME = 1.4323356686262345e-07 * _num_conv_times

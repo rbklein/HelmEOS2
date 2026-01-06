@@ -5,12 +5,15 @@ Important: this approach is not jit-compilable at the moment
 """
 
 from prep_jax import *
-from modules.thermodynamics.EOS import *
-from modules.postprocess.plot.isobar import isobar_T
-from modules.numerical.computation import extract_1d_from_padded, pad_1d_to_mesh
+
+from modules.thermodynamics.EOS         import c_p
+from modules.postprocess.plot.isobar    import isobar_T
+from modules.numerical.computation      import extract_1d_from_padded, pad_1d_to_mesh
+from jax                                import jit
+from jax.numpy                          import any, argmax, ndarray, linspace, nan, array
 
 
-def discrete_max_index(x: jnp.ndarray):
+def discrete_max_index(x: ndarray):
     # Same idea as your function, but returns a Python int or None
     # (so your `if i_max != None:` logic keeps working).
     n = x.shape[0]
@@ -22,11 +25,11 @@ def discrete_max_index(x: jnp.ndarray):
     right = x[2:]
 
     mask = (interior > left) & (interior > right)
-    exists = bool(jnp.any(mask))
+    exists = bool(any(mask))
     if not exists:
         return None
 
-    idx0 = int(jnp.argmax(mask.astype(jnp.int32)))
+    idx0 = int(argmax(mask.astype(int)))
     return idx0 + 1
 
 
@@ -38,11 +41,11 @@ def widom_line(p1, p2, T1, T2, num = 10):
     n_points_per_pass = 11   
     n_refine_passes = 4      
 
-    ps = jnp.linspace(p1, p2, num)
+    ps = linspace(p1, p2, num)
     Ts = []
     rhos = []
 
-    C_p = jax.jit(c_p)
+    C_p = jit(c_p)
 
     for p in ps:
         T_low, T_high = T1, T2
@@ -76,10 +79,10 @@ def widom_line(p1, p2, T1, T2, num = 10):
             Ts.append(T_peak)
             rhos.append(rho_peak)
         else:
-            Ts.append(jnp.nan)
-            rhos.append(jnp.nan)
+            Ts.append(nan)
+            rhos.append(nan)
 
-    Ts = jnp.array(Ts)
-    rhos = jnp.array(rhos)
+    Ts = array(Ts)
+    rhos = array(rhos)
 
     return rhos, Ts, ps

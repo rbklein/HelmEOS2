@@ -32,7 +32,8 @@ class CarbonDioxide(Molecule):
             "p_max" : 300e6 # Maximal valid pressure                            
         }
 
-        self._rho_c = 10.6249e3 * self._molar_mass #kg m^-3 critical density
+        
+        self._rho_c = 10.6249e3 * self._molar_mass #kg m^-3 critical density (467.59972402 kg m^-3)
         self._T_c = 304.1282 #K critical temperature
         self._p_c = 7.3773e6 #Pa critical pressure
 
