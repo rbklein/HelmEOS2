@@ -82,7 +82,12 @@ def integrate(u, T):
         u = time_step(u_prev, T_prev, dt, t)    # Compute new state
         T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
         it = it + 1
-        t  = t + dt
+        t  = t + dt 
+
+        cond((it % NUM_ITS_PER_UPDATE) == 0, 
+                     lambda _: status(it, u, T), 
+                     lambda _: None, 
+                     operand=None)
         
         return (t, it, u, T)
 
@@ -110,22 +115,39 @@ def integrate_data(u, T):
     Returns:
         Final state and temperature
     """    
+    # Define process status function
+    status = lambda it, u, T: jax_print(
+        "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
+        it=it, 
+        its = NUM_TIME_STEPS, 
+        t=(it*dt), 
+        cfl = max(check_CFL(u, T))
+    )
+
     def step(carry, _):
-        t, u_prev, T_prev = carry           # Unpack the carry variable
+        t, it, u_prev, T_prev = carry           # Unpack the carry variable
         u = time_step(u_prev, T_prev, dt, t)    # Compute new state
         T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
         t  = t + dt
-        
+        it = it + 1
+
         k = total_kinetic_energy(u, T)
         s = total_enstrophy(u, T)
         p = total_enstrophy(u, T)
 
         data = stack((k, s, p))
-        return (t, u, T), data
+
+        cond((it % NUM_ITS_PER_UPDATE) == 0, 
+                     lambda _: status(it, u, T), 
+                     lambda _: None, 
+                     operand=None)
+
+        return (t, it, u, T), data
+
 
     # Perform the integration over the specified number of time steps
-    (t, u, T), data = scan(
-        step, (0.0, u, T), None, length = NUM_TIME_STEPS
+    (t, its, u, T), data = scan(
+        step, (0.0, 0, u, T), None, length = NUM_TIME_STEPS
     )  
 
     return u, T, data

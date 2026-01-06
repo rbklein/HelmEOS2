@@ -23,7 +23,7 @@ TIME_STEP_METHOD = "WRAY"
 #Options: "SYM_ITOH_ABE", "GONZALEZ"
 DISCRETE_GRADIENT = "SYM_ITOH_ABE"
 
-_num_conv_times = 5
+_num_conv_times = 10
 
 #Number of time steps
 NUM_TIME_STEPS = 256 * _num_conv_times

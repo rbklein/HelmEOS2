@@ -1,6 +1,7 @@
 *.pyc
 *.pyo
 *.npy
+*.png
 
 __pycache__/
 
