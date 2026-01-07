@@ -2,13 +2,13 @@
 Taylor-Green vortex initial conditions
 """
 
-from prep_jax               import *
+from prep_jax import *
 
-from modules.geometry.grid      import DOMAIN_SIZE
-from modules.thermodynamics.EOS import molecule, pressure, speed_of_sound
-from jax.numpy                  import stack, ones_like, zeros_like, sin, cos, pi, array
-from jax                        import jit
-from modules.numerical.computation import pad_1d_to_mesh, extract_1d_from_padded
+from modules.geometry.grid          import DOMAIN_SIZE
+from modules.thermodynamics.EOS     import molecule, pressure, speed_of_sound
+from jax.numpy                      import stack, ones_like, zeros_like, sin, cos, pi, array
+from jax                            import jit
+from modules.numerical.computation  import pad_1d_to_mesh, extract_1d_from_padded
 
 rho_c, T_c, p_c = molecule.critical_point
 

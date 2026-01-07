@@ -15,7 +15,7 @@ L = 4.1255488903943995e-06 #5e-6
 DOMAIN_SIZE = (2 * PI * L, 2 * PI * L, 2 * PI * L) # tuple of floats representing the size in each dimension
 
 #grid resolution (n_x, n_y, n_z)
-GRID_RESOLUTION = (64, 64, 64) # tuple of integers representing the number of grid cells in each dimension
+GRID_RESOLUTION = (512, 512, 512) # tuple of integers representing the number of grid cells in each dimension
 
 
 
