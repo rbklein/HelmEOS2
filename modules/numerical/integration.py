@@ -132,7 +132,7 @@ def integrate_data(u, T):
         it = it + 1
 
         k = total_kinetic_energy(u, T)
-        s = total_enstrophy(u, T)
+        s = total_entropy(u, T)
         p = total_enstrophy(u, T)
 
         data = stack((k, s, p))
@@ -180,7 +180,7 @@ def integrate_5convs(u, T, it, t):
         it = it + 1
 
         k = total_kinetic_energy(u, T)
-        s = total_enstrophy(u, T)
+        s = total_entropy(u, T)
         p = total_enstrophy(u, T)
 
         data = stack((k, s, p))
@@ -194,13 +194,13 @@ def integrate_5convs(u, T, it, t):
     
     # Perform the integration over the specified number of time steps
     (t, its, u, T), data = scan(
-        step, (t, it, u, T), None, length = 2 #5 * _num_steps_per_conv
+        step, (t, it, u, T), None, length = 5 * _num_steps_per_conv
     )  
 
     return u, T, data
 
 
-def integrate_test(u, T):
+def integrate_TG(u, T):
     """
     Integrate the Compressible flow in time
 
@@ -219,8 +219,8 @@ def integrate_test(u, T):
 
         print('saving...')
         file_name_u     = "sim_data/u_" + str(i+1) + ".npy"
-        file_name_T     = "sim_data/u_" + str(i+1) + ".npy"
-        file_name_data  = "sim_data/u_" + str(i+1) + ".npy"
+        file_name_T     = "sim_data/T_" + str(i+1) + ".npy"
+        file_name_data  = "sim_data/data_" + str(i+1) + ".npy"
 
         save(file_name_u, u)
         save(file_name_T, T)
