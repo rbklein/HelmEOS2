@@ -153,96 +153,84 @@ def integrate_data(u, T):
     return u, T, data
 
 
-from config.conf_simulation import _num_conv_times, _conv_time
-from config.conf_numerical  import _num_conv_times as _nct_num, _num_steps_per_conv
+# @jit
+# def integrate_5convs(u, T, it, t):
+#     """
+#     Integrate 5 convective time scales of the taylor green vortex
+#     """
+#     # Define process status function
+#     status = lambda it, u, T: jax_print(
+#         "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
+#         it=it, 
+#         its = NUM_TIME_STEPS, 
+#         t=(it*dt), 
+#         cfl = max(check_CFL(u, T))
+#     )
 
-from jax.numpy              import save
+#     def step(carry, _):
+#         t, it, u_prev, T_prev = carry           # Unpack the carry variable
+#         u = time_step(u_prev, T_prev, dt, t)    # Compute new state
+#         T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
+#         t  = t + dt
+#         it = it + 1
 
-@jit
-def integrate_5convs(u, T, it, t):
-    """
-    Integrate 5 convective time scales of the taylor green vortex
-    """
-    # Define process status function
-    status = lambda it, u, T: jax_print(
-        "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
-        it=it, 
-        its = NUM_TIME_STEPS, 
-        t=(it*dt), 
-        cfl = max(check_CFL(u, T))
-    )
+#         k = total_kinetic_energy(u, T)
+#         s = total_entropy(u, T)
+#         p = total_enstrophy(u, T)
 
-    def step(carry, _):
-        t, it, u_prev, T_prev = carry           # Unpack the carry variable
-        u = time_step(u_prev, T_prev, dt, t)    # Compute new state
-        T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
-        t  = t + dt
-        it = it + 1
+#         data = stack((k, s, p))
 
-        k = total_kinetic_energy(u, T)
-        s = total_entropy(u, T)
-        p = total_enstrophy(u, T)
-
-        data = stack((k, s, p))
-
-        cond((it % NUM_ITS_PER_UPDATE) == 0, 
-                    lambda _: status(it, u, T), 
-                    lambda _: None, 
-                    operand=None)
+#         cond((it % NUM_ITS_PER_UPDATE) == 0, 
+#                     lambda _: status(it, u, T), 
+#                     lambda _: None, 
+#                     operand=None)
         
-        return (t, it, u, T), data
+#         return (t, it, u, T), data
     
-    # Perform the integration over the specified number of time steps
-    (t, its, u, T), data = scan(
-        step, (t, it, u, T), None, length = 5 * _num_steps_per_conv
-    )  
+#     # Perform the integration over the specified number of time steps
+#     (t, its, u, T), data = scan(
+#         step, (t, it, u, T), None, length = 5 * _num_steps_per_conv
+#     )  
 
-    return u, T, data
-
-
-def integrate_TG(u, T):
-    """
-    Integrate the Compressible flow in time
-
-    Parameters:
-        - u (array-like): initial state
-        - T (array-like): initial temperature associated to initial state
-
-    Returns:
-        Final state and temperature
-    """    
-
-    assert _num_conv_times == _nct_num, "Number of convective time scales is not the same in configuration files"
-
-    for i in range(4):
-        u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time)
-
-        print('saving...')
-        file_name_u     = "sim_data/u_" + str(i+1) + ".npy"
-        file_name_T     = "sim_data/T_" + str(i+1) + ".npy"
-        file_name_data  = "sim_data/data_" + str(i+1) + ".npy"
-
-        save(file_name_u, u)
-        save(file_name_T, T)
-        save(file_name_data, data)
+#     return u, T, data
 
 
-    return u, T, data
+# def integrate_TG(u, T):
+#     """
+#     Integrate the Compressible flow in time
+
+#     Parameters:
+#         - u (array-like): initial state
+#         - T (array-like): initial temperature associated to initial state
+
+#     Returns:
+#         Final state and temperature
+#     """    
+#     from config.conf_simulation import _num_conv_times, _conv_time
+#     from config.conf_numerical  import _num_conv_times as _nct_num, _num_steps_per_conv
+
+#     from jax.numpy              import save
+
+#     assert _num_conv_times == _nct_num, "Number of convective time scales is not the same in configuration files"
+
+#     for i in range(4):
+#         u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time)
+
+#         print('saving...')
+#         file_name_u     = "sim_data/u_" + str(i+1) + ".npy"
+#         file_name_T     = "sim_data/T_" + str(i+1) + ".npy"
+#         file_name_data  = "sim_data/data_" + str(i+1) + ".npy"
+
+#         save(file_name_u, u)
+#         save(file_name_T, T)
+#         save(file_name_data, data)
 
 
-
-
-
-
+#     return u, T, data
 
 
 
-
-
-
-
-
-# cond((it % NUM_ITS_PER_UPDATE) == 0, 
-        #             lambda _: status(it, u, T), 
-        #             lambda _: None, 
-        #             operand=None)
+# # cond((it % NUM_ITS_PER_UPDATE) == 0, 
+#         #             lambda _: status(it, u, T), 
+#         #             lambda _: None, 
+#         #             operand=None)
