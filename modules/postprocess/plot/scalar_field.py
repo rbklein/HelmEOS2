@@ -2,23 +2,24 @@
     Function to plot a scalar field in 2D or 3D.
 """
 
-from prep_jax import *
-from config.conf_geometry import *
-from config.conf_postprocess import *
-from config.conf_geometry import *
+from prep_jax                   import *
+from config.conf_geometry       import *
+from config.conf_postprocess    import *
+from config.conf_geometry       import *
+
+from matplotlib.ticker  import FormatStrFormatter
+from jax.numpy          import linspace
 
 if N_DIMENSIONS == 2:
     Lx, Ly = DOMAIN_SIZE
 elif N_DIMENSIONS == 3:
     Lx, Ly, Lz = DOMAIN_SIZE
 
-import matplotlib.ticker as tkr
-
 def plot_scalar_field_1d(scalar_field, fig, ax, title ="Scalar Field", cmap ='viridis'):
     """
     Plot a scalar field in 1D.
     """
-    x = jnp.linspace(0, DOMAIN_SIZE[0], GRID_RESOLUTION[0])
+    x = linspace(0, DOMAIN_SIZE[0], GRID_RESOLUTION[0])
     im,      = ax.plot(x, scalar_field)
     ax.set_ylabel(title)
     ax.set_xlabel('x')
@@ -39,7 +40,7 @@ def plot_scalar_field_2d(scalar_field, fig, ax, title ="Scalar Field", cmap ='vi
     Plot a scalar field in 2D.
     """
     im = ax.imshow(scalar_field.T, extent = (0, Lx, 0, Ly), origin='lower', cmap=cmap)
-    cbar = fig.colorbar(im, ax = ax, label = title, format = tkr.FormatStrFormatter('%.2g'))
+    cbar = fig.colorbar(im, ax = ax, label = title, format = FormatStrFormatter('%.2g'))
     return im, cbar
 
 def update_scalar_field_2d(scalar_field, im, cbar):
@@ -64,7 +65,7 @@ def plot_scalar_field_3d(scalar_field, fig, ax, ind = None, title ="Scalar Field
     Plot a slice of a 3D scalar field
     """
     im = ax.imshow(scalar_field[SLICE_3D].T, extent = (0, lengths_slice[0], 0, lengths_slice[1]), origin = 'lower', cmap = cmap)
-    cbar = fig.colorbar(im, ax = ax, label = title, format = tkr.FormatStrFormatter('%.2g'))
+    cbar = fig.colorbar(im, ax = ax, label = title, format = FormatStrFormatter('%.2g'))
     return im, cbar
 
 def update_scalar_field_3d(scalar_field, im, cbar):

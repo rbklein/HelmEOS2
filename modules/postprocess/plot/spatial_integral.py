@@ -2,8 +2,10 @@
     Functions to plot a spatial integral evolving in time
 """
 
-from prep_jax import *
-from config.conf_geometry import *
+from prep_jax               import *
+from config.conf_geometry   import *
+
+from jax.numpy import append
 
 def plot_integral(value, fig, ax, title = "Spatial Integral"):
     """
@@ -20,8 +22,8 @@ def update_integral(value, line, ax, nits = 1, max_length = -1):
     Update values in plot
     """
     t_data, integral_data = line.get_data()
-    t_data          = jnp.append(t_data, t_data[-1] + nits)
-    integral_data   = jnp.append(integral_data, value)
+    t_data          = append(t_data, t_data[-1] + nits)
+    integral_data   = append(integral_data, value)
 
     #reduce length of series if more than max_length
     if max_length > 0 and integral_data.shape[0] > max_length:

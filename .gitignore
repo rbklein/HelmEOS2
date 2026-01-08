@@ -2,6 +2,7 @@
 *.pyo
 *.npy
 *.png
+*.vti
 
 __pycache__/
 
@@ -14,3 +15,4 @@ experiment.py
 run_experiments.py
 experiments/
 jax_profile_logs/
+output/

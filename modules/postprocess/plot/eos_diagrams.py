@@ -2,7 +2,7 @@
 Plot p-T, p-v/rho and rho-T diagrams
 """
 
-
+"""
 from prep_jax import *
 from modules.thermodynamics.EOS import *
 from modules.postprocess.plot.isobar    import isobar_rho, isobar_T
@@ -85,3 +85,4 @@ def plot_rhoT(fig, ax):
     ax.set_xlabel(r'$\rho_r$')
     ax.set_ylabel(r'$T_r$')
     ax.grid(which = 'both')
+"""

@@ -1,7 +1,7 @@
 from config.conf_thermodynamics import *
 
 from modules.thermodynamics.EOS import pressure
-from numpy import linspace, ravel, log10, histogram2d
+from numpy                      import linspace, ravel, log10, histogram2d
 
 rho_c, T_c, p_c = molecule.critical_point
 
