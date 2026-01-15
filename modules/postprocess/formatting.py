@@ -8,15 +8,15 @@ import vtk
 
 from vtkmodules.util import numpy_support
 
-def velocity_vti(u):
+def velocity_vti(u, name):
     v = u[1:(N_DIMENSIONS+1)] / u[0]
     
     # ---- user inputs ----
-    vti_path = "output/velocity_cell.vti"
+    vti_path = "output/velocity_cell_" + name + ".vti"
 
     origin  = (0.0, 0.0, 0.0)
     spacing = GRID_SPACING
-    array_name = "velocity"
+    array_name = "velocity_" + name
 
 
     # Use float32 to cut file/memory footprint (recommended)

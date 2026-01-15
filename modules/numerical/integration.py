@@ -133,9 +133,9 @@ def integrate_data(u, T):
 
         k = total_kinetic_energy(u, T)
         s = total_entropy(u, T)
-        p = total_enstrophy(u, T)
+        #p = total_enstrophy(u, T)
 
-        data = stack((k, s, p))
+        data = stack((k, s))#, p))
 
         cond((it % NUM_ITS_PER_UPDATE) == 0, 
                     lambda _: status(it, u, T), 

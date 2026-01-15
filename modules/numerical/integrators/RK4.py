@@ -12,8 +12,8 @@ def _rhs(u, T, t):
     """Combined RHS: convective + viscous + heat."""
     return (
         dudt_c(u, T)
-        + dudt_v(u, T)
-        + dudt_q(u, T)
+        # + dudt_v(u, T)
+        # + dudt_q(u, T)
         # + dudt_s(u, T, t)
     )
 

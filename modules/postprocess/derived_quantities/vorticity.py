@@ -51,8 +51,9 @@ def vorticity_3d(u, T):
     return stack((curl_x, curl_y, curl_z), axis = 0)
 
 def total_enstrophy(u, T):
-    w = vorticity_3d(u, T)
-    return sum(w**2) * CELL_VOLUME
+    rho = u[0]
+    w = rho * sum(vorticity_3d(u, T)**2, axis = 0)
+    return sum(w) * CELL_VOLUME
 
 def total_entropy(u, T):
     rho = u[0]
@@ -61,7 +62,7 @@ def total_entropy(u, T):
 
 def total_kinetic_energy(u, T):
     rho = u[0]
-    k = kinetic_energy(rho, u[1:N_DIMENSIONS+1] / rho)
+    k = kinetic_energy(rho, u[1:(N_DIMENSIONS+1)] / rho)
     return sum(k) * CELL_VOLUME
 
 

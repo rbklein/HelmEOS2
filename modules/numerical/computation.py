@@ -6,7 +6,7 @@ from prep_jax import *
 from config.conf_geometry import *
 
 from modules.geometry.grid  import GRID_SPACING, CELL_VOLUME
-from jax.numpy              import finfo, sum, sqrt, maximum, cbrt, abs, logical_not, logical_and, all
+from jax.numpy              import finfo, sum, sqrt, maximum, cbrt, abs, logical_not, logical_and, all, array, log, where
 from jax.lax                import while_loop 
 from jax                    import vmap
 
@@ -20,6 +20,26 @@ def pad_1d_to_mesh(arr):
 def extract_1d_from_padded(arr):
     idx = (slice(None),) + (0,) * (arr.ndim - 1)
     return arr[idx]
+
+def evaluate_scalar(f : callable, arg1, arg2):
+    val = extract_1d_from_padded(
+        f(
+            pad_1d_to_mesh(array(arg1)),
+            pad_1d_to_mesh(array(arg2))
+        )
+    )[0]
+    return val
+
+def log_mean(a, b):
+    """
+        Robust computation of the logarithmic mean for scalar from Ismail and Roe "Affordable, 
+        entropy-consistent Euler flux functions II: Entropy production at shocks"
+    """
+    d = a / b
+    f = (d - 1) / (d + 1)
+    u = f**2
+    F = where(u < 0.001, 1 + u / 3 + u**2 / 5 + u**3 / 7, log(d) / 2 / f)
+    return (a + b) / (2 * F)
 
 def solve_root_thermo(v, vconst, vaux, root, droot, tol, it_max):
     R = abs(vaux)

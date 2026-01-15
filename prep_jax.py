@@ -6,15 +6,21 @@
 
 from config.conf_jax import *
 
-# Global flag to turn off memory preallocation
+
 import os
+
+# Global flag to turn off memory preallocation
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 
+# Global flag to use CPU
+os.environ['JAX_PLATFORMS'] = 'cpu'
+
 from jax import devices
-print('Workstation devices: ', devices(backend="cpu"), devices(backend="gpu"))
+#print('Workstation devices: ', devices(backend="cpu"), devices(backend="gpu")) #should by try catch type formulation
 
 cpus = devices("cpu")
-gpus = devices("gpu")
+#gpus = devices("gpu")
+
 
 match USE_DTYPE:
     case "DOUBLE":
@@ -38,8 +44,8 @@ if SHARD_ARRAYS:
 
     # Set device array
     match SHARD_DEVICES:
-        case 'GPU':
-            devices = gpus
+        # case 'GPU':
+        #     devices = gpus
         case 'CPU':
             devices = cpus
 
