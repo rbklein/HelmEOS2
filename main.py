@@ -5,7 +5,7 @@
 if __name__ == "__main__":
     from prep_jax import *
     from modules.geometry.grid          import construct_mesh
-    from modules.numerical.integration  import integrate_data, check_CFL
+    from modules.numerical.integration  import integrate_TG, check_CFL
     from modules.simulation.initial     import initial_condition
     from modules.simulation.variables   import get_convert
 
@@ -22,16 +22,8 @@ if __name__ == "__main__":
     print('CFL: ', check_CFL(u, T).max())
 
     # simulate
-    u, T, data = integrate_data(u, T) 
+    u, T, data = integrate_TG(u, T) 
     
-    import matplotlib.pyplot as plt
     
-    fig, ax = plt.subplots(1, 2)
-    ax[0].plot(data[:, 0], label='Kinetic Energy')
-    ax[1].plot(data[:, 1], label='Entropy')
-
-    fig, ax = plt.subplots()
-    ax.plot(u[0])
-    plt.show()
 
     

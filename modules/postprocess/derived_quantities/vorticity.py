@@ -7,7 +7,8 @@ from config.conf_geometry   import *
 
 from modules.geometry.grid          import GRID_SPACING, CELL_VOLUME
 from modules.simulation.boundary    import apply_boundary_conditions
-from modules.thermodynamics.EOS     import entropy, kinetic_energy
+from modules.thermodynamics.EOS     import entropy, kinetic_energy, pressure
+from modules.thermodynamics.constitutive import dynamic_viscosity
 from jax.numpy                      import stack, sum
 
 def vorticity_2d(u, T):
@@ -50,9 +51,36 @@ def vorticity_3d(u, T):
 
     return stack((curl_x, curl_y, curl_z), axis = 0)
 
+def divergence_3d(u, T):
+    """
+        Calculate the divergence of the 3D velocity field u
+    """
+
+    dx, dy, dz = GRID_SPACING
+
+    u = apply_boundary_conditions(u, T)
+    vel = u[1:4, :, :] / u[0, : ,:]
+
+    vel_x_x = (vel[0, 2:, 1:-1, 1:-1] - vel[0, :-2, 1:-1, 1:-1]) / (2 * dx)
+    vel_y_y = (vel[1, 1:-1, 2:, 1:-1] - vel[1, 1:-1, :-2, 1:-1]) / (2 * dy)
+    vel_z_z = (vel[2, 1:-1, 1:-1, 2:] - vel[2, 1:-1, 1:-1, :-2]) / (2 * dz)
+
+    return vel_x_x + vel_y_y + vel_z_z
+
+def pressure_work(u, T):
+    div = divergence_3d(u, T)
+    p   = pressure(u[0], T)
+    return sum(p * div) * CELL_VOLUME
+
+def total_dilation(u, T):
+    div = divergence_3d(u, T)
+    mu  = dynamic_viscosity(u, T)
+    p   = 4/3 * mu * div**2
+    return sum(p) * CELL_VOLUME
+
 def total_enstrophy(u, T):
-    rho = u[0]
-    w = rho * sum(vorticity_3d(u, T)**2, axis = 0)
+    mu  = dynamic_viscosity(u, T)
+    w   = mu * sum(vorticity_3d(u, T)**2, axis = 0)
     return sum(w) * CELL_VOLUME
 
 def total_entropy(u, T):

@@ -21,11 +21,11 @@ def extract_1d_from_padded(arr):
     idx = (slice(None),) + (0,) * (arr.ndim - 1)
     return arr[idx]
 
-def evaluate_scalar(f : callable, arg1, arg2):
+def evaluate_scalar_thermo(f : callable, rho, T):
     val = extract_1d_from_padded(
         f(
-            pad_1d_to_mesh(array(arg1)),
-            pad_1d_to_mesh(array(arg2))
+            pad_1d_to_mesh(array(rho)),
+            pad_1d_to_mesh(array(T))
         )
     )[0]
     return val
