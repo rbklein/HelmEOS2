@@ -27,7 +27,7 @@ def Taylor_Green_vortex_3d(mesh):
     # Determine p0, c0 from rho0 and T0
     p0      = pressure(rho0, T0)[0,0,0]
     c0      = speed_of_sound(rho0, T0)[0,0,0]
-    U0      = 0.1 * c0
+    U0      = 0.3 * c0
     
     rho0    = extract_1d_from_padded(rho0)[0]
     T0      = extract_1d_from_padded(T0)[0]

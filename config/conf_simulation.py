@@ -23,7 +23,7 @@ TEST_CASE = "TAYLOR_GREEN_VORTEX_3D"
 BC_TYPES = [("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC")]
 
 _num_conv_times = 20
-_conv_time      = 1.432335668626272e-07
+_conv_time      = 1.5914840762514136e-08
 
 #Total simulation time
 TOTAL_TIME = _conv_time * _num_conv_times
