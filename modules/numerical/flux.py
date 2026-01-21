@@ -8,11 +8,10 @@ from config.conf_geometry   import *
 
 from modules.geometry.grid          import CELL_VOLUME
 from modules.simulation.boundary    import apply_boundary_conditions, apply_temperature_boundary_condition
-from jax import jit
 
 ''' Consistency checks '''
 
-KNOWN_FLUX_TYPES = ["NAIVE", "KEEP", "RANOCHA_IDEAL", "ISMAIL_ROE_IDEAL", "CHANDRASHEKAR_IDEAL"]
+KNOWN_FLUX_TYPES = ["NAIVE", "KEEP", "RANOCHA_IDEAL", "ISMAIL_ROE_IDEAL", "CHANDRASHEKAR_IDEAL", "KUYA"]
 KNOWN_DISCRETE_GRADIENTS = ["SYM_ITOH_ABE", "GONZALEZ", "NONE"] 
 
 assert NUMERICAL_FLUX in KNOWN_FLUX_TYPES, f"Unknown numerical flux: {NUMERICAL_FLUX}"
@@ -58,6 +57,13 @@ match NUMERICAL_FLUX:
             raise NotImplementedError(f"Chandrashekar ideal flux not implemented in 2D")
         elif N_DIMENSIONS == 3:
             raise NotImplementedError(f"Chandrashekar ideal flux not implemented in 3D")
+    case "KUYA":
+        if N_DIMENSIONS == 1:
+            from modules.numerical.fluxes.kuya import div_kuya_1d as flux_div
+        elif N_DIMENSIONS == 2:
+            from modules.numerical.fluxes.kuya import div_kuya_2d as flux_div
+        elif N_DIMENSIONS == 3:
+            raise NotImplementedError(f"Kuya flux not implemented in 3D")
         
     case _:
         raise ValueError(f"Unknown numerical flux: {NUMERICAL_FLUX}")

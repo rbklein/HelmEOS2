@@ -24,8 +24,8 @@ def extract_1d_from_padded(arr):
 def evaluate_scalar_thermo(f : callable, rho, T):
     val = extract_1d_from_padded(
         f(
-            pad_1d_to_mesh(array(rho)),
-            pad_1d_to_mesh(array(T))
+            pad_1d_to_mesh(array([rho])),
+            pad_1d_to_mesh(array([T]))
         )
     )[0]
     return val

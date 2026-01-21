@@ -20,11 +20,11 @@ def chan_shear_layer_2d(mesh):
     Generate Chan's shear layer experiment
 
     Domain  : [0, 1]^2
-    T       : 0.02
+    T       : 0.04
     """
 
     #shear layer thickness parameters
-    sig = 0.15
+    sig = 0.2
     alpha = 0.1
     sig2 = sig**2
 

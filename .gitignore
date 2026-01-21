@@ -11,8 +11,9 @@ output/
 archive/
 
 experiment_data/
-experiment.py
+run_script.py
 run_experiments.py
 experiments/
 jax_profile_logs/
 output/
+scripts/ 

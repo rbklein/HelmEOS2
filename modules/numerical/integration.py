@@ -135,7 +135,7 @@ def integrate_data(u, T):
         s = total_entropy(u, T)
         #p = total_enstrophy(u, T)
 
-        data = stack((k, s))#, p))
+        data = stack((t, k, s))#, p))
 
         cond((it % NUM_ITS_PER_UPDATE) == 0, 
                     lambda _: status(it, u, T), 
@@ -152,10 +152,10 @@ def integrate_data(u, T):
 
     return u, T, data
 
-from config.conf_numerical import _num_steps_per_conv
+
 
 @jit
-def integrate_5convs(u, T, it, t):
+def integrate_5convs(u, T, it, t, num_steps_per_conv):
     """
     Integrate 5 convective time scales of the taylor green vortex
     """
@@ -192,7 +192,7 @@ def integrate_5convs(u, T, it, t):
     
     # Perform the integration over the specified number of time steps
     (t, its, u, T), data = scan(
-        step, (t, it, u, T), None, length = 5 * _num_steps_per_conv
+        step, (t, it, u, T), None, length = 5 * num_steps_per_conv
     )  
 
     return u, T, data
@@ -217,7 +217,7 @@ def integrate_TG(u, T):
     assert _num_conv_times == _nct_num, "Number of convective time scales is not the same in configuration files"
 
     for i in range(4):
-        u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time)
+        u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv)
 
         print('saving...')
         file_name_u     = "sim_data/u_01_1600_" + str(i+1) + ".npy"

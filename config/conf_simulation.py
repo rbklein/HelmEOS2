@@ -17,13 +17,10 @@
 ''' User-defined parameters '''
 
 #Initial conditions
-TEST_CASE = "TAYLOR_GREEN_VORTEX_3D"
+TEST_CASE = "DENSITY_WAVE_1D"
 
 #Boundary condition type ([x_1, x_2], [y_1, y_2](, [z_1, z_2]))
-BC_TYPES = [("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC"), ("PERIODIC", "PERIODIC")]
-
-_num_conv_times = 20
-_conv_time      = 1.5914840762514136e-08
+BC_TYPES = [("PERIODIC", "PERIODIC")]
 
 #Total simulation time
-TOTAL_TIME = _conv_time * _num_conv_times
+TOTAL_TIME = 0.2
