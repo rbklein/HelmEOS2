@@ -18,16 +18,15 @@ def Taylor_Green_vortex_3d(mesh):
         Domain : [- pi L, pi L]^3
         T      : ???
     """
-
-    # rho0    = pad_1d_to_mesh(array([1.1925 * rho_c]))
+    # rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
     # T0      = pad_1d_to_mesh(array([1.1 * T_c]))
     rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
-    T0      = pad_1d_to_mesh(array([1.1 * T_c]))
+    T0      = pad_1d_to_mesh(array([294.4444]))
 
     # Determine p0, c0 from rho0 and T0
     p0      = pressure(rho0, T0)[0,0,0]
     c0      = speed_of_sound(rho0, T0)[0,0,0]
-    U0      = 0.3 * c0
+    U0      = 0.1 * c0
     
     rho0    = extract_1d_from_padded(rho0)[0]
     T0      = extract_1d_from_padded(T0)[0]

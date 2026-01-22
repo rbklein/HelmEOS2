@@ -155,7 +155,7 @@ def integrate_data(u, T):
 
 
 @jit
-def integrate_5convs(u, T, it, t, num_steps_per_conv):
+def integrate_5convs(u, T, it, t, num_steps_per_conv, num_convs):
     """
     Integrate 5 convective time scales of the taylor green vortex
     """
@@ -192,7 +192,7 @@ def integrate_5convs(u, T, it, t, num_steps_per_conv):
     
     # Perform the integration over the specified number of time steps
     (t, its, u, T), data = scan(
-        step, (t, it, u, T), None, length = 5 * num_steps_per_conv
+        step, (t, it, u, T), None, length = num_convs * num_steps_per_conv
     )  
 
     return u, T, data
@@ -217,7 +217,19 @@ def integrate_TG(u, T):
     assert _num_conv_times == _nct_num, "Number of convective time scales is not the same in configuration files"
 
     for i in range(4):
-        u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv)
+        if i == 1:
+            u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv, 3)
+            print('saving intermediate...')
+            file_name_u     = "sim_data/u_01_1600_2_5.npy"
+            file_name_T     = "sim_data/T_01_1600_2_5.npy"
+            file_name_data  = "sim_data/data_01_1600_2_5.npy"
+            save(file_name_u, u)
+            save(file_name_T, T)
+            save(file_name_data, data)
+            u, T, data = integrate_5convs(u, T, (5 * i + 3) * _num_steps_per_conv, (5 * i + 3) * _conv_time, _num_steps_per_conv, 2)
+
+        else:
+            u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv, 5)
 
         print('saving...')
         file_name_u     = "sim_data/u_01_1600_" + str(i+1) + ".npy"

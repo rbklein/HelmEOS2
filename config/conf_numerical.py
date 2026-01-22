@@ -17,12 +17,15 @@ NUMERICAL_HEAT_FLUX = "NAIVE"
 SOURCE_TERM = "NONE"
 
 #Time-stepping method
-TIME_STEP_METHOD = "RK4"
+TIME_STEP_METHOD = "WRAY"
 
 #Discrete gradient type
 #Options: "SYM_ITOH_ABE", "GONZALEZ"
 DISCRETE_GRADIENT = "SYM_ITOH_ABE"
 
+_num_conv_times = 20
+_num_steps_per_conv = 2048
+
 #Number of time steps
-NUM_TIME_STEPS = 12500
+NUM_TIME_STEPS = _num_steps_per_conv * _num_conv_times
 
