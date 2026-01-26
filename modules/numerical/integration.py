@@ -154,7 +154,7 @@ def integrate_data(u, T):
 
 
 
-@jit
+@jit(static_argnames=['num_steps_per_conv', 'num_convs'])
 def integrate_5convs(u, T, it, t, num_steps_per_conv, num_convs):
     """
     Integrate 5 convective time scales of the taylor green vortex

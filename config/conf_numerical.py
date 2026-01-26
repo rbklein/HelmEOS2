@@ -5,7 +5,7 @@
 ''' User-defined parameters '''
 
 #Numerical flux type
-NUMERICAL_FLUX = "KEEP"
+NUMERICAL_FLUX = "KUYA"
 
 #Numerical viscous flux type
 NUMERICAL_VISCOUS_FLUX = "NAIVE"
@@ -17,14 +17,14 @@ NUMERICAL_HEAT_FLUX = "NAIVE"
 SOURCE_TERM = "NONE"
 
 #Time-stepping method
-TIME_STEP_METHOD = "WRAY"
+TIME_STEP_METHOD = "RK4"
 
 #Discrete gradient type
 #Options: "SYM_ITOH_ABE", "GONZALEZ"
 DISCRETE_GRADIENT = "SYM_ITOH_ABE"
 
 _num_conv_times = 20
-_num_steps_per_conv = 2048
+_num_steps_per_conv = 256
 
 #Number of time steps
 NUM_TIME_STEPS = _num_steps_per_conv * _num_conv_times

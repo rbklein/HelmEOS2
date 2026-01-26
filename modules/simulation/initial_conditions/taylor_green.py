@@ -18,10 +18,10 @@ def Taylor_Green_vortex_3d(mesh):
         Domain : [- pi L, pi L]^3
         T      : ???
     """
-    # rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
-    # T0      = pad_1d_to_mesh(array([1.1 * T_c]))
     rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
-    T0      = pad_1d_to_mesh(array([294.4444]))
+    T0      = pad_1d_to_mesh(array([1.1 * T_c]))
+    # rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
+    # T0      = pad_1d_to_mesh(array([294.4444]))
 
     # Determine p0, c0 from rho0 and T0
     p0      = pressure(rho0, T0)[0,0,0]

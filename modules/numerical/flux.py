@@ -63,7 +63,7 @@ match NUMERICAL_FLUX:
         elif N_DIMENSIONS == 2:
             from modules.numerical.fluxes.kuya import div_kuya_2d as flux_div
         elif N_DIMENSIONS == 3:
-            raise NotImplementedError(f"Kuya flux not implemented in 3D")
+            from modules.numerical.fluxes.kuya import div_kuya_3d as flux_div
         
     case _:
         raise ValueError(f"Unknown numerical flux: {NUMERICAL_FLUX}")
