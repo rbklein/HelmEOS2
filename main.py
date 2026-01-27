@@ -26,6 +26,8 @@ if __name__ == "__main__":
 
     import jax.numpy as jnp
     jnp.save('sim_data/kuya_data.npy', data)
+    jnp.save('sim_data/kuya_u.npy', u)
+    jnp.save('sim_data/kuya_T.npy', T)
 
     
     

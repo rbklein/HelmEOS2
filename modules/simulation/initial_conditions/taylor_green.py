@@ -12,7 +12,7 @@ from modules.numerical.computation  import pad_1d_to_mesh, extract_1d_from_padde
 
 rho_c, T_c, p_c = molecule.critical_point
 
-#@jit
+@jit
 def Taylor_Green_vortex_3d(mesh):
     """
         Domain : [- pi L, pi L]^3
@@ -28,8 +28,11 @@ def Taylor_Green_vortex_3d(mesh):
     # T0      = pad_1d_to_mesh(array([294.4444]))
 
     # Peng-Robinson inviscid experiment
-    rho0    = pad_1d_to_mesh(array([1.41 * rho_c]))
-    T0      = pad_1d_to_mesh(array([1.075 * T_c]))
+    # rho0    = pad_1d_to_mesh(array([1.41 * rho_c]))
+    # T0      = pad_1d_to_mesh(array([1.075 * T_c]))
+    rho0    = pad_1d_to_mesh(array([0.3 * rho_c]))
+    T0      = pad_1d_to_mesh(array([1.4 * T_c]))
+
 
     # Determine p0, c0 from rho0 and T0
     p0      = pressure(rho0, T0)[0,0,0]
@@ -48,6 +51,6 @@ def Taylor_Green_vortex_3d(mesh):
     v = - U0 * cos(X / L) * sin(Y / L) * cos(Z / L)
     w = zeros_like(u)
 
-    print(U0, L / U0, c0)
+    #print(U0, L / U0, c0)
 
     return stack((u, v, w, p, T), axis = 0), 1 #vpt
