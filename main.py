@@ -25,7 +25,6 @@ if __name__ == "__main__":
     u, T, data = integrate_data(u, T) 
 
     import jax.numpy as jnp
-
     jnp.save('sim_data/kuya_data.npy', data)
 
     

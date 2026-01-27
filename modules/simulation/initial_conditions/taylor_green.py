@@ -12,22 +12,30 @@ from modules.numerical.computation  import pad_1d_to_mesh, extract_1d_from_padde
 
 rho_c, T_c, p_c = molecule.critical_point
 
-@jit
+#@jit
 def Taylor_Green_vortex_3d(mesh):
     """
         Domain : [- pi L, pi L]^3
         T      : ???
     """
-    rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
-    T0      = pad_1d_to_mesh(array([1.1 * T_c]))
+
+    # Kunz-Wagner viscous run
+    # rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
+    # T0      = pad_1d_to_mesh(array([1.1 * T_c]))
+
+    # Ideal gas DeBonis run
     # rho0    = pad_1d_to_mesh(array([1.198 * rho_c]))
     # T0      = pad_1d_to_mesh(array([294.4444]))
+
+    # Peng-Robinson inviscid experiment
+    rho0    = pad_1d_to_mesh(array([1.41 * rho_c]))
+    T0      = pad_1d_to_mesh(array([1.075 * T_c]))
 
     # Determine p0, c0 from rho0 and T0
     p0      = pressure(rho0, T0)[0,0,0]
     c0      = speed_of_sound(rho0, T0)[0,0,0]
-    U0      = 0.1 * c0
-    
+    U0      = 0.4 * c0
+
     rho0    = extract_1d_from_padded(rho0)[0]
     T0      = extract_1d_from_padded(T0)[0]
 
@@ -39,5 +47,7 @@ def Taylor_Green_vortex_3d(mesh):
     u = U0 * sin(X / L) * cos(Y / L) * cos(Z / L)
     v = - U0 * cos(X / L) * sin(Y / L) * cos(Z / L)
     w = zeros_like(u)
+
+    print(U0, L / U0, c0)
 
     return stack((u, v, w, p, T), axis = 0), 1 #vpt
