@@ -11,7 +11,7 @@ from modules.simulation.boundary    import apply_boundary_conditions, apply_temp
 
 ''' Consistency checks '''
 
-KNOWN_FLUX_TYPES = ["NAIVE", "KEEP", "RANOCHA_IDEAL", "ISMAIL_ROE_IDEAL", "CHANDRASHEKAR_IDEAL", "KUYA"]
+KNOWN_FLUX_TYPES = ["NAIVE", "KEEP", "RANOCHA_IDEAL", "ISMAIL_ROE_IDEAL", "CHANDRASHEKAR_IDEAL", "KUYA", "AIELLO"]
 KNOWN_DISCRETE_GRADIENTS = ["SYM_ITOH_ABE", "GONZALEZ", "NONE"] 
 
 assert NUMERICAL_FLUX in KNOWN_FLUX_TYPES, f"Unknown numerical flux: {NUMERICAL_FLUX}"
@@ -64,7 +64,13 @@ match NUMERICAL_FLUX:
             from modules.numerical.fluxes.kuya import div_kuya_2d as flux_div
         elif N_DIMENSIONS == 3:
             from modules.numerical.fluxes.kuya import div_kuya_3d as flux_div
-        
+    case "AIELLO":
+        if N_DIMENSIONS == 1:
+            raise NotImplementedError(f"Chandrashekar ideal flux not implemented in 1D")
+        elif N_DIMENSIONS == 2:
+            raise NotImplementedError(f"Chandrashekar ideal flux not implemented in 2D")
+        elif N_DIMENSIONS == 3:
+            from modules.numerical.fluxes.aiello import div_aiello_3d as flux_div
     case _:
         raise ValueError(f"Unknown numerical flux: {NUMERICAL_FLUX}")
 

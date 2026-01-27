@@ -13,7 +13,7 @@ import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 
 # Global flag to use CPU
-# os.environ['JAX_PLATFORMS'] = 'cpu'
+# sos.environ['JAX_PLATFORMS'] = 'cpu'
 
 from jax import devices
 #print('Workstation devices: ', devices(backend="cpu"), devices(backend="gpu")) #should by try catch type formulation

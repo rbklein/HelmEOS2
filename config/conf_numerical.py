@@ -5,7 +5,7 @@
 ''' User-defined parameters '''
 
 #Numerical flux type
-NUMERICAL_FLUX = "KUYA"
+NUMERICAL_FLUX = "AIELLO"
 
 #Numerical viscous flux type
 NUMERICAL_VISCOUS_FLUX = "NAIVE"
