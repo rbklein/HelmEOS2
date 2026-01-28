@@ -147,7 +147,7 @@ def integrate_data(u, T):
         dzT = dzT[:, :, 1:] + dzT[:, :, :-1]
 
         dT  = (dxT + dyT + dzT) >= 1
-        percentage = sum(dT) / prod(GRID_RESOLUTION)
+        percentage = sum(dT) / (n_x * n_y * n_z)
 
         data = stack((t, k, s, percentage))#, p))
 
