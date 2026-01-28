@@ -11,7 +11,7 @@ from config.conf_thermodynamics import *
 
 from modules.thermodynamics.EOS     import temperature, speed_of_sound
 from modules.geometry.grid          import GRID_SPACING
-from jax.numpy                      import max, abs, stack
+from jax.numpy                      import max, abs, stack, sum
 from jax                            import jit
 from jax.lax                        import fori_loop, scan, cond
 from jax.debug                      import print as jax_print
