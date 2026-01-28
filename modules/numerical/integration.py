@@ -142,6 +142,10 @@ def integrate_data(u, T):
         dxT = abs(Tp[1:, 1:-1, 1:-1] - Tp[:-1, 1:-1, 1:-1]) < 1e-3
         dyT = abs(Tp[1:-1, 1:, 1:-1] - Tp[1:-1, :-1, 1:-1]) < 1e-3
         dzT = abs(Tp[1:-1, 1:-1, 1:] - Tp[1:-1, 1:-1, :-1]) < 1e-3
+        dxT = dxT[1:, :, :] + dxT[:-1, :, :]
+        dyT = dyT[:, 1:, :] + dyT[:, :-1, :]
+        dzT = dzT[:, :, 1:] + dzT[:, :, :-1]
+
         dT  = (dxT + dyT + dzT) >= 1
         percentage = sum(dT) / prod(GRID_RESOLUTION)
 
