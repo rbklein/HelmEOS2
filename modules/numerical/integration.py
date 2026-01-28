@@ -139,9 +139,9 @@ def integrate_data(u, T):
         Tp = apply_temperature_boundary_condition(u, T)
         n_x, n_y, n_z = GRID_RESOLUTION
 
-        dxT = abs(Tp[1:, 1:(n_y+1), 1:(n_z+1)] - Tp[:-1, 1:(n_y+1), 1:(n_z+1)]) < 1e-3
-        dyT = abs(Tp[1:(n_x+1), 1:, 1:(n_z+1)] - Tp[1:(n_x+1), :-1, 1:(n_z+1)]) < 1e-3
-        dzT = abs(Tp[1:(n_x+1), 1:(n_y+1), 1:] - Tp[1:(n_x+1), 1:(n_y+1), :-1]) < 1e-3
+        dxT = abs(Tp[1:, 1:-1, 1:-1] - Tp[:-1, 1:-1, 1:-1]) < 1e-3
+        dyT = abs(Tp[1:-1, 1:, 1:-1] - Tp[1:-1, :-1, 1:-1]) < 1e-3
+        dzT = abs(Tp[1:-1, 1:-1, 1:] - Tp[1:-1, 1:-1, :-1]) < 1e-3
         dT  = (dxT + dyT + dzT) >= 1
         percentage = sum(dT) / prod(GRID_RESOLUTION)
 
