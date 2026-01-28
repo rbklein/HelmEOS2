@@ -11,6 +11,8 @@ from modules.geometry.grid      import GRID_RESOLUTION, GRID_SPACING
 from modules.thermodynamics.EOS import pressure, Gibbs_energy, internal_energy
 from jax.numpy                  import stack, sum, where, abs
 
+_threshold = 1e-3
+
 ''' 3D versions of the naive fluxes for testing purposes '''
 
 def div_x_aiello_3d(u, T):
@@ -34,7 +36,7 @@ def div_x_aiello_3d(u, T):
 
     p_m = 0.5 * (p[1:, :, :] + p[:-1, :, :])
 
-    f_m1_x = f_rho_x * vel_m[0] +  p_m
+    f_m1_x = f_rho_x * vel_m[0] + p_m
     f_m2_x = f_rho_x * vel_m[1]
     f_m3_x = f_rho_x * vel_m[2]
 
@@ -42,7 +44,7 @@ def div_x_aiello_3d(u, T):
     pv  = 0.5 * (p[:-1, :, :] * vel[0, 1:, :, :] + p[1:, :, :] * vel[0, :-1, :, :]) 
 
     e_m = where(
-        abs(T[1:, :, :] - T[:-1, :, :]) > 1e-5, 
+        abs(T[1:, :, :] - T[:-1, :, :]) > _threshold, 
         (g[1:, :, :] / T[1:, :, :] - g[:-1, :, :] / T[:-1, :, :]) / (1 / T[1:, :, :] - 1 / T[:-1, :, :]) - (p[1:, :, :] / T[1:, :, :] - p[:-1, :, :] / T[:-1, :, :]) / (1 / T[1:, :, :] - 1 / T[:-1, :, :]) / rho_m,
         0.5 * (e[1:, :, :] + e[:-1, :, :])
     )
@@ -82,7 +84,7 @@ def div_y_aiello_3d(u, T):
     pv  = 0.5 * (p[:, :-1, :] * vel[1, :, 1:, :] + p[:, 1:, :] * vel[1, :, :-1, :]) 
 
     e_m = where(
-        abs(T[:, 1:, :] - T[:, :-1, :]) > 1e-5, 
+        abs(T[:, 1:, :] - T[:, :-1, :]) > _threshold, 
         (g[:, 1:, :] / T[:, 1:, :] - g[:, :-1, :] / T[:, :-1, :]) / (1 / T[:, 1:, :] - 1 / T[:, :-1, :]) - (p[:, 1:, :] / T[:, 1:, :] - p[:, :-1, :] / T[:, :-1, :]) / (1 / T[:, 1:, :] - 1 / T[:, :-1, :]) / rho_m,
         0.5 * (e[:, 1:, :] + e[:, :-1, :])
     )
@@ -122,7 +124,7 @@ def div_z_aiello_3d(u, T):
     pv  = 0.5 * (p[:, :, :-1] * vel[2, :, :, 1:] + p[:, :, 1:] * vel[2, :, :, :-1]) 
 
     e_m = where(
-        abs(T[:, :, 1:] - T[:, :, :-1]) > 1e-5, 
+        abs(T[:, :, 1:] - T[:, :, :-1]) > _threshold, 
         (g[:, :, 1:] / T[:, :, 1:] - g[:, :, :-1] / T[:, :, :-1]) / (1 / T[:, :, 1:] - 1 / T[:, :, :-1]) - (p[:, :, 1:] / T[:, :, 1:] - p[:, :, :-1] / T[:, :, :-1]) / (1 / T[:, :, 1:] - 1 / T[:, :, :-1]) / rho_m,
         0.5 * (e[:, :, 1:] + e[:, :, :-1])
     )

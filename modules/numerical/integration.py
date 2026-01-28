@@ -17,6 +17,7 @@ from jax.lax                        import fori_loop, scan, cond
 from jax.debug                      import print as jax_print
 
 from modules.postprocess.derived_quantities.vorticity import total_enstrophy, total_entropy, total_kinetic_energy, pressure_work, total_dilation
+from modules.simulation.boundary import apply_temperature_boundary_condition
 
 ''' Consistency checks '''
 
@@ -135,7 +136,16 @@ def integrate_data(u, T):
         s = total_entropy(u, T)
         #p = total_enstrophy(u, T)
 
-        data = stack((t, k, s))#, p))
+        Tp = apply_temperature_boundary_condition(u, T)
+        n_x, n_y, n_z = GRID_RESOLUTION
+
+        dxT = abs(Tp[1:, 1:(n_y+1), 1:(n_z+1)] - Tp[:-1, 1:(n_y+1), 1:(n_z+1)]) < 1e-3
+        dyT = abs(Tp[1:(n_x+1), 1:, 1:(n_z+1)] - Tp[1:(n_x+1), :-1, 1:(n_z+1)]) < 1e-3
+        dzT = abs(Tp[1:(n_x+1), 1:(n_y+1), 1:] - Tp[1:(n_x+1), 1:(n_y+1), :-1]) < 1e-3
+        dT  = (dxT + dyT + dzT) >= 1
+        percentage = sum(dT) / prod(GRID_RESOLUTION)
+
+        data = stack((t, k, s, percentage))#, p))
 
         cond((it % NUM_ITS_PER_UPDATE) == 0, 
                     lambda _: status(it, u, T), 
