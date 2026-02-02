@@ -1,11 +1,11 @@
 """
     Functions for handling boundary conditions in simulations.
 """
-import prep_jax
-
-from config.conf_geometry import *
+from prep_jax import *
+from config.conf_geometry   import *
 from config.conf_simulation import *
-from modules.geometry.grid import *
+
+from jax.numpy import pad
 
 ''' Consistency checks '''
 
@@ -31,7 +31,7 @@ def pad_periodic(u, axis):
     jnp.ndarray: The padded array with periodic boundary conditions applied.
     """
     padding = tuple((1, 1) if i == (axis + 1) else (0, 0) for i in range(N_DIMENSIONS + 1))
-    return jnp.pad(u, padding, mode = 'wrap') 
+    return pad(u, padding, mode = 'wrap') 
 
 def apply_boundary_conditions(u, T):
     # BC_TYPES is a Python tuple/list of length n_dimensions, e.g. [("PERIODIC","PERIODIC"), ...]
@@ -57,7 +57,7 @@ def pad_periodic_scalar(T, axis):
     jnp.ndarray: The padded array with periodic boundary conditions applied.
     """
     padding = tuple((1, 1) if i == axis else (0, 0) for i in range(N_DIMENSIONS))
-    return jnp.pad(T, padding, mode = 'wrap') 
+    return pad(T, padding, mode = 'wrap') 
 
 
 def apply_temperature_boundary_condition(u, T):

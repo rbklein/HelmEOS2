@@ -1,253 +1,328 @@
 """
-    Functions for thermodynamic equations of state (EOS).
+Functions for thermodynamic equations of state (EOS).
+
+Assumptions:
+- Helmholtz_scalar(rho, T) returns specific Helmholtz free energy A per unit mass.
+- All thermodynamic quantities below are per unit mass.
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
-from config.conf_geometry import N_DIMENSIONS
+from config.conf_geometry       import *
 
-''' Consistency checks '''
+from jax.numpy  import sum, abs, sqrt
+from jax        import vmap, grad, jacfwd
 
-KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"]
-
+# -----------------------------
+# Consistency checks
+# -----------------------------
+KNOWN_EOS = ["IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "KUNZ_WAGNER", "KUNZ_WAGNER_MANUAL"]
 assert EOS in KNOWN_EOS, f"Unknown EOS: {EOS}"
-assert MOLAR_MASS > 0, f"Molar mass should be positive"
+assert MOLAR_MASS > 0, "Molar mass should be positive"
 
+# -----------------------------
+# Select EOS model
+# -----------------------------
 match EOS:
     case "IDEAL_GAS":
-
         from modules.thermodynamics.gas_models.ideal_gas import check_consistency_ideal as check_consistency
-
-        ''' set critical point values '''
-        #from modules.thermodynamics.gas_models.ideal_gas import rho_c, T_c, p_c
-
-        '''' set Helmholtz energy function for ideal gas '''
-        from modules.thermodynamics.gas_models.ideal_gas import ideal_gas as Helmholtz
-
-        ''' set temperature function for ideal gas '''
+        from modules.thermodynamics.gas_models.ideal_gas import ideal_gas as Helmholtz_scalar
         from modules.thermodynamics.gas_models.ideal_gas import temperature_rpt_ideal as temperature_rpt
-
-        ''' set density function for ideal gas '''
         from modules.thermodynamics.gas_models.ideal_gas import density_ptr_ideal as density_ptr
-
-        ''' set temperature functions for ideal gas '''
         from modules.thermodynamics.gas_models.ideal_gas import temperature_ret_ideal as temperature_ret
 
-
     case "VAN_DER_WAALS":
-
         from modules.thermodynamics.gas_models.Van_der_Waals import check_consistency_Van_der_Waals as check_consistency
-
-        ''' set critical point values '''
-        #from modules.thermodynamics.gas_models.Van_der_Waals import rho_c, T_c, p_c
-
-        ''' set Helmholtz energy function for Van der Waals '''
-        from modules.thermodynamics.gas_models.Van_der_Waals import Van_der_Waals as Helmholtz
-
-        ''' set temperature function for Van der Waals gas '''        
+        from modules.thermodynamics.gas_models.Van_der_Waals import Van_der_Waals as Helmholtz_scalar
         from modules.thermodynamics.gas_models.Van_der_Waals import temperature_rpt_Van_der_Waals as temperature_rpt
-
-        ''' set density function for Van der Waals gas '''
         from modules.thermodynamics.gas_models.Van_der_Waals import density_ptr_Van_der_Waals as density_ptr
-
-        ''' set temperature functions for Van der Waals gas '''
         from modules.thermodynamics.gas_models.Van_der_Waals import temperature_ret_Van_der_Waals as temperature_ret
 
-
     case "PENG_ROBINSON":
-
         from modules.thermodynamics.gas_models.Peng_Robinson import check_consistency_Peng_Robinson as check_consistency
-
-        ''' set critical point values '''
-        #from modules.thermodynamics.gas_models.Peng_Robinson import rho_c, T_c, p_c
-
-        ''' set Helmholtz energy function for Span_Wagner '''
-        from modules.thermodynamics.gas_models.Peng_Robinson import Peng_Robinson as Helmholtz
-
-        ''' set temperature function for Span_Wagner gas '''        
+        from modules.thermodynamics.gas_models.Peng_Robinson import Peng_Robinson as Helmholtz_scalar
         from modules.thermodynamics.gas_models.Peng_Robinson import temperature_rpt_Peng_Robinson as temperature_rpt
-
-        ''' set density function for Span_Wagner gas '''
         from modules.thermodynamics.gas_models.Peng_Robinson import density_ptr_Peng_Robinson as density_ptr
-
-        ''' set temperature functions for Span_Wagner gas '''
         from modules.thermodynamics.gas_models.Peng_Robinson import temperature_ret_Peng_Robinson as temperature_ret
 
+    case "KUNZ_WAGNER":
+        from modules.thermodynamics.gas_models.Kunz_Wagner import check_consistency_Wagner as check_consistency
+        from modules.thermodynamics.gas_models.Kunz_Wagner import Kunz_Wagner as Helmholtz_scalar
+        from modules.thermodynamics.gas_models.Kunz_Wagner import temperature_rpt_Kunz_Wagner as temperature_rpt
+        from modules.thermodynamics.gas_models.Kunz_Wagner import density_ptr_Kunz_Wagner as density_ptr
+        from modules.thermodynamics.gas_models.Kunz_Wagner import temperature_ret_Kunz_Wagner as temperature_ret
 
-    case "WAGNER":
-
-        from modules.thermodynamics.gas_models.Wagner import check_consistency_Wagner as check_consistency
-
-        ''' set critical point values '''
-        #from modules.thermodynamics.gas_models.Wagner import rho_c, T_c, p_c
-
-        ''' set Helmholtz energy function for Wagner '''
-        from modules.thermodynamics.gas_models.Wagner import Wagner as Helmholtz
-
-        ''' set temperature function for Wagner gas '''        
-        from modules.thermodynamics.gas_models.Wagner import temperature_rpt_Wagner as temperature_rpt
-
-        ''' set density function for Wagner gas '''
-        from modules.thermodynamics.gas_models.Wagner import density_ptr_Wagner as density_ptr
-
-        ''' set temperature functions for Wagner gas '''
-        from modules.thermodynamics.gas_models.Wagner import temperature_ret_Wagner as temperature_ret
+    case "KUNZ_WAGNER_MANUAL":
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import check_consistency_Wagner as check_consistency
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import Kunz_Wagner as Helmholtz_scalar
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import temperature_rpt_Kunz_Wagner as temperature_rpt
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import density_ptr_Kunz_Wagner as density_ptr
+        from modules.thermodynamics.gas_models.Kunz_Wagner_manual import temperature_ret_Kunz_Wagner as temperature_ret
 
     case _:
         raise ValueError(f"Unknown EOS: {EOS}")
 
 check_consistency()
 
-
-''' Temperature equations (rho, e) -> T for simulations '''
+# -----------------------------
+# Temperature helper from conservative variables
+# -----------------------------
 def internal_energy_u(u):
     """
-        Calculate internal energy from conservative variables
+    Internal energy per unit mass from conservative state u = [rho, rho*u, rho*E].
+    Works for N_DIMENSIONS velocity components.
     """
-    return u[N_DIMENSIONS+1] / u[0] - 0.5 * jnp.sum((u[1:N_DIMENSIONS+1])**2, axis=0) / u[0]**2
+    rho = u[0]
+    rhou = u[1 : N_DIMENSIONS + 1]
+    rhoE = u[N_DIMENSIONS + 1]
+    ke = 0.5 * sum(rhou * rhou, axis=0) / (rho * rho)
+    return rhoE / rho - ke
 
-
-''' Temperature from conservative variables  (u) -> T '''
+# Temperature from conservative variables (u, Tguess) -> T
 temperature = lambda u, Tguess: temperature_ret(u[0], internal_energy_u(u), Tguess)
 
-
-
-''' Compute other thermodynamic quantities automatically '''
-def _vectorize_thermo(f : callable) -> callable:
+# -----------------------------
+# Vectorization helper (maps scalar thermo over N_DIMENSIONS array)
+# -----------------------------
+def _vectorize_thermo(f: callable) -> callable:
     """
-    Helper function to clean up code
-
-    Vectorizes a thermodynamic function to work on arrays of dim = N_DIMENSIONS 
-    elementwise
+    Vectorizes a scalar thermodynamic function to work elementwise over arrays
+    of dim = N_DIMENSIONS (e.g., 3D mesh).
     """
-    f_vec = jax.vmap(f, in_axes=(0, 0), out_axes=0)
+    f_vec = vmap(f, in_axes=(0, 0), out_axes=0)
     for i in range(1, N_DIMENSIONS):
-        f_vec = jax.vmap(f_vec, in_axes=(i, i), out_axes=i)
-    
+        f_vec = vmap(f_vec, in_axes=(i, i), out_axes=i)
     return f_vec
 
+# -----------------------------
+# Helmholtz derivatives
+# -----------------------------
+if EOS != "KUNZ_WAGNER_MANUAL":
+    # First derivatives: 
+    dAdrho_scalar = grad(Helmholtz_scalar, argnums=0)
+    dAdT_scalar   = grad(Helmholtz_scalar, argnums=1)
 
-''' Helmholtz and derivatives mapped over n dimensions '''
-dAdrho_scalar       = jax.grad(Helmholtz, argnums = 0)
-dAdT_scalar         = jax.grad(Helmholtz, argnums = 1)
-Helmholtz_scalar    = Helmholtz
+    # Second derivatives: 
+    d2Ad2rho_scalar  = jacfwd(dAdrho_scalar, argnums=0)
+    d2AdrhodT_scalar = jacfwd(dAdrho_scalar, argnums=1)
+    d2Ad2T_scalar    = jacfwd(dAdT_scalar,   argnums=1)
 
-dAdrho      = _vectorize_thermo(dAdrho_scalar)
-dAdT        = _vectorize_thermo(dAdT_scalar)
-Helmholtz   = _vectorize_thermo(Helmholtz_scalar)
+    # Vectorized versions used on fields
+    Helmholtz = _vectorize_thermo(Helmholtz_scalar)
+    dAdrho    = _vectorize_thermo(dAdrho_scalar)
+    dAdT      = _vectorize_thermo(dAdT_scalar)
 
-''' Helmholtz second derivatives mapped over n dimensions '''
-d2Ad2rho_scalar     = jax.grad(dAdrho_scalar, argnums = 0)
-d2Ad2T_scalar       = jax.grad(dAdT_scalar, argnums = 1)
-d2AdrhodT_scalar    = jax.grad(dAdrho_scalar, argnums=1)
+    d2Ad2rho  = _vectorize_thermo(d2Ad2rho_scalar)
+    d2AdrhodT = _vectorize_thermo(d2AdrhodT_scalar)
+    d2Ad2T    = _vectorize_thermo(d2Ad2T_scalar)
+else:
+    ''' The necessary derivatives are already computed manually locally '''
 
-d2Ad2rho    = _vectorize_thermo(d2Ad2rho_scalar)
-d2Ad2T      = _vectorize_thermo(d2Ad2T_scalar)
-d2AdrhodT   = _vectorize_thermo(d2AdrhodT_scalar)
+    # First derivatives:
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _dAdrho as dAdrho_scalar
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _dAdT as dAdT_scalar
 
-''' Helmholtz third derivatives mapped over n dimensions'''
-d3Ad3rho_scalar     = jax.grad(d2Ad2rho_scalar, argnums = 0)
-d3Ad2rhodT_scalar   = jax.grad(d2Ad2rho_scalar, argnums = 1)
-d3Ad2Tdrho_scalar   = jax.grad(d2Ad2T_scalar, argnums = 0)
-d3Ad3T_scalar       = jax.grad(d2Ad2T_scalar, argnums = 1)
+    # Second derivatives: 
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _d2Adrho2 as d2Ad2rho_scalar
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _d2AdrhodT as d2AdrhodT_scalar
+    from modules.thermodynamics.gas_models.Kunz_Wagner_manual import _d2AdT2 as d2Ad2T_scalar
 
-d3Ad3rho    = _vectorize_thermo(d3Ad3rho_scalar)
-d3Ad2rhodT  = _vectorize_thermo(d3Ad2rhodT_scalar)
-d3Ad2Tdrho  = _vectorize_thermo(d3Ad2Tdrho_scalar)
-d3Ad3T      = _vectorize_thermo(d3Ad3T_scalar)
+    Helmholtz   = Helmholtz_scalar
+    dAdrho      = dAdrho_scalar
+    dAdT        = dAdT_scalar 
+
+    d2Ad2rho    = d2Ad2rho_scalar
+    d2AdrhodT   = d2AdrhodT_scalar
+    d2Ad2T      = d2Ad2T_scalar
 
 
-''' Computing thermodynamic quantites using the equation of state'''
+# -----------------------------
+# Core thermodynamic quantities
+# -----------------------------
 def pressure(rho, T):
-    return rho**2 * dAdrho(rho, T) 
+    # p = rho^2 * A_rho
+    return rho * rho * dAdrho(rho, T)
 
-''' all thermodynamic quantities below are defined per unit mass '''
 def entropy(rho, T):
+    # s = -A_T
     return -dAdT(rho, T)
 
 def internal_energy(rho, T):
+    # e = A - T A_T
     return Helmholtz(rho, T) - T * dAdT(rho, T)
 
 def Gibbs_energy(rho, T):
-    return Helmholtz(rho, T) + rho * dAdrho(rho, T) 
+    # g = A + rho A_rho
+    return Helmholtz(rho, T) + rho * dAdrho(rho, T)
 
-def enthalpy(rho, T):
-    return Helmholtz(rho, T) + rho * dAdrho(rho, T) - T * dAdT(rho, T)
+def speed_of_sound(rho, T):
+    """
+    Speed of sound a (NOT squared).
+    a^2 = dp/drho|s. For Helmholtz form:
+    a^2 = 2 rho A_rho + rho^2 A_rhorho - rho^2 (A_rhoT^2)/A_TT
+    """
+    A_rho  = dAdrho(rho, T)
+    A_rr   = d2Ad2rho(rho, T)
+    A_rT   = d2AdrhodT(rho, T)
+    A_TT   = d2Ad2T(rho, T)
+    a2 = 2.0 * rho * A_rho + (rho * rho) * A_rr - (rho * rho) * (A_rT * A_rT) / A_TT
+    return sqrt(abs(a2))
 
+def c_v(rho, T):
+    """
+    Specific isochoric heat capacity c_v.
+    c_v = -T * A_TT
+    """
+    return -T * d2Ad2T(rho, T)
 
-''' all thermodynamic quantities below are defined per unit volume '''
+def c_p(rho, T):
+    """
+    Specific isobaric heat capacity c_p.
+    cp = cv + T * (dp/dT|rho)^2 / (rho^2 * dp/drho|T)
+    where:
+      dp/drho|T = 2 rho A_rho + rho^2 A_rhorho
+      dp/dT|rho = rho^2 A_rhoT
+    """
+    A_rho  = dAdrho(rho, T)
+    A_rr   = d2Ad2rho(rho, T)
+    A_rT   = d2AdrhodT(rho, T)
+    A_TT   = d2Ad2T(rho, T)
+
+    cv = -T * A_TT
+    dp_drho_T = 2.0 * rho * A_rho + (rho * rho) * A_rr
+    dp_dT_rho = (rho * rho) * A_rT
+
+    return cv + T * (dp_dT_rho * dp_dT_rho) / ((rho * rho) * dp_drho_T)
+
+# -----------------------------
+# Miscallaneous dynamic quantities
+# -----------------------------
 def kinetic_energy(rho, v):
-    return 0.5 * rho * jnp.sum(v**2, axis = 0)
+    return 0.5 * rho * sum(v**2, axis = 0)
 
 def total_energy(rho, T, v):
     return rho * internal_energy(rho, T) + kinetic_energy(rho, v)
 
+# -----------------------------
+# Quantities used in numerical fluxes (KEEP / beta-form)
+# -----------------------------
+# The original version used grad() on these beta-form functions which already
+# called grad(Helmholtz), causing Hessian-level AD tapes and large intermediates.
+# Here we compute them analytically from A and its 1st/2nd derivatives.
+def _T_from_beta(beta):
+    return 1.0 / beta
 
-''' miscellaneous thermodynamic quantities'''
-def speed_of_sound(rho, T):
-    """
-        IMPORTANT: NOT SQUARED
-    """
-    s = 2 * rho * dAdrho(rho, T) + rho**2 * d2Ad2rho(rho, T) - rho**2 * (d2AdrhodT(rho,T)**2) / d2Ad2T(rho,T)
-    return jnp.sqrt(jnp.abs(s))
+def Gibbs_beta_scalar(rho, beta):
+    T = _T_from_beta(beta)
+    A = Helmholtz_scalar(rho, T)
+    A_rho = dAdrho_scalar(rho, T)
+    return beta * (A + rho * A_rho)
 
-def c_v(rho, T):
-    """
-        Specific isochoric heat capacity c_v.
-    """
-    A_TT = d2Ad2T(rho, T)
-    c_v = -T * A_TT
-    return c_v
+def dgbdrho_scalar(rho, beta):
+    T = _T_from_beta(beta)
+    A_rho  = dAdrho_scalar(rho, T)
+    A_rr   = d2Ad2rho_scalar(rho, T)
+    # d/drho [beta*(A + rho*A_rho)] = beta*(A_rho + A_rho + rho*A_rr)
+    return beta * (2.0 * A_rho + rho * A_rr)
 
-def c_p(rho, T):
-    """
-        Specific isobaric heat capacity c_p.
-    """
-    A_rho      = dAdrho(rho, T)
-    A_rhorho   = d2Ad2rho(rho, T)
-    A_TT       = d2Ad2T(rho, T)
-    A_rhoT     = d2AdrhodT(rho, T)
+def dgbdbeta_scalar(rho, beta):
+    T = _T_from_beta(beta)
+    A    = Helmholtz_scalar(rho, T)
+    A_rho = dAdrho_scalar(rho, T)
+    A_T   = dAdT_scalar(rho, T)
+    A_rT  = d2AdrhodT_scalar(rho, T)
 
-    c_v = -T * A_TT
-    dp_drho_T = 2 * rho * A_rho + rho**2 * A_rhorho     
-    dp_dT_rho = rho**2 * A_rhoT                        
+    g = A + rho * A_rho
+    # d/dbeta [beta*g(rho,T)] with T=1/beta:
+    # = g + beta * g_T * dT/dbeta, dT/dbeta=-1/beta^2 => = g - g_T/beta
+    g_T = A_T + rho * A_rT
+    return g - g_T / beta
 
-    cp = c_v + T * (dp_dT_rho**2) / (rho**2 * dp_drho_T)
-    return cp
+def pressure_beta_scalar(rho, beta):
+    T = _T_from_beta(beta)
+    A_rho = dAdrho_scalar(rho, T)
+    return beta * (rho * rho) * A_rho
 
+def dpbdrho_scalar(rho, beta):
+    T = _T_from_beta(beta)
+    A_rho = dAdrho_scalar(rho, T)
+    A_rr  = d2Ad2rho_scalar(rho, T)
+    # d/drho [beta * rho^2 A_rho] = beta*(2 rho A_rho + rho^2 A_rr)
+    return beta * (2.0 * rho * A_rho + (rho * rho) * A_rr)
 
-''' all thermodynamic quantities below are used specifically in numerical fluxes'''
-# keepdg terms
-#-----------
-def Gibbs_beta(rho, beta):
-    return beta * (Helmholtz_scalar(rho, 1/beta) + rho * dAdrho_scalar(rho, 1/beta) )
+def dpbdbeta_scalar(rho, beta):
+    T = _T_from_beta(beta)
+    A_rho = dAdrho_scalar(rho, T)
+    A_rT  = d2AdrhodT_scalar(rho, T)
+    # p_beta = beta * p, p = rho^2 A_rho, dp/dT = rho^2 A_rhoT
+    # dp_beta/dbeta = p - (dp/dT)/beta
+    return (rho * rho) * (A_rho - A_rT / beta)
 
-dgbdrho = jax.grad(Gibbs_beta, argnums = 0)
-dgbdbeta = jax.grad(Gibbs_beta, argnums = 1)
+# Vectorize beta-form functions over fields
+if EOS != "KUNZ_WAGNER_MANUAL":
+    Gibbs_beta   = _vectorize_thermo(Gibbs_beta_scalar)
+    dgbdrho      = _vectorize_thermo(dgbdrho_scalar)
+    dgbdbeta     = _vectorize_thermo(dgbdbeta_scalar)
 
-Gibbs_beta = _vectorize_thermo(Gibbs_beta)
-dgbdrho = _vectorize_thermo(dgbdrho)
-dgbdbeta = _vectorize_thermo(dgbdbeta)
+    pressure_beta = _vectorize_thermo(pressure_beta_scalar)
+    dpbdrho       = _vectorize_thermo(dpbdrho_scalar)
+    dpbdbeta      = _vectorize_thermo(dpbdbeta_scalar)
+else:
+    Gibbs_beta   = Gibbs_beta_scalar
+    dgbdrho      = dgbdrho_scalar
+    dgbdbeta     = dgbdbeta_scalar
 
-def pressure_beta(rho, beta):
-    return beta * (rho**2 * dAdrho_scalar(rho, 1/beta))
+    pressure_beta = pressure_beta_scalar
+    dpbdrho       = dpbdrho_scalar
+    dpbdbeta      = dpbdbeta_scalar
 
-dpbdrho = jax.grad(pressure_beta, argnums = 0)
-dpbdbeta = jax.grad(pressure_beta, argnums = 1)
+# -----------------------------
+# Derivatives used in manufactured solutions (avoid grad; use analytic forms)
+# -----------------------------
+def pressure_rho_scalar(rho, T):
+    A_rho = dAdrho_scalar(rho, T)
+    A_rr  = d2Ad2rho_scalar(rho, T)
+    return 2.0 * rho * A_rho + (rho * rho) * A_rr
 
-pressure_beta = _vectorize_thermo(pressure_beta)
-dpbdrho = _vectorize_thermo(dpbdrho)
-dpbdbeta = _vectorize_thermo(dpbdbeta)
+def pressure_T_scalar(rho, T):
+    A_rT = d2AdrhodT_scalar(rho, T)
+    return (rho * rho) * A_rT
 
-''' derivatives used in manufactured solutions '''
-pressure_rho = jax.grad(lambda rho, T: rho**2 * dAdrho_scalar(rho, T), 0)
-pressure_T   = jax.grad(lambda rho, T: rho**2 * dAdrho_scalar(rho, T), 1)
+def internal_energy_rho_scalar(rho, T):
+    A_rho = dAdrho_scalar(rho, T)
+    A_rT  = d2AdrhodT_scalar(rho, T)
+    # e = A - T A_T => e_rho = A_rho - T A_rhoT
+    return A_rho - T * A_rT
 
-pressure_rho = _vectorize_thermo(pressure_rho)
-pressure_T   = _vectorize_thermo(pressure_T) 
+def internal_energy_T_scalar(rho, T):
+    A_TT = d2Ad2T_scalar(rho, T)
+    # e_T = -T * A_TT
+    return -T * A_TT
 
-internal_energy_rho = jax.grad(lambda rho, T: Helmholtz_scalar(rho, T) - T * dAdT_scalar(rho, T), 0)
-internal_energy_T   = jax.grad(lambda rho, T: Helmholtz_scalar(rho, T) - T * dAdT_scalar(rho, T), 1)
+if EOS != "KUNZ_WAGNER_MANUAL":
+    pressure_rho        = _vectorize_thermo(pressure_rho_scalar)
+    pressure_T          = _vectorize_thermo(pressure_T_scalar)
+    internal_energy_rho = _vectorize_thermo(internal_energy_rho_scalar)
+    internal_energy_T   = _vectorize_thermo(internal_energy_T_scalar)
+else:
+    pressure_rho        = pressure_rho_scalar
+    pressure_T          = pressure_T_scalar
+    internal_energy_rho = internal_energy_rho_scalar
+    internal_energy_T   = internal_energy_T_scalar
 
-internal_energy_rho = _vectorize_thermo(internal_energy_rho)
-internal_energy_T   = _vectorize_thermo(internal_energy_T) 
+# -----------------------------
+# Optional: Third derivatives
+# -----------------------------
+# If your code genuinely needs 3rd derivatives, prefer forward-mode chains as well.
+# Leaving them out by default reduces the chance they are pulled into traces inadvertently.
+# Uncomment if required.
+#
+# d3Ad3rho_scalar    = jax.jacfwd(d2Ad2rho_scalar,  argnums=0)
+# d3Ad2rhodT_scalar  = jax.jacfwd(d2Ad2rho_scalar,  argnums=1)
+# d3Ad2Tdrho_scalar  = jax.jacfwd(d2Ad2T_scalar,    argnums=0)
+# d3Ad3T_scalar      = jax.jacfwd(d2Ad2T_scalar,    argnums=1)
+#
+# d3Ad3rho    = _vectorize_thermo(d3Ad3rho_scalar)
+# d3Ad2rhodT  = _vectorize_thermo(d3Ad2rhodT_scalar)
+# d3Ad2Tdrho  = _vectorize_thermo(d3Ad2Tdrho_scalar)
+# d3Ad3T      = _vectorize_thermo(d3Ad3T_scalar)

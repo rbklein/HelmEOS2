@@ -2,7 +2,7 @@
     Functions constructing constitutive laws used in the computation of irreversible processes
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
 
 ''' Consistency checks '''

@@ -4,43 +4,30 @@
 
 if __name__ == "__main__":
     from prep_jax import *
-    from modules.geometry.grid          import mesh
-    from modules.numerical.integration  import integrate
+    from modules.geometry.grid          import construct_mesh
+    from modules.numerical.integration  import integrate_data, check_CFL
     from modules.simulation.initial     import initial_condition
     from modules.simulation.variables   import get_convert
-    from modules.thermodynamics.EOS     import molecule
-    #from modules.postprocess.post       import init_postprocess, plot_postprocess, COLORMAP, show
-
-    #profiler_dir = "./jax_profile_logs/"
-    #jax.profiler.start_trace(profiler_dir)
 
     # prepare initial condition
+    mesh                = construct_mesh()
     u, conversion       = initial_condition(mesh) 
     convert             = get_convert(conversion)
-    u, T                = convert(u)
+    u0, T0                = convert(u)
+    del mesh
 
-    u.block_until_ready()
-    print('finished initial condition')
-
-    rho_c, T_c, p_c = molecule.critical_point
-    print('rho_c: ', rho_c)
-    print('T_c: ', T_c)
-    print('p_c: ', p_c)
+    u0.block_until_ready()
+    T0.block_until_ready()
+    print('Finished initial condition')
+    print('CFL: ', check_CFL(u0, T0).max())
 
     # simulate
-    u, T = integrate(u, T) 
+    u, T, data = integrate_data(u0, T0) 
 
-    u.block_until_ready()
-    T.block_until_ready()
+    import numpy as np
 
-    #jax.profiler.stop_trace()
+    np.save('experiment_data/density_wave/data_VdW_32.npy', data)
+    np.save('experiment_data/density_wave/u_VdW_32.npy', u)
+    np.save('experiment_data/density_wave/T_VdW_32.npy', T)
 
-    jnp.save("test_u.npy", u)
-    jnp.save("test_T.npy", T)
-
-    # postprocess
-    #fig, plot_grid  = init_postprocess()
-    #plot_grid       = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP, freeze_image=True)
-    #show()
-    
     

@@ -2,9 +2,9 @@
 Implementation of the density and internal energy means for the keep_dg flux
 """
 
-from prep_jax import *
 from config.conf_numerical import *
-from modules.thermodynamics.EOS import *
+
+from modules.thermodynamics.EOS import Gibbs_beta, dgbdrho, dgbdbeta, pressure_beta, dpbdrho, dpbdbeta
 
 ''' Import necessary discrete gradients'''
 match DISCRETE_GRADIENT:

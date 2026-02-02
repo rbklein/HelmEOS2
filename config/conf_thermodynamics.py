@@ -11,8 +11,8 @@ NAME_MOLECULE = molecule.name
 MOLAR_MASS = molecule.molar_mass #kg mol^-1
 
 # Equation of State (EOS) type
-# Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "WAGNER"
-EOS = "WAGNER" 
+# Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "KUNZ_WAGNER", "KUNZ_WAGNER_MANUAL"
+EOS = "VAN_DER_WAALS"
 
 # Equation of State parameters
 match EOS:
@@ -22,16 +22,21 @@ match EOS:
         EOS_parameters = molecule.Van_der_Waals_parameters
     case "PENG_ROBINSON":
         EOS_parameters = molecule.Peng_Robinson_parameters
-    case "WAGNER":
+    case "KUNZ_WAGNER":
+        assert molecule.name == "CO_2", "Wagner equation is hard-coded for carbon dioxide" # CO_2 exclusive
+        EOS_parameters = molecule.Wagner_parameters
+    case "KUNZ_WAGNER_MANUAL":
         assert molecule.name == "CO_2", "Wagner equation is hard-coded for carbon dioxide" # CO_2 exclusive
         EOS_parameters = molecule.Wagner_parameters
 
 
 # Dynamic viscosity 
 # Options: "CONSTANT", "LAESECKE"
-VISC_DYN = "LAESECKE"
+VISC_DYN = "CONSTANT"
 
-VISC_DYN_parameters = { }
+VISC_DYN_parameters = { 
+    "value" : 0.0 #0.014890322739265844
+}
 
 # Bulk viscosity
 VISC_BULK = "CONSTANT"
@@ -42,9 +47,11 @@ VISC_BULK_parameters = {
 
 #Thermal conductivity
 # Options: "CONSTANT", "HUBER"
-THERMAL_COND = "HUBER"
+THERMAL_COND = "CONSTANT"
 
-THERMAL_COND_parameters = { }
+THERMAL_COND_parameters = { 
+    "value" : 0.0 #13.867513479472809
+}
 
 ''' Constants '''
 

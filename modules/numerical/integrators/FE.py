@@ -1,10 +1,10 @@
 """
     Implementation of the forward Euler method for solving ordinary differential equations (ODEs).
 """
-from modules.numerical.flux import dudt as dudt_c
-from modules.numerical.viscous import dudt as dudt_v
-from modules.numerical.heat import dudt as dudt_q
-from modules.numerical.source import dudt as dudt_s
+from modules.numerical.flux     import dudt as dudt_c
+from modules.numerical.viscous  import dudt as dudt_v
+from modules.numerical.heat     import dudt as dudt_q
+from modules.numerical.source   import dudt as dudt_s
 
 
 def _rhs(u, T, t):

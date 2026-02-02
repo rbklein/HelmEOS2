@@ -1,10 +1,9 @@
 """
     Setup initial conditions for the simulation.
 """
-import prep_jax
 
+from config.conf_geometry   import *
 from config.conf_simulation import *
-from modules.geometry.grid import *
 
 ''' Consistency checks '''
 
@@ -13,6 +12,7 @@ KNOWN_TEST_CASES = [
     "TAYLOR_GREEN_VORTEX_3D", 
     "CHAN_SHEAR_LAYER_2D", 
     "TURBULENCE_2D",
+    "GRESHO_VORTEX_2D",
     "MMS1_1D"
 ]
 
@@ -51,7 +51,17 @@ match TEST_CASE:
         ''' set initial condition for 2D turbulence '''
         # Ensure the number of dimensions is 2 for this test case
         assert N_DIMENSIONS == 2, "TURBULENCE_2D requires 2 dimensions"
-        from modules.simulation.initial_conditions.turbulence2D import turbulence_2d as initial_condition
+        #from modules.simulation.initial_conditions.turbulence2D import turbulence_2d as initial_condition
+        NotImplementedError("Turbulence 2D out of order")
+    case "GRESHO_VORTEX_2D":
+
+        ''' set initial condition for 2D Gresho vortex '''
+
+        # Ensure the number of dimensions is 2 for this test case
+        assert N_DIMENSIONS == 2, "GRESHO_VORTEX_2D requires 2 dimensions"
+
+        from modules.simulation.initial_conditions.gresho_vortex import gresho_vortex as initial_condition
+
     case "MMS1_1D":
         ''' set initial condition for manufactured solution 1 '''
 

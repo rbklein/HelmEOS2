@@ -2,8 +2,10 @@
     Implementation of a constant dynamic viscosity
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
+
+from jax.numpy import ones_like
 
 ''' Functions '''
 
@@ -19,4 +21,4 @@ def constant_dynamic_viscosity(u, T):
     """
         returns a user-defined constant dynamic viscosity for every value in the temperature field
     """
-    return VISC_DYN_parameters["value"] * jnp.ones_like(T)
+    return VISC_DYN_parameters["value"] * ones_like(T)

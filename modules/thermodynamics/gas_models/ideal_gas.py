@@ -2,8 +2,10 @@
 The Helmholtz energy and other functions of the ideal gas law
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
+
+from jax.numpy import log
 
 ''' check parameter consistency '''
 
@@ -26,7 +28,7 @@ def ideal_gas(rho, T):
     """
     gamma = EOS_parameters["gamma"]
 
-    return - R_specific * T * (1 + jnp.log(T**(1/(gamma - 1)) / rho))
+    return - R_specific * T * (1 + log(T**(1/(gamma - 1)) / rho))
 
 
 ''' Temperature equation (rho, p) -> T for initial conditions'''

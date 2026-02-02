@@ -4,26 +4,31 @@
     This should be used in all files where jax numpy is used.
 """
 
-# Global flag to turn off memory preallocation
-import os
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
-
-import jax
 from config.conf_jax import *
 
-print('Workstation devices: ', jax.devices(backend="cpu"), jax.devices(backend="gpu"))
 
-cpus = jax.devices("cpu")
-gpus = jax.devices("gpu")
+import os
 
-match DTYPE:
+# Global flag to turn off memory preallocation
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
+
+# Global flag to use CPU
+os.environ['JAX_PLATFORMS'] = 'cpu'
+
+from jax import devices
+#print('Workstation devices: ', devices(backend="cpu"), devices(backend="gpu")) #should by try catch type formulation
+
+cpus = devices("cpu")
+gpus = [] # devices("gpu") #  
+
+
+match USE_DTYPE:
     case "DOUBLE":
-        jax.config.update("jax_enable_x64", True)
-        import jax.numpy as jnp
-        DTYPE = jnp.float64
+        from jax.numpy import float64 as DTYPE
+        from jax import config
+        config.update("jax_enable_x64", True)
     case "SINGLE":
-        import jax.numpy as jnp
-        DTYPE = jnp.float32
+        from jax.numpy import float32 as DTYPE
 
 if SHARD_ARRAYS:
     from jax.experimental import mesh_utils

@@ -2,23 +2,20 @@
 Implementation of Wray's third order low-storage Runge-Kutta method
 """
 
-import jax.numpy as jnp
-
-from modules.numerical.flux import dudt as dudt_c
-from modules.numerical.viscous import dudt as dudt_v
-from modules.numerical.heat import dudt as dudt_q
-from modules.numerical.source import dudt as dudt_s
+from modules.numerical.flux     import dudt as dudt_c
+from modules.numerical.viscous  import dudt as dudt_v
+from modules.numerical.heat     import dudt as dudt_q
+from modules.numerical.source   import dudt as dudt_s
 from modules.thermodynamics.EOS import temperature
 
 
 def _rhs(u, T, t):
     """Combined RHS: convective + viscous + heat."""
-    return (
-        dudt_c(u, T)
-        + dudt_v(u, T)
-        + dudt_q(u, T)
-        #+ dudt_s(u, T, t)
-    )
+    rhs = dudt_c(u, T)
+    rhs += dudt_v(u, T)
+    rhs += dudt_q(u, T)
+
+    return rhs
 
 def Wray(u, T, dt, t):
     """

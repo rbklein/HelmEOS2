@@ -2,22 +2,21 @@
     Functions for numerical integration.
 """
 
-from prep_jax import *
-from config.conf_numerical import *
-from config.conf_simulation import *
-from config.conf_postprocess import *
-
-from config.conf_geometry import *
+from prep_jax                   import *
+from config.conf_numerical      import *
+from config.conf_simulation     import *
+from config.conf_postprocess    import *
+from config.conf_geometry       import *
 from config.conf_thermodynamics import *
 
-from modules.thermodynamics.EOS import *
-from modules.geometry.grid import GRID_SPACING
+from modules.thermodynamics.EOS     import temperature, speed_of_sound
+from modules.geometry.grid          import GRID_SPACING
+from jax.numpy                      import max, abs, stack
+from jax                            import jit
+from jax.lax                        import fori_loop, scan, cond
+from jax.debug                      import print as jax_print
 
-from modules.postprocess.post import init_postprocess, plot_postprocess, update_postprocess, NUM_ITS_PER_UPDATE
-from modules.numerical.computation import midpoint_integrate
-
-from functools import partial
-from pathlib import Path
+from modules.postprocess.derived_quantities.vorticity import total_enstrophy, total_entropy, total_kinetic_energy, pressure_work, total_dilation
 
 ''' Consistency checks '''
 
@@ -41,7 +40,8 @@ match TIME_STEP_METHOD:
     case "WRAY":
         from modules.numerical.integrators.wray import Wray as time_step
     case "BE":
-        from modules.numerical.integrators.BE import backward_euler as time_step
+        #from modules.numerical.integrators.BE import backward_euler as time_step
+        raise NotImplementedError(f"Backward Euler out of order")
     case _:
         raise ValueError(f"Unknown time step method: {TIME_STEP_METHOD}")
 
@@ -52,11 +52,11 @@ def check_CFL(u, T):
     CFL is define as the max_i |u_i| * dt / dx
     """
     c = speed_of_sound(u[0], T)
-    v_max = jnp.max(jnp.abs(u[1:(N_DIMENSIONS+1)] / u[0]), axis = 0) 
+    v_max = max(abs(u[1:(N_DIMENSIONS+1)] / u[0]), axis = 0) 
     cfl = (dt * (v_max + c)) / GRID_SPACING[0]
     return cfl
 
-@jax.jit
+@jit
 def integrate(u, T):
     """
     Integrate the Compressible flow in time
@@ -69,40 +69,44 @@ def integrate(u, T):
         Final state and temperature
     """
     # Define process status function
-    status = lambda it, u, T: jax.debug.print(
+    status = lambda it, u, T: jax_print(
         "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
         it=it, 
         its = NUM_TIME_STEPS, 
         t=(it*dt), 
-        cfl = jnp.max(check_CFL(u, T))
+        cfl = max(check_CFL(u, T))
     )
-
+    
     def step(_, carry):
         t, it, u_prev, T_prev = carry           # Unpack the carry variable
         u = time_step(u_prev, T_prev, dt, t)    # Compute new state
         T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
         it = it + 1
-        t  = t + dt
-        jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
-                    lambda _: status(it, u, T), 
-                    lambda _: None, 
-                    operand=None)
+        t  = t + dt 
+
+        cond((it % NUM_ITS_PER_UPDATE) == 0, 
+                     lambda _: status(it, u, T), 
+                     lambda _: None, 
+                     operand=None)
+        
         return (t, it, u, T)
 
     status(0, u, T)
 
     # Perform the integration over the specified number of time steps
-    t, it, u, T = jax.lax.fori_loop(
-        0, NUM_TIME_STEPS, step, (0.0, 0, u, T) #, None, length=NUM_TIME_STEPS
+    t, it, u, T = fori_loop(
+        0, NUM_TIME_STEPS, step, (0.0, 0, u, T)
     )  
+
+    status(it, u, T)
 
     return u, T
 
 
-@jax.jit
+@jit
 def integrate_data(u, T):
     """
-    Integrate the Compressible flow in time while gather all data
+    Integrate the Compressible flow in time
 
     Parameters:
         - u (array-like): initial state
@@ -110,79 +114,130 @@ def integrate_data(u, T):
 
     Returns:
         Final state and temperature
-    """
+    """    
     # Define process status function
-    status = lambda it, u, T: jax.debug.print(
+    status = lambda it, u, T: jax_print(
         "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
         it=it, 
         its = NUM_TIME_STEPS, 
         t=(it*dt), 
-        cfl = jnp.max(check_CFL(u, T))
+        cfl = max(check_CFL(u, T))
     )
 
-    def scan_step(carry, _):
+    def step(carry, _):
         t, it, u_prev, T_prev = carry           # Unpack the carry variable
         u = time_step(u_prev, T_prev, dt, t)    # Compute new state
         T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
-        it = it + 1
         t  = t + dt
-        jax.lax.cond((it % NUM_ITS_PER_UPDATE) == 0, 
+        it = it + 1
+
+        k = total_kinetic_energy(u, T)
+        s = total_entropy(u, T)
+
+        data = stack((t, k, s))
+
+        cond((it % NUM_ITS_PER_UPDATE) == 0, 
                     lambda _: status(it, u, T), 
                     lambda _: None, 
                     operand=None)
-        return (t, it, u, T), (u, T)
+        
+        return (t, it, u, T), data
 
-    u0, T0 = jnp.copy(u), jnp.copy(T)
-    status(0, u, T)
 
     # Perform the integration over the specified number of time steps
-    (t, it, u, T), (u_hist, T_hist) = jax.lax.scan(
-        scan_step, (0.0, 0, u, T), None, length=NUM_TIME_STEPS
+    (t, its, u, T), data = scan(
+        step, (0.0, 0, u, T), None, length = NUM_TIME_STEPS
     )  
 
-    u_hist = jnp.concatenate([u0[jnp.newaxis, ...], u_hist], axis=0)
-    T_hist = jnp.concatenate([T0[jnp.newaxis, ...], T_hist], axis=0)
-
-    return u, T, u_hist, T_hist
+    return u, T, data
 
 
 
-def integrate_interactive(u, T):
+@jit(static_argnames=['num_steps_per_conv', 'num_convs'])
+def integrate_convs(u, T, it, t, num_steps_per_conv, num_convs):
     """
-    Interactive integration using a JIT-compiled jax.lax.scan for each interval
-    between update_postprocess calls.
+    Integrate 5 convective time scales of the taylor green vortex
     """
+    # Define process status function
+    status = lambda it, u, T: jax_print(
+        "Current time step: {it}/{its}, t: {t}, CFL: {cfl}", 
+        it=it, 
+        its = NUM_TIME_STEPS, 
+        t=(it*dt), 
+        cfl = max(check_CFL(u, T))
+    )
 
-    @jax.jit
-    def step(u, T, dt, t):
-        u = time_step(u, T, dt, t)
-        T = temperature(u, T)
-        t = t + dt
-        return u, T, t
+    def step(carry, _):
+        t, it, u_prev, T_prev = carry           # Unpack the carry variable
+        u = time_step(u_prev, T_prev, dt, t)    # Compute new state
+        T = temperature(u, T_prev)              # Compute new temperature using previous temperature as initial guess
+        t  = t + dt
+        it = it + 1
 
-    status = lambda it, u, T: print(f"Current time step: {it}/{NUM_TIME_STEPS}, t: {it*dt}, CFL: {jnp.max(check_CFL(u, T)):.4f}")
+        k = total_kinetic_energy(u, T)
+        s = total_entropy(u, T)
+        En = total_enstrophy(u, T)
+        di = total_dilation(u, T)
+        pw = pressure_work(u, T)
 
-    scan_steps = NUM_ITS_PER_UPDATE
-    total_steps = NUM_TIME_STEPS
+        data = stack((k, s, En, di, pw))
 
-    fig, plot_grid = init_postprocess()
-    plot_grid = plot_postprocess(u, T, fig, plot_grid, cmap=COLORMAP)
-    status(0, u, T)
-
-    #compiled interval of steps between plot updates
-    @partial(jax.jit, static_argnames=['steps'])
-    def compiled_step(u, T, steps, t):
-        u, T, t = jax.lax.scan(lambda carry, _: (step(carry[0], carry[1], dt, carry[2]), None), (u, T, t), None, length=steps)[0]
-        return u, T, t
+        cond((it % NUM_ITS_PER_UPDATE) == 0, 
+                    lambda _: status(it, u, T), 
+                    lambda _: None, 
+                    operand=None)
+        
+        return (t, it, u, T), data
     
-    t = 0.0
-    steps_done = 0
-    while steps_done < total_steps:
-        #steps = min(scan_steps, total_steps - steps_done)
-        u, T, t = compiled_step(u, T, scan_steps, t)
-        steps_done += scan_steps
+    # Perform the integration over the specified number of time steps
+    (t, its, u, T), data = scan(
+        step, (t, it, u, T), None, length = num_convs * num_steps_per_conv
+    )  
 
-        status(steps_done, u, T)
-        update_postprocess(u, T, fig, plot_grid)
+    return u, T, data
 
-    return u, T
+
+def integrate_TG(u, T):
+    """
+    Integrate the Compressible flow in time
+
+    Parameters:
+        - u (array-like): initial state
+        - T (array-like): initial temperature associated to initial state
+
+    Returns:
+        Final state and temperature
+    """    
+    from config.conf_simulation import _num_conv_times, _conv_time
+    from config.conf_numerical  import _num_conv_times as _nct_num, _num_steps_per_conv
+
+    from jax.numpy              import save
+
+    assert _num_conv_times == _nct_num, "Number of convective time scales is not the same in configuration files"
+
+    for i in range(4):
+        if i == 1:
+            u, T, data = integrate_convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv, 3)
+            print('saving intermediate...')
+            file_name_u     = "sim_data/u_01_1600_2_5.npy"
+            file_name_T     = "sim_data/T_01_1600_2_5.npy"
+            file_name_data  = "sim_data/data_01_1600_2_5.npy"
+            save(file_name_u, u)
+            save(file_name_T, T)
+            save(file_name_data, data)
+            u, T, data = integrate_convs(u, T, (5 * i + 3) * _num_steps_per_conv, (5 * i + 3) * _conv_time, _num_steps_per_conv, 2)
+
+        else:
+            u, T, data = integrate_convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv, 5)
+
+        print('saving...')
+        file_name_u     = "sim_data/u_01_1600_" + str(i+1) + ".npy"
+        file_name_T     = "sim_data/T_01_1600_" + str(i+1) + ".npy"
+        file_name_data  = "sim_data/data_01_1600_" + str(i+1) + ".npy"
+
+        save(file_name_u, u)
+        save(file_name_T, T)
+        save(file_name_data, data)
+
+
+    return u, T, data

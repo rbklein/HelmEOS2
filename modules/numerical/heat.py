@@ -2,10 +2,13 @@
     Contains functions that construct the heat flux divergence
 """
 
-from prep_jax import *
-from config.conf_numerical import *
-from config.conf_geometry import *
-from modules.simulation.boundary import apply_boundary_conditions, apply_temperature_boundary_condition
+from prep_jax               import *
+from config.conf_numerical  import *
+from config.conf_geometry   import *
+
+from modules.geometry.grid          import CELL_VOLUME
+from modules.simulation.boundary    import apply_boundary_conditions, apply_temperature_boundary_condition
+from jax                            import jit
 
 ''' Consistency checks '''
 
@@ -14,7 +17,7 @@ KNOWN_HEAT_FLUX_TYPES = ["NAIVE"]
 assert NUMERICAL_HEAT_FLUX in KNOWN_HEAT_FLUX_TYPES, f"Unknown numerical heat flux: {NUMERICAL_HEAT_FLUX}"
 
 ''' Functions for heat fluxes '''
-from modules.geometry.grid import CELL_VOLUME
+
 
 match NUMERICAL_HEAT_FLUX:
     case "NAIVE":

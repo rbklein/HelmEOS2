@@ -2,11 +2,12 @@
 Implementation of a new kinetic energy consistent and entropy conserving numerical flux
 for arbitrary equations of state.
 """
+from prep_jax               import *
+from config.conf_numerical  import *
 
-from prep_jax import *
-from config.conf_numerical import *
-from modules.geometry.grid import *
-from modules.thermodynamics.EOS import *
+from modules.geometry.grid      import GRID_RESOLUTION, GRID_SPACING
+from modules.thermodynamics.EOS import pressure
+from jax.numpy                  import stack, sum, zeros_like
 
 ''' Import necessary discrete gradient means'''
 match DISCRETE_GRADIENT:
@@ -59,7 +60,7 @@ def div_keep_dg_1d(u, T):
     f_pv                = pv_mean    
 
     f_total_energy = f_internal_energy + f_kinetic_energy + f_pv
-    f = jnp.stack((f_density, f_momentum, f_total_energy), axis=0)
+    f = stack((f_density, f_momentum, f_total_energy), axis=0)
 
     return f[:, 1:] - f[:, :-1]
 
@@ -90,12 +91,12 @@ def div_x_keepdg_2d(u, T):
 
     #compute pressure in x-direction
     pressure_mean   = 0.5 * (press[:-1, :] + press[1:, :]) 
-    f_p             = jnp.stack((pressure_mean, jnp.zeros_like(pressure_mean)), axis=0)
+    f_p             = stack((pressure_mean, zeros_like(pressure_mean)), axis=0)
     f_momentum      = f_density[None, :, :] * vel_mean + f_p
 
     #compute ||v_m||^2 - 0.5 (||v||^2)_m
-    kinetic_energy      = 0.5 * jnp.sum(vel**2, axis=0)
-    kinetic_energy_mean = jnp.sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:-1, :] + kinetic_energy[1:, :])
+    kinetic_energy      = 0.5 * sum(vel**2, axis=0)
+    kinetic_energy_mean = sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:-1, :] + kinetic_energy[1:, :])
 
     #compute 2 p_m v_m - (p v)_m
     pv              = press * vel[0, :, :]
@@ -106,7 +107,7 @@ def div_x_keepdg_2d(u, T):
     f_pv                = pv_mean    
 
     f_total_energy = f_internal_energy + f_kinetic_energy + f_pv
-    f = jnp.stack((f_density, f_momentum[0, :, :], f_momentum[1, :, :], f_total_energy), axis=0)[:, :, 1:-1]
+    f = stack((f_density, f_momentum[0, :, :], f_momentum[1, :, :], f_total_energy), axis=0)[:, :, 1:-1]
 
     return d_y * (f[:, 1:, :] - f[:, :-1, :])
 
@@ -136,12 +137,12 @@ def div_y_keepdg_2d(u, T):
 
     #compute pressure in y-direction
     pressure_mean   = 0.5 * (press[:, :-1] + press[:, 1:]) 
-    f_p             = jnp.stack((jnp.zeros_like(pressure_mean), pressure_mean), axis=0)
+    f_p             = stack((zeros_like(pressure_mean), pressure_mean), axis=0)
     f_momentum      = f_density[None, :, :] * vel_mean + f_p
 
     #compute ||v_m||^2 - 0.5 (||v||^2)_m
-    kinetic_energy      = 0.5 * jnp.sum(vel**2, axis=0)
-    kinetic_energy_mean = jnp.sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:, :-1] + kinetic_energy[:, 1:])
+    kinetic_energy      = 0.5 * sum(vel**2, axis=0)
+    kinetic_energy_mean = sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:, :-1] + kinetic_energy[:, 1:])
 
     #compute 2 p_m v_m - (p v)_m
     pv              = press * vel[1, :, :]
@@ -152,7 +153,7 @@ def div_y_keepdg_2d(u, T):
     f_pv                = pv_mean    
 
     f_total_energy = f_internal_energy + f_kinetic_energy + f_pv
-    f = jnp.stack((f_density, f_momentum[0, :, :], f_momentum[1, :, :], f_total_energy), axis=0)[:, 1:-1, :]
+    f = stack((f_density, f_momentum[0, :, :], f_momentum[1, :, :], f_total_energy), axis=0)[:, 1:-1, :]
 
     return d_x * (f[:, :, 1:] - f[:, :, :-1])
 
@@ -182,12 +183,12 @@ def div_x_keepdg_3d(u, T):
 
     #compute pressure in x-direction
     pressure_mean   = 0.5 * (press[:-1, :, :] + press[1:, :, :]) 
-    f_p             = jnp.stack((pressure_mean, jnp.zeros_like(pressure_mean), jnp.zeros_like(pressure_mean)), axis=0)
+    f_p             = stack((pressure_mean, zeros_like(pressure_mean), zeros_like(pressure_mean)), axis=0)
     f_momentum      = f_density[None, :, :, :] * vel_mean + f_p
 
     #compute ||v_m||^2 - 0.5 (||v||^2)_m
-    kinetic_energy      = 0.5 * jnp.sum(vel**2, axis=0)
-    kinetic_energy_mean = jnp.sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:-1, :, :] + kinetic_energy[1:, :, :])
+    kinetic_energy      = 0.5 * sum(vel**2, axis=0)
+    kinetic_energy_mean = sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:-1, :, :] + kinetic_energy[1:, :, :])
 
     #compute 2 p_m v_m - (p v)_m
     pv              = press * vel[0, :, :, :]
@@ -198,7 +199,7 @@ def div_x_keepdg_3d(u, T):
     f_pv                = pv_mean    
 
     f_total_energy = f_internal_energy + f_kinetic_energy + f_pv
-    f = jnp.stack((f_density, f_momentum[0, :, :, :], f_momentum[1, :, :, :], f_momentum[2, :, :, :], f_total_energy), axis=0)[:, :, 1:-1, 1:-1]
+    f = stack((f_density, f_momentum[0, :, :, :], f_momentum[1, :, :, :], f_momentum[2, :, :, :], f_total_energy), axis=0)[:, :, 1:-1, 1:-1]
 
     return d_y * d_z * (f[:, 1:, :, :] - f[:, :-1, :, :])
 
@@ -224,12 +225,12 @@ def div_y_keepdg_3d(u, T):
 
     #compute pressure in y-direction
     pressure_mean   = 0.5 * (press[:, :-1, :] + press[:, 1:, :]) 
-    f_p             = jnp.stack((jnp.zeros_like(pressure_mean), pressure_mean, jnp.zeros_like(pressure_mean)), axis=0)
+    f_p             = stack((zeros_like(pressure_mean), pressure_mean, zeros_like(pressure_mean)), axis=0)
     f_momentum      = f_density[None, :, :, :] * vel_mean + f_p
 
     #compute ||v_m||^2 - 0.5 (||v||^2)_m
-    kinetic_energy      = 0.5 * jnp.sum(vel**2, axis=0)
-    kinetic_energy_mean = jnp.sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:, :-1, :] + kinetic_energy[:, 1:, :])
+    kinetic_energy      = 0.5 * sum(vel**2, axis=0)
+    kinetic_energy_mean = sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:, :-1, :] + kinetic_energy[:, 1:, :])
 
     #compute 2 p_m v_m - (p v)_m
     pv              = press * vel[1, :, :, :]
@@ -240,7 +241,7 @@ def div_y_keepdg_3d(u, T):
     f_pv                = pv_mean    
 
     f_total_energy = f_internal_energy + f_kinetic_energy + f_pv
-    f = jnp.stack((f_density, f_momentum[0, :, :, :], f_momentum[1, :, :, :], f_momentum[2, :, :, :], f_total_energy), axis=0)[:, 1:-1, :, 1:-1]
+    f = stack((f_density, f_momentum[0, :, :, :], f_momentum[1, :, :, :], f_momentum[2, :, :, :], f_total_energy), axis=0)[:, 1:-1, :, 1:-1]
 
     return d_x * d_z * (f[:, :, 1:, :] - f[:, :, :-1, :])
 
@@ -266,12 +267,12 @@ def div_z_keepdg_3d(u, T):
 
     #compute pressure in y-direction
     pressure_mean   = 0.5 * (press[:, :, :-1] + press[:, :, 1:]) 
-    f_p             = jnp.stack((jnp.zeros_like(pressure_mean), jnp.zeros_like(pressure_mean), pressure_mean), axis=0)
+    f_p             = stack((zeros_like(pressure_mean), zeros_like(pressure_mean), pressure_mean), axis=0)
     f_momentum      = f_density[None, :, :, :] * vel_mean + f_p
 
     #compute ||v_m||^2 - 0.5 (||v||^2)_m
-    kinetic_energy      = 0.5 * jnp.sum(vel**2, axis=0)
-    kinetic_energy_mean = jnp.sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:, :, :-1] + kinetic_energy[:, :, 1:])
+    kinetic_energy      = 0.5 * sum(vel**2, axis=0)
+    kinetic_energy_mean = sum(vel_mean**2, axis=0) - 0.5 * (kinetic_energy[:, :, :-1] + kinetic_energy[:, :, 1:])
 
     #compute 2 p_m v_m - (p v)_m
     pv              = press * vel[2, :, :, :]
@@ -282,7 +283,7 @@ def div_z_keepdg_3d(u, T):
     f_pv                = pv_mean    
 
     f_total_energy = f_internal_energy + f_kinetic_energy + f_pv
-    f = jnp.stack((f_density, f_momentum[0, :, :, :], f_momentum[1, :, :, :], f_momentum[2, :, :, :], f_total_energy), axis=0)[:, 1:-1, 1:-1, :]
+    f = stack((f_density, f_momentum[0, :, :, :], f_momentum[1, :, :, :], f_momentum[2, :, :, :], f_total_energy), axis=0)[:, 1:-1, 1:-1, :]
 
     return d_x * d_y * (f[:, :, :, 1:] - f[:, :, :, :-1])
 

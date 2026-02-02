@@ -1,3 +1,4 @@
+''' revise some day
 from prep_jax import *
 
 from modules.numerical.flux import dudt as dudt_c
@@ -6,9 +7,9 @@ from modules.numerical.heat import dudt as dudt_q
 from modules.numerical.source import dudt as dudt_s
 from modules.thermodynamics.EOS import temperature
 
-import jax
-import jax.numpy as jnp
-from jax import lax
+
+
+from jax.numpy import asarray, inf
 from jax.scipy.sparse.linalg import gmres
 
 
@@ -114,3 +115,4 @@ def backward_euler(u, T, dt, t):
 
     u_new = v_final.reshape(u_shape)
     return u_new
+'''

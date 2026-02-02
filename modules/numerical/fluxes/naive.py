@@ -6,8 +6,10 @@
 
 from prep_jax import *
 from config.conf_numerical import *
-from modules.geometry.grid import *
-from modules.thermodynamics.EOS import *
+
+from modules.geometry.grid      import GRID_RESOLUTION, GRID_SPACING
+from modules.thermodynamics.EOS import pressure
+from jax.numpy                  import stack
 
 ''' 3D versions of the naive fluxes for testing purposes '''
 
@@ -28,7 +30,7 @@ def div_x_naive_3d(u, T):
     f_m3_x = u_m_x[1] * u_m_x[3] / u_m_x[0]
     f_E_x = u_m_x[1] * (u_m_x[4] + p) / u_m_x[0]
 
-    F = jnp.stack((f_rho_x, f_m1_x, f_m2_x, f_m3_x, f_E_x), axis=0)
+    F = stack((f_rho_x, f_m1_x, f_m2_x, f_m3_x, f_E_x), axis=0)
     return d_y * d_z * (F[:, 1:, 1:(n_y+1), 1:(n_z+1)] - F[:, :-1, 1:(n_y+1), 1:(n_z+1)])  # Return the difference in fluxes in x-direction
 
 def div_y_naive_3d(u, T):
@@ -48,7 +50,7 @@ def div_y_naive_3d(u, T):
     f_m3_y = u_m_y[2] * u_m_y[3] / u_m_y[0]
     f_E_y = u_m_y[2] * (u_m_y[4] + p) / u_m_y[0]
 
-    F = jnp.stack((f_rho_y, f_m1_y, f_m2_y, f_m3_y, f_E_y), axis=0)
+    F = stack((f_rho_y, f_m1_y, f_m2_y, f_m3_y, f_E_y), axis=0)
     return d_x * d_z * (F[:, 1:(n_x+1), 1:, 1:(n_z+1)] - F[:, 1:(n_x+1), :-1, 1:(n_z+1)])  # Return the difference in fluxes in y-direction
 
 def div_z_naive_3d(u, T):
@@ -68,7 +70,7 @@ def div_z_naive_3d(u, T):
     f_m3_z = u_m_z[3]**2 / u_m_z[0] + p
     f_E_z = u_m_z[3] * (u_m_z[4] + p) / u_m_z[0]
 
-    F = jnp.stack((f_rho_z, f_m1_z, f_m2_z, f_m3_z, f_E_z), axis=0)
+    F = stack((f_rho_z, f_m1_z, f_m2_z, f_m3_z, f_E_z), axis=0)
     return d_x * d_y * (F[:, 1:(n_x+1), 1:(n_y+1), 1:] - F[:, 1:(n_x+1), 1:(n_y+1), :-1])  # Return the difference in fluxes in z-direction
 
 def div_naive_3d(u, T):
@@ -93,7 +95,7 @@ def div_x_naive_2d(u, T):
     f_m2_x = u_m_x[1] * u_m_x[2] / u_m_x[0]
     f_E_x = u_m_x[1] * (u_m_x[3] + p) / u_m_x[0]
 
-    F = jnp.stack((f_rho_x, f_m1_x, f_m2_x, f_E_x), axis=0)
+    F = stack((f_rho_x, f_m1_x, f_m2_x, f_E_x), axis=0)
     return d_y * (F[:, 1:, 1:(n_y+1)] - F[:, :-1, 1:(n_y+1)])  # Return the difference in fluxes in x-direction
 
 def div_y_naive_2d(u, T):
@@ -112,7 +114,7 @@ def div_y_naive_2d(u, T):
     f_m2_y = u_m_y[2]**2 / u_m_y[0] + p
     f_E_y = u_m_y[2] * (u_m_y[3] + p) / u_m_y[0]
 
-    F = jnp.stack((f_rho_y, f_m1_y, f_m2_y, f_E_y), axis=0)
+    F = stack((f_rho_y, f_m1_y, f_m2_y, f_E_y), axis=0)
     return d_x * (F[:, 1:(n_x+1), 1:] - F[:, 1:(n_x+1), :-1])  # Return the difference in fluxes in y-direction
 
     

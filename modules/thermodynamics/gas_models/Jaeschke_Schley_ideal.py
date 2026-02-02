@@ -9,8 +9,12 @@ see (referred to as KW-article): The GERG-2004 Wide-Range Equation of State for 
 and: Ideal-Gas Thermodynamic Properties for Natural-Gas Applications
 """
 
-from prep_jax import *
+from prep_jax                   import *
 from config.conf_thermodynamics import *
+
+from jax.numpy  import array, tanh, log, sinh, cosh, zeros_like
+from jax.lax    import fori_loop
+
 
 ''' Derived parameters '''
 
@@ -20,50 +24,79 @@ rho_c, T_c, p_c = molecule.critical_point
 
 # parameters from Table A3.1 converted back to b_k form
 _b0 = 2.500020000 + 1.0
-_b13 = jnp.array([2.044520000, 2.033660000]) # sinh coeffs
-_theta13 = jnp.array([3.022758166, 1.589964364]) * T_c 
-_b24 = jnp.array([-1.060440000, 0.013930000]) # cosh coeffs
-_theta24 = jnp.array([-2.844425476, 1.121596090]) * T_c
+_b13 = array([2.044520000, 2.033660000]) # sinh coeffs
+_theta13 = array([3.022758166, 1.589964364]) * T_c 
+_b24 = array([-1.060440000, 0.013930000]) # cosh coeffs
+_theta24 = array([-2.844425476, 1.121596090]) * T_c
 
 # reference values mentioned in KW-article
-T_ref = 273.15 # 298.15      # 10 # K
-p_ref = 0.101325e6  # 10 * R_specific # Pa
+T_ref = 10 # K # 273.15 # 298.15 # 
+p_ref = 10 * R_specific # Pa 0.101325e6  # 
 rho_ref = p_ref / (R_specific * T_ref) # kg m^-3 
-
-coth = lambda x: 1.0 / jnp.tanh(x)
 
 
 ''' Helmholtz energy '''
+def cp_ideal(T):
+    """
+    The ideal isobaric heat capacity model as in eq 4.14 of KW-article
+    """
+    def sinh_body(i, acc):
+        x = _theta13[i] / T
+        return acc + _b13[i] * ((x / sinh(x)) ** 2)
+    
+    def cosh_body(i, acc):
+        x = _theta24[i] / T
+        return acc + _b24[i] * ((x / cosh(x)) ** 2)
+    
+    sinh_term = fori_loop(0, 2, sinh_body, zeros_like(T))
+    cosh_term = fori_loop(0, 2, cosh_body, zeros_like(T))
+
+    return R_specific * (_b0 + sinh_term + cosh_term)
+
+def coth(x):
+    return 1.0 / tanh(x)
 
 def enthalpy_integral(T):
-    '''
-        Evaluates the anti-derivative of the c_p(T) model as in eq 4.14 of KW-article
+    """
+    Evaluates the anti-derivative of the c_p(T) model as in eq 4.14 of KW-article
 
-        The quantity is multiplied by the specific gas constant to obtain per mass units
-    '''
+    The quantity is multiplied by the specific gas constant to obtain per mass units
+    """
     linear_term = _b0 * T
-    tanh_term = 0.0
-    for i in range(2):
-        tanh_term -= _b13[i] * _theta13[i] * jnp.tanh(_theta13[i] / T)
-    coth_term = 0.0
-    for i in range(2):
-        coth_term += _b24[i] * _theta24[i] * coth(_theta24[i] / T) # coth = 1 / tanh
-    return R_specific * (linear_term + tanh_term + coth_term) 
+
+    def coth_body(i, acc):
+        return acc + _b13[i] * _theta13[i] * coth(_theta13[i] / T)
+    
+    def tanh_body(i, acc):
+        return acc - _b24[i] * _theta24[i] * tanh(_theta24[i] / T)
+
+    coth_term = fori_loop(0, 2, coth_body, zeros_like(T))
+    tanh_term = fori_loop(0, 2, tanh_body, zeros_like(T))
+
+    return R_specific * (linear_term + coth_term + tanh_term )
+
 
 def entropy_integral(T):
-    '''
-        Evaluates the anti-derivative of c_p / T where c_p(T) is given by the model as in eq 4.14 of KW-article
+    """
+    Evaluates the anti-derivative of c_p / T where c_p(T) is given by the model as in eq 4.14 of KW-article
 
-        The quantity is multiplied by the specific gas constant to obtain per mass units
-    '''
-    ln_term = _b0 * jnp.log(T)
-    sinh_term = 0.0
-    for i in range(2):
-        sinh_term -= _b13[i] * (jnp.log(jnp.sinh(_theta13[i] / T)) - _theta13[i] / T * coth(_theta13[i] / T))
-    cosh_term = 0.0
-    for i in range(2):
-        cosh_term += _b24[i] * (jnp.log(jnp.cosh(_theta24[i] / T)) - _theta24[i] / T * jnp.tanh(_theta24[i] / T))
+    The quantity is multiplied by the specific gas constant to obtain per mass units
+    """
+    ln_term = _b0 * log(T)
+
+    def sinh_body(i, acc):
+        x = _theta13[i] / T
+        return acc - _b13[i] * (log(sinh(x)) - x * coth(x))
+
+    def cosh_body(i, acc):
+        x = _theta24[i] / T
+        return acc + _b24[i] * (log(cosh(x)) - x * tanh(x))
+
+    sinh_term = fori_loop(0, 2, sinh_body, zeros_like(T))
+    cosh_term = fori_loop(0, 2, cosh_body, zeros_like(T))
+
     return R_specific * (ln_term + sinh_term + cosh_term)
+
 
 def Jaeschke_Schley(rho, T):
     '''
@@ -71,9 +104,40 @@ def Jaeschke_Schley(rho, T):
 
         Integrals are exactly evaluated using integral_calculator.com
     '''
-    #enthalpy_terms  = enthalpy_integral(T) - enthalpy_integral(T_ref) # + 0.0 reference enthalpy
-    #entropy_terms   = entropy_integral(T) - entropy_integral(T_ref) - R_specific * jnp.log(T / T_ref) - R_specific * jnp.log(rho / rho_ref) # + 0.0 reference entropy
-    
     enthalpy_terms  = enthalpy_integral(T) - enthalpy_integral(T_ref) # + 0.0 reference enthalpy
-    entropy_terms   = entropy_integral(T) - entropy_integral(T_ref) - R_specific * jnp.log(T / T_ref) - R_specific * jnp.log(rho / rho_ref) # + 0.0 reference entropy
+    entropy_terms   = entropy_integral(T) - entropy_integral(T_ref) - R_specific * log(T / T_ref) - R_specific * log(rho / rho_ref) # + 0.0 reference entropy
     return enthalpy_terms - R_specific * T - T * entropy_terms
+
+
+
+def Jaeschke_Schley_dT(rho, T):
+    """
+    Manual computation of temperature derivative for performance critical situations
+    """
+    integral_term = - (entropy_integral(T) - entropy_integral(T_ref) - R_specific * log(T / T_ref))
+    density_term = R_specific * log(rho / rho_ref) # - 0.0 reference entropy
+    return integral_term + density_term
+
+def Jaeschke_Schley_drho(rho, T):
+    """
+    Manual computation of density derivative for performance critical situations
+    """
+    return R_specific * T / rho
+
+def Jaeschke_Schley_dT2(rho, T):
+    """
+    Manual computation of second temperature derivative for performance critical situations
+    """
+    return - (cp_ideal(T) - R_specific) / T
+
+def Jaeschke_Schley_drho2(rho, T):
+    """
+    Manual computation of second density derivative for performance critical situations
+    """
+    return -R_specific * T / (rho ** 2)
+
+def Jaeschke_Schley_drhodT(rho, T):
+    """
+    Manual computation of second mixed derivative for performance critical situations
+    """
+    return R_specific / rho
