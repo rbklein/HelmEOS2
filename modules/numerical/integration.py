@@ -11,13 +11,12 @@ from config.conf_thermodynamics import *
 
 from modules.thermodynamics.EOS     import temperature, speed_of_sound
 from modules.geometry.grid          import GRID_SPACING
-from jax.numpy                      import max, abs, stack, sum
+from jax.numpy                      import max, abs, stack
 from jax                            import jit
 from jax.lax                        import fori_loop, scan, cond
 from jax.debug                      import print as jax_print
 
 from modules.postprocess.derived_quantities.vorticity import total_enstrophy, total_entropy, total_kinetic_energy, pressure_work, total_dilation
-from modules.simulation.boundary import apply_temperature_boundary_condition
 
 ''' Consistency checks '''
 
@@ -134,22 +133,8 @@ def integrate_data(u, T):
 
         k = total_kinetic_energy(u, T)
         s = total_entropy(u, T)
-        #p = total_enstrophy(u, T)
 
-        Tp = apply_temperature_boundary_condition(u, T)
-        n_x, n_y, n_z = GRID_RESOLUTION
-
-        dxT = abs(Tp[1:, 1:-1, 1:-1] - Tp[:-1, 1:-1, 1:-1]) < 1e-3
-        dyT = abs(Tp[1:-1, 1:, 1:-1] - Tp[1:-1, :-1, 1:-1]) < 1e-3
-        dzT = abs(Tp[1:-1, 1:-1, 1:] - Tp[1:-1, 1:-1, :-1]) < 1e-3
-        dxT = dxT[1:, :, :] + dxT[:-1, :, :]
-        dyT = dyT[:, 1:, :] + dyT[:, :-1, :]
-        dzT = dzT[:, :, 1:] + dzT[:, :, :-1]
-
-        dT  = (dxT + dyT + dzT) >= 1
-        percentage = sum(dT) / (n_x * n_y * n_z)
-
-        data = stack((t, k, s, percentage))#, p))
+        data = stack((t, k, s))
 
         cond((it % NUM_ITS_PER_UPDATE) == 0, 
                     lambda _: status(it, u, T), 
@@ -169,7 +154,7 @@ def integrate_data(u, T):
 
 
 @jit(static_argnames=['num_steps_per_conv', 'num_convs'])
-def integrate_5convs(u, T, it, t, num_steps_per_conv, num_convs):
+def integrate_convs(u, T, it, t, num_steps_per_conv, num_convs):
     """
     Integrate 5 convective time scales of the taylor green vortex
     """
@@ -232,7 +217,7 @@ def integrate_TG(u, T):
 
     for i in range(4):
         if i == 1:
-            u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv, 3)
+            u, T, data = integrate_convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv, 3)
             print('saving intermediate...')
             file_name_u     = "sim_data/u_01_1600_2_5.npy"
             file_name_T     = "sim_data/T_01_1600_2_5.npy"
@@ -240,10 +225,10 @@ def integrate_TG(u, T):
             save(file_name_u, u)
             save(file_name_T, T)
             save(file_name_data, data)
-            u, T, data = integrate_5convs(u, T, (5 * i + 3) * _num_steps_per_conv, (5 * i + 3) * _conv_time, _num_steps_per_conv, 2)
+            u, T, data = integrate_convs(u, T, (5 * i + 3) * _num_steps_per_conv, (5 * i + 3) * _conv_time, _num_steps_per_conv, 2)
 
         else:
-            u, T, data = integrate_5convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv, 5)
+            u, T, data = integrate_convs(u, T, 5 * i * _num_steps_per_conv, 5 * i * _conv_time, _num_steps_per_conv, 5)
 
         print('saving...')
         file_name_u     = "sim_data/u_01_1600_" + str(i+1) + ".npy"
@@ -256,10 +241,3 @@ def integrate_TG(u, T):
 
 
     return u, T, data
-
-
-
-# # cond((it % NUM_ITS_PER_UPDATE) == 0, 
-#         #             lambda _: status(it, u, T), 
-#         #             lambda _: None, 
-#         #             operand=None)

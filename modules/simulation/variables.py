@@ -10,8 +10,8 @@ from config.conf_geometry   import *
 from modules.thermodynamics.EOS                         import temperature_rpt, density_ptr, total_energy
 from modules.thermodynamics.gas_models.Peng_Robinson    import density_ptr_Peng_Robinson as ptr
 from modules.thermodynamics.gas_models.Van_der_Waals    import temperature_rpt_Van_der_Waals as rpt
-from modules.thermodynamics.EOS                         import Gibbs_energy
-from jax.numpy                                          import stack, ndarray, sum
+from modules.thermodynamics.EOS                         import Gibbs_energy, molecule
+from jax.numpy                                          import stack, ndarray, sum, ones_like
 from jax                                                import jit
 from typing                                             import Tuple
 
@@ -29,6 +29,8 @@ def get_convert(vars : int):
             return rvt2u
         case _:
             raise ValueError(f"Unknown variable set: {vars}")
+
+rho_c, T_c, p_c = molecule.critical_point
 
 @jit
 def rvp2u(v : ndarray) -> Tuple[ndarray, ndarray]:

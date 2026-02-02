@@ -1,22 +1,9 @@
 """
 Functions for thermodynamic equations of state (EOS).
 
-This version is written to avoid common JAX/XLA memory blow-ups for real-fluid
-Helmholtz EOS usage in flux functions (e.g., KEEP-style schemes).
-
-Key changes vs. the original:
-- Avoids taking grad() of functions that already call grad() (no "grad-of-grad"
-  for Gibbs_beta / pressure_beta derivatives). Those derivatives are expressed
-  analytically in terms of A_rho, A_T, A_rhorho, A_rhoT, A_TT.
-- Computes 2nd derivatives using forward-over-reverse (jacfwd(grad)) rather than
-  reverse-over-reverse (grad(grad)), which is typically much lighter on GPU memory.
-- Keeps the public API largely compatible: pressure, entropy, internal_energy,
-  Gibbs_energy, speed_of_sound, c_v, c_p, Gibbs_beta / pressure_beta and their
-  derivatives, plus manufactured-solution derivatives.
-
 Assumptions:
 - Helmholtz_scalar(rho, T) returns specific Helmholtz free energy A per unit mass.
-- All thermodynamic quantities below are per unit mass, except pressure which is per volume.
+- All thermodynamic quantities below are per unit mass.
 """
 
 from prep_jax                   import *
@@ -108,7 +95,7 @@ def _vectorize_thermo(f: callable) -> callable:
     return f_vec
 
 # -----------------------------
-# Helmholtz derivatives (memory-aware)
+# Helmholtz derivatives
 # -----------------------------
 if EOS != "KUNZ_WAGNER_MANUAL":
     # First derivatives: 

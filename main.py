@@ -13,23 +13,21 @@ if __name__ == "__main__":
     mesh                = construct_mesh()
     u, conversion       = initial_condition(mesh) 
     convert             = get_convert(conversion)
-    u, T                = convert(u)
+    u0, T0                = convert(u)
     del mesh
 
-    u.block_until_ready()
-    T.block_until_ready()
+    u0.block_until_ready()
+    T0.block_until_ready()
     print('Finished initial condition')
-    print('CFL: ', check_CFL(u, T).max())
+    print('CFL: ', check_CFL(u0, T0).max())
 
     # simulate
-    u, T, data = integrate_data(u, T) 
+    u, T, data = integrate_data(u0, T0) 
 
-    import jax.numpy as jnp
-    jnp.save('sim_data/kuya_data.npy', data)
-    jnp.save('sim_data/kuya_u.npy', u)
-    jnp.save('sim_data/kuya_T.npy', T)
+    import numpy as np
 
-    
-    
+    np.save('experiment_data/density_wave/data_VdW_32.npy', data)
+    np.save('experiment_data/density_wave/u_VdW_32.npy', u)
+    np.save('experiment_data/density_wave/T_VdW_32.npy', T)
 
     

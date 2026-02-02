@@ -8,7 +8,7 @@ from config.conf_geometry       import *
 
 from modules.numerical.computation import solve_root_thermo, vectorize_root, cubic_root_single
 from jax.numpy import stack, sqrt, log, ones_like
-from jax import grad
+from jax import grad, jacfwd
 
 ''' check parameter consistency '''
 
@@ -60,9 +60,9 @@ drpdT_root = vectorize_root(_drpdT_root)
 
 def temperature_rpt_Peng_Robinson(rho, p, Tguess):
     """
-        Solve temperature profile from density and pressure for Peng-Robinson gas
+        Solve temperature profile from density and pressure for Wagner gas
     """
-    return solve_root_thermo(Tguess, rho, p, root_func_pressure, drpdT_root, 10, 1e-10)
+    return solve_root_thermo(Tguess, rho, p, root_func_pressure, drpdT_root, 1e-10, 10)
 
 
 ''' Density equation (p, T) -> rho for initial conditions''' 

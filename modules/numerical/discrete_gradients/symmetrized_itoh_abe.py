@@ -84,3 +84,53 @@ def symmetrized_itoh_abe_2vars(
         
         return dx_f, dy_f
 
+
+
+
+
+#Unsafe version  for convergence tests
+# def symmetrized_itoh_abe_2vars(
+#         f : callable,
+#         dfdx : callable,
+#         dfdy : callable,
+#         x_1 : ndarray | float,
+#         x_2 : ndarray | float,
+#         y_1 : ndarray | float,
+#         y_2 : ndarray | float
+# ) -> Tuple[ndarray, ndarray] | Tuple[float, float]:
+#         """
+#         Compute the symmetrized itoh-abe discrete gradient of a function f
+#         taking two variables
+
+#         The discrete gradient Gf between two points satisfies:
+#         (f2 - f1) = Gf^T (x2 - x1)
+
+#         parameters:
+#         f       : 2 variable function
+#         dfdx    : analytical derivative of f wrt first var
+#         dfdy    : analytical derivative of f wrt second var
+#         x_1, x_2, y_1, y_2 : input variables
+#         tol     : tolerance on x and y to use analytical derivatives
+
+#         returns:
+#         tuple containing two discrete gradient components
+#         """
+
+#         # Function values (4 corners)
+#         f11 = f(x_1, y_1)
+#         f12 = f(x_1, y_2)
+#         f21 = f(x_2, y_1)
+#         f22 = f(x_2, y_2)
+
+#         # Differences and adaptive thresholds (abs + relative)
+#         dx = x_2 - x_1
+#         dy = y_2 - y_1
+
+#         # Symmetrized Itoh-abe numerators
+#         num_x = 0.5 * ((f21 - f11) + (f22 - f12))  
+#         num_y = 0.5 * ((f12 - f11) + (f22 - f21)) 
+
+#         qx_safe = num_x / dx
+#         qy_safe = num_y / dy
+        
+#         return qx_safe, qy_safe
