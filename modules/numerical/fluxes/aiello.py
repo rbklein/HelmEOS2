@@ -1,7 +1,5 @@
 """
-    All functions for the naive flux are gathered here.
-    This flux is a simple implementation that does not consider any physical properties or
-    numerical stability. It is primarily used for testing and debugging purposes.
+    All functions for the Aiello flux are gathered here.
 """
 
 from prep_jax import *
@@ -13,7 +11,7 @@ from jax.numpy                  import stack, sum, where, abs
 
 _threshold = 1e-3
 
-''' 3D versions of the naive fluxes for testing purposes '''
+''' 3D versions '''
 
 def div_x_aiello_3d(u, T):
     """

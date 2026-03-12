@@ -12,7 +12,7 @@ MOLAR_MASS = molecule.molar_mass #kg mol^-1
 
 # Equation of State (EOS) type
 # Options: "IDEAL_GAS", "VAN_DER_WAALS", "PENG_ROBINSON", "KUNZ_WAGNER", "KUNZ_WAGNER_MANUAL"
-EOS = "VAN_DER_WAALS"
+EOS =  "VAN_DER_WAALS"
 
 # Equation of State parameters
 match EOS:
@@ -32,10 +32,10 @@ match EOS:
 
 # Dynamic viscosity 
 # Options: "CONSTANT", "LAESECKE"
-VISC_DYN = "CONSTANT"
+VISC_DYN = "LAESECKE"
 
 VISC_DYN_parameters = { 
-    "value" : 0.0 #0.014890322739265844
+    #"value" : 0.014890322739265844
 }
 
 # Bulk viscosity
@@ -47,10 +47,10 @@ VISC_BULK_parameters = {
 
 #Thermal conductivity
 # Options: "CONSTANT", "HUBER"
-THERMAL_COND = "CONSTANT"
+THERMAL_COND = "HUBER"
 
 THERMAL_COND_parameters = { 
-    "value" : 0.0 #13.867513479472809
+    #"value" : 13.867513479472809
 }
 
 ''' Constants '''

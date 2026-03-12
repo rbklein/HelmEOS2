@@ -70,10 +70,3 @@ def gresho_vortex(mesh):
 
 
     return stack((rho, u, v, p)), 0
-
-
-
-
-    
-
-

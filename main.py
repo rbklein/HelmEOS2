@@ -23,11 +23,4 @@ if __name__ == "__main__":
 
     # simulate
     u, T, data = integrate_data(u0, T0) 
-
-    import numpy as np
-
-    np.save('experiment_data/density_wave/data_VdW_32.npy', data)
-    np.save('experiment_data/density_wave/u_VdW_32.npy', u)
-    np.save('experiment_data/density_wave/T_VdW_32.npy', T)
-
     

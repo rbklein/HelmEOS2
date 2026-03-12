@@ -7,13 +7,10 @@
 __pycache__/
 
 notes.txt
-output/
+
 archive/
 
 experiment_data/
-run_script.py
-run_experiments.py
-experiments/
 jax_profile_logs/
 output/
 scripts/ 

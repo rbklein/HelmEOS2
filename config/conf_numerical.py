@@ -23,9 +23,9 @@ TIME_STEP_METHOD = "RK4"
 #Options: "SYM_ITOH_ABE", "GONZALEZ"
 DISCRETE_GRADIENT = "SYM_ITOH_ABE"
 
-# _num_conv_times = 20
-# _num_steps_per_conv = 256 * 25
+_num_conv_times = 20
+_num_steps_per_conv = 2048
 
 #Number of time steps
-NUM_TIME_STEPS = 1000000
+NUM_TIME_STEPS = _num_conv_times * _num_steps_per_conv
 

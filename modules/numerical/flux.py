@@ -66,9 +66,9 @@ match NUMERICAL_FLUX:
             from modules.numerical.fluxes.kuya import div_kuya_3d as flux_div
     case "AIELLO":
         if N_DIMENSIONS == 1:
-            raise NotImplementedError(f"Chandrashekar ideal flux not implemented in 1D")
+            raise NotImplementedError(f"Aiello flux not implemented in 1D")
         elif N_DIMENSIONS == 2:
-            raise NotImplementedError(f"Chandrashekar ideal flux not implemented in 2D")
+            raise NotImplementedError(f"Aiello flux not implemented in 2D")
         elif N_DIMENSIONS == 3:
             from modules.numerical.fluxes.aiello import div_aiello_3d as flux_div
     case _:
